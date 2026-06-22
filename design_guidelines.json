@@ -1,0 +1,123 @@
+{
+  "project_name": "AussieBack",
+  "theme_archetype": {
+    "theme": "light",
+    "archetype": "1 - Organic & Earthy",
+    "vibe": "Australian coastal and outback warmth meeting modern fintech trust. Energetic, approachable, reliable."
+  },
+  "typography": {
+    "fonts": {
+      "headings": "'Clash Display', sans-serif",
+      "body": "'Outfit', sans-serif"
+    },
+    "scale": {
+      "h1": "text-5xl sm:text-6xl tracking-tight font-semibold",
+      "h2": "text-4xl sm:text-5xl tracking-tight font-medium",
+      "h3": "text-2xl sm:text-3xl tracking-tight font-medium",
+      "h4": "text-xl sm:text-2xl font-medium",
+      "body_lg": "text-lg leading-relaxed",
+      "body": "text-base leading-relaxed",
+      "small": "text-sm uppercase tracking-[0.15em] font-medium"
+    },
+    "imports": [
+      "@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');",
+      "@import url('https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap');"
+    ]
+  },
+  "colors": {
+    "background": "#F7F5F0",
+    "surface": "#FFFFFF",
+    "surface_alt": "#FAFAF9",
+    "primary": "#E05D43",
+    "primary_hover": "#C8533B",
+    "secondary": "#0B2B40",
+    "secondary_hover": "#082030",
+    "accent": "#C8795A",
+    "text_primary": "#0B2B40",
+    "text_secondary": "#4A5D68",
+    "border": "#E8E6E1",
+    "success": "#2E7D32",
+    "error": "#D32F2F"
+  },
+  "layout_spacing": {
+    "marketing": {
+      "container_padding": "px-6 md:px-12 lg:px-24",
+      "section_spacing": "py-20 md:py-32",
+      "grid_pattern": "bento-grid",
+      "gap": "gap-8 md:gap-12"
+    },
+    "dashboard": {
+      "container_padding": "px-4 md:px-8",
+      "section_spacing": "py-8",
+      "grid_pattern": "control-room",
+      "gap": "gap-4 md:gap-6"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-[#E05D43] text-white hover:bg-[#C8533B] hover:-translate-y-1 transition-all duration-200 shadow-[0_4px_14px_0_rgba(224,93,67,0.39)] rounded-lg font-medium px-6 py-3",
+      "secondary": "bg-[#0B2B40] text-white hover:bg-[#082030] hover:-translate-y-1 transition-all duration-200 rounded-lg font-medium px-6 py-3",
+      "outline": "border-2 border-[#E8E6E1] text-[#0B2B40] hover:border-[#0B2B40] transition-all duration-200 rounded-lg font-medium px-6 py-3"
+    },
+    "cards": {
+      "marketing": "bg-white border border-[#E8E6E1] rounded-2xl shadow-sm p-8",
+      "dashboard": "bg-white border border-[#E8E6E1] rounded-xl p-6",
+      "estimator": "bg-white border border-[#0B2B40]/10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 md:p-10"
+    },
+    "inputs": {
+      "base": "w-full bg-[#FAFAF9] border border-[#E8E6E1] rounded-lg px-4 py-3 text-[#0B2B40] placeholder:text-[#4A5D68] focus:outline-none focus:ring-2 focus:ring-[#E05D43]/20 focus:border-[#E05D43] transition-all",
+      "slider": "Shadcn UI slider customized with #E05D43 thumb and track."
+    }
+  },
+  "animations_motion": {
+    "page_transitions": "Subtle fade-in and slide-up (Framer Motion).",
+    "estimator_reveal": "The final amount is initially covered by a backdrop-blur-md overlay. Upon submitting Step 2, the blur animates to 0px, revealing a counting-up number.",
+    "hover_states": "Buttons and interactive cards lift by -4px with an increased shadow.",
+    "marquee": "Slow, organic horizontal scroll for trust badges/testimonials using react-fast-marquee."
+  },
+  "media_assets": {
+    "hero_background": {
+      "url": "https://images.pexels.com/photos/542811/pexels-photo-542811.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Stunning sunset view over rural fields in Australia. Use as a background with a bg-gradient-to-r from-[#F7F5F0] via-[#F7F5F0]/90 to-transparent overlay."
+    },
+    "testimonials": [
+      {
+        "url": "https://images.pexels.com/photos/23225205/pexels-photo-23225205.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Portrait of a young woman wearing a hat, representing a backpacker."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1548213238-0da7521bd6e0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwyfHxoYXBweSUyMGJhY2twYWNrZXIlMjB0cmF2ZWxlcnxlbnwwfHx8fDE3ODIxMzE5MjV8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Smiling man with green mountaineering bag."
+      }
+    ]
+  },
+  "technical_rules": {
+    "icons": "Use lucide-react for all interface icons (security badges, navigation, dashboard icons).",
+    "testing": "All interactive elements must include data-testid attributes (e.g., data-testid='calculate-refund-btn', data-testid='estimator-step-1-next').",
+    "forms": "Use Shadcn customized components. Avoid native HTML select or inputs where possible.",
+    "accessibility": "Ensure text contrast meets APCA/WCAG standards. Do not rely solely on color for error states."
+  },
+  "page_structures": {
+    "landing_page": {
+      "sections": [
+        "Header (Logo, Nav, Login/Admin link, CTA)",
+        "Hero (Split layout: Text & Trust signals on left, Interactive Estimator Card on right over the sunset background)",
+        "Trust Marquee (Logos, '$X million recovered', 'TPB Registered Tax Agent')",
+        "How It Works (3-step visual bento grid)",
+        "Testimonials & FAQ",
+        "Footer (Legal, TPB disclaimer, links)"
+      ]
+    },
+    "estimator_flow": {
+      "step_1": "Visa Type (Buttons for 417/462 vs Other) & Balance input (Toggle between exact balance input OR earnings slider calculating 12%).",
+      "step_2": "Lead Capture (Name, Email, WhatsApp). The estimated refund is visible but BLURRED out behind a 'lock' gate. Call to action: 'Reveal My Refund'.",
+      "step_3": "Success State + Extra Details. Blur is removed, animating number reveals the $ amount. Form asks for Super Fund Name & Departure Date to finalize claim."
+    },
+    "admin_dashboard": {
+      "layout": "Sidebar navigation + Main content area.",
+      "metrics": "Top cards (Total Leads, Est Pipeline Value, Conversion Rate).",
+      "table": "Lead list with columns (Name, Visa, Est Refund, Status Pipeline, Action).",
+      "status_pipeline": "Badges for: New Estimate, Contacted, Documents Received, Submitted to ATO, Refund Paid."
+    }
+  }
+}
