@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import WhatsAppChatButton from "@/components/WhatsAppChatButton";
 import SEO from "@/components/SEO";
 import BlogCTA from "@/components/BlogCTA";
+import Comments from "@/components/Comments";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
@@ -187,6 +188,9 @@ export default function BlogPost() {
             <div className="mt-10">
               <BlogCTA />
             </div>
+
+            {/* Threaded comments */}
+            <Comments slug={post.slug} />
 
             <div className="flex items-center justify-between mt-10 pt-6 border-t border-[#E8E6E1]">
               <div className="text-xs text-[#4A5D68]">

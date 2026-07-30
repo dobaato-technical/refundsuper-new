@@ -27,6 +27,9 @@ import string
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from blog_seed import SEED_BLOG_POSTS
+from fastapi.responses import PlainTextResponse, Response
+import re
+import json
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -71,6 +74,11 @@ REFERRAL_TIERS = [
 WEEKLY_DIGEST_TZ = os.environ.get('WEEKLY_DIGEST_TZ', 'Australia/Sydney')
 WEEKLY_DIGEST_ENABLED = os.environ.get('WEEKLY_DIGEST_ENABLED', 'true').lower() == 'true'
 
+EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
+SITE_URL = os.environ.get('SITE_URL', 'https://aussieback.com').rstrip('/')
+GOOGLE_SITE_VERIFICATION = os.environ.get('GOOGLE_SITE_VERIFICATION', '').strip()
+COMMENTS_AUTO_APPROVE = os.environ.get('COMMENTS_AUTO_APPROVE', 'true').lower() == 'true'
+
 # ---------------- DB ----------------
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
@@ -78,6 +86,7 @@ leads_collection = db['leads']
 admins_collection = db['admins']
 share_events_collection = db['share_events']
 blog_posts_collection = db['blog_posts']
+comments_collection = db['comments']
 
 # ---------------- Logging ----------------
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -216,6 +225,32 @@ class BlogPostSummary(BaseModel):
 class BlogPost(BlogPostSummary):
     content: str
     keywords: List[str] = Field(default_factory=list)
+
+class CommentCreate(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    author_name: str = Field(..., min_length=1, max_length=80)
+    author_email: EmailStr
+    body: str = Field(..., min_length=2, max_length=4000)
+    parent_id: Optional[str] = None
+
+class BlogPostDraftRequest(BaseModel):
+    topic: str = Field(..., min_length=3, max_length=200)
+    keywords: List[str] = Field(default_factory=list)
+    category: Optional[str] = None
+
+class BlogPostUpsert(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    slug: str = Field(..., min_length=3, max_length=140)
+    title: str = Field(..., min_length=3, max_length=200)
+    meta_description: str = Field(..., min_length=10, max_length=320)
+    excerpt: str = Field(..., min_length=10, max_length=600)
+    category: str = Field(..., min_length=2, max_length=60)
+    tags: List[str] = Field(default_factory=list)
+    keywords: List[str] = Field(default_factory=list)
+    hero_image: Optional[str] = None
+    author: str = "AussieBack Team"
+    reading_time_minutes: int = 4
+    content: str = Field(..., min_length=50)
 
 # ---------------- Calculator ----------------
 SUPER_RATE = 0.12  # 12% Super Guarantee
@@ -801,6 +836,165 @@ async def get_blog_post(slug: str):
         raise HTTPException(status_code=404, detail="Post not found")
     return BlogPost(**doc)
 
+# --- Comments (threaded, public) ---
+@api_router.get("/blog/posts/{slug}/comments")
+async def list_comments(slug: str):
+    post = await blog_posts_collection.find_one({"slug": slug}, {"_id": 0, "slug": 1})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    docs = await comments_collection.find(
+        {"post_slug": slug, "approved": True},
+        {"_id": 0, "author_email": 0},
+    ).sort("created_at", 1).to_list(500)
+    return {"comments": docs, "count": len(docs)}
+
+@api_router.post("/blog/posts/{slug}/comments")
+@limiter.limit("10/hour")
+async def create_comment(request: Request, slug: str, payload: CommentCreate):
+    post = await blog_posts_collection.find_one({"slug": slug}, {"_id": 0, "slug": 1})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if payload.parent_id:
+        parent = await comments_collection.find_one(
+            {"id": payload.parent_id, "post_slug": slug}, {"_id": 0, "id": 1}
+        )
+        if not parent:
+            raise HTTPException(status_code=400, detail="Parent comment not found")
+    now = datetime.now(timezone.utc).isoformat()
+    doc = {
+        "id": str(uuid.uuid4()),
+        "post_slug": slug,
+        "author_name": payload.author_name.strip(),
+        "author_email": payload.author_email,
+        "body": payload.body.strip(),
+        "parent_id": payload.parent_id,
+        "approved": COMMENTS_AUTO_APPROVE,
+        "created_at": now,
+    }
+    await comments_collection.insert_one({**doc})
+    return {
+        "ok": True,
+        "comment": {k: v for k, v in doc.items() if k != "author_email"},
+        "pending_moderation": not COMMENTS_AUTO_APPROVE,
+    }
+
+# --- Admin comment moderation ---
+@api_router.get("/admin/comments")
+async def admin_list_comments(current: dict = Depends(get_current_admin), approved: Optional[bool] = None):
+    q: dict = {}
+    if approved is not None:
+        q["approved"] = approved
+    docs = await comments_collection.find(q, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return {"comments": docs, "count": len(docs)}
+
+@api_router.patch("/admin/comments/{comment_id}/approve")
+async def admin_approve_comment(comment_id: str, current: dict = Depends(get_current_admin)):
+    res = await comments_collection.update_one({"id": comment_id}, {"$set": {"approved": True}})
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"ok": True}
+
+@api_router.delete("/admin/comments/{comment_id}")
+async def admin_delete_comment(comment_id: str, current: dict = Depends(get_current_admin)):
+    res = await comments_collection.delete_one({"id": comment_id})
+    if res.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"ok": True}
+
+# --- Admin: Claude-powered article generator ---
+_SLUG_RE = re.compile(r"[^a-z0-9]+")
+
+def _slugify(text: str) -> str:
+    s = _SLUG_RE.sub("-", (text or "").lower()).strip("-")
+    return s[:140] or f"post-{uuid.uuid4().hex[:8]}"
+
+async def _generate_article_draft(topic: str, keywords: List[str], category: Optional[str]) -> dict:
+    if not EMERGENT_LLM_KEY:
+        raise HTTPException(status_code=503, detail="EMERGENT_LLM_KEY not configured")
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+    except ImportError:
+        raise HTTPException(status_code=503, detail="emergentintegrations not installed")
+    system = (
+        "You are an SEO-savvy travel-finance editor at AussieBack. "
+        "Write article drafts about Australian Super refunds (DASP) for backpackers, "
+        "working holiday makers and international students who have left Australia. "
+        "Always respond with ONLY a JSON object (no code fences, no prose) with keys: "
+        "title (max 90 chars, keyword-first), meta_description (140-160 chars), excerpt "
+        "(1-2 sentences), category, tags (array of 3-6 lowercase strings), keywords "
+        "(array of 3-8 SEO phrases), reading_time_minutes (int 3-8), content (markdown, "
+        "500-900 words, must use H2 sections, bullet lists, a table or blockquote, and "
+        "end with a call to action linking to '/#estimator')."
+    )
+    user_text = (
+        f"Draft an SEO article for AussieBack.\n\n"
+        f"Topic: {topic}\n"
+        f"Target keywords: {', '.join(keywords) if keywords else '(pick from topic)'}\n"
+        f"Preferred category: {category or 'auto-select from Guide, By Visa, By Country, Tips, Case Study'}\n\n"
+        "Respond with ONLY the JSON object."
+    )
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=f"blog-draft-{uuid.uuid4().hex[:8]}",
+        system_message=system,
+    ).with_model("anthropic", "claude-sonnet-4-6")
+    raw = await chat.send_message(UserMessage(text=user_text))
+    text = raw.strip()
+    # Strip potential code fences
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?", "", text).strip()
+        text = re.sub(r"```$", "", text).strip()
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        # Some models wrap JSON in prose — try to extract the first {...} block
+        match = re.search(r"\{.*\}", text, re.DOTALL)
+        if not match:
+            raise HTTPException(status_code=502, detail="LLM did not return JSON")
+        data = json.loads(match.group(0))
+    return {
+        "slug": _slugify(data.get("title", topic)),
+        "title": data["title"],
+        "meta_description": data["meta_description"],
+        "excerpt": data["excerpt"],
+        "category": data.get("category") or category or "Guide",
+        "tags": data.get("tags", []),
+        "keywords": data.get("keywords", keywords),
+        "reading_time_minutes": int(data.get("reading_time_minutes", 5)),
+        "content": data["content"],
+        "hero_image": None,
+        "author": "AussieBack Team",
+    }
+
+@api_router.post("/admin/blog/generate-draft")
+async def admin_generate_draft(payload: BlogPostDraftRequest, current: dict = Depends(get_current_admin)):
+    draft = await _generate_article_draft(payload.topic, payload.keywords, payload.category)
+    return {"ok": True, "draft": draft}
+
+@api_router.post("/admin/blog/posts")
+async def admin_publish_post(payload: BlogPostUpsert, current: dict = Depends(get_current_admin)):
+    now = datetime.now(timezone.utc).isoformat()
+    slug = _slugify(payload.slug)
+    existing = await blog_posts_collection.find_one({"slug": slug}, {"_id": 1})
+    doc = {
+        **payload.model_dump(),
+        "slug": slug,
+        "updated_at": now,
+    }
+    if existing:
+        await blog_posts_collection.update_one({"slug": slug}, {"$set": doc})
+    else:
+        doc["published_at"] = now
+        await blog_posts_collection.insert_one(doc)
+    return {"ok": True, "slug": slug, "created": not existing}
+
+@api_router.delete("/admin/blog/posts/{slug}")
+async def admin_delete_post(slug: str, current: dict = Depends(get_current_admin)):
+    res = await blog_posts_collection.delete_one({"slug": slug})
+    if res.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"ok": True}
+
 # --- Admin: manually trigger digest ---
 @api_router.post("/admin/weekly-digest/run")
 async def run_weekly_digest_now(current: dict = Depends(get_current_admin)):
@@ -808,6 +1002,58 @@ async def run_weekly_digest_now(current: dict = Depends(get_current_admin)):
     return {"ok": True, "digest": digest}
 
 app.include_router(api_router)
+
+# --- Root-level SEO endpoints (must NOT sit behind /api because search engines expect these paths) ---
+@app.get("/sitemap.xml", include_in_schema=False)
+async def sitemap_xml():
+    posts = await blog_posts_collection.find({}, {"_id": 0, "slug": 1, "updated_at": 1}).to_list(500)
+    urls = [
+        f"  <url><loc>{SITE_URL}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>",
+        f"  <url><loc>{SITE_URL}/blog</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>",
+    ]
+    for p in posts:
+        updated = (p.get("updated_at") or "")[:10]
+        lastmod = f"<lastmod>{updated}</lastmod>" if updated else ""
+        urls.append(
+            f'  <url><loc>{SITE_URL}/blog/{p["slug"]}</loc>'
+            f'{lastmod}<changefreq>monthly</changefreq><priority>0.7</priority></url>'
+        )
+    body = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + "\n".join(urls)
+        + "\n</urlset>\n"
+    )
+    return Response(content=body, media_type="application/xml")
+
+@app.get("/robots.txt", include_in_schema=False)
+async def robots_txt():
+    body = (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /admin\n"
+        "Disallow: /admin/*\n"
+        "Disallow: /api/\n\n"
+        f"Sitemap: {SITE_URL}/sitemap.xml\n"
+    )
+    return PlainTextResponse(content=body)
+
+# Serve Google Search Console HTML verification file when configured.
+# Set GOOGLE_SITE_VERIFICATION to the token Google gives you (e.g. abc123...) and
+# the file `google<token>.html` will be available at the site root as required.
+@app.get("/google{token}.html", include_in_schema=False)
+async def google_verification_file(token: str):
+    if GOOGLE_SITE_VERIFICATION and token == GOOGLE_SITE_VERIFICATION:
+        return PlainTextResponse(f"google-site-verification: google{token}.html")
+    raise HTTPException(status_code=404, detail="Not found")
+
+@app.get("/api/site-config")
+async def site_config():
+    """Frontend polls this on boot to inject the current google-site-verification meta tag."""
+    return {
+        "site_url": SITE_URL,
+        "google_site_verification": GOOGLE_SITE_VERIFICATION or None,
+    }
 
 app.add_middleware(
     CORSMiddleware,
@@ -834,6 +1080,8 @@ async def seed_admin_and_indexes():
     await blog_posts_collection.create_index("slug", unique=True)
     await blog_posts_collection.create_index("category")
     await blog_posts_collection.create_index("tags")
+    await comments_collection.create_index("post_slug")
+    await comments_collection.create_index("created_at")
 
     # Seed blog posts if collection is empty
     existing_posts = await blog_posts_collection.count_documents({})

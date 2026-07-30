@@ -1,8 +1,11 @@
+import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
+import { api } from "@/lib/api";
 
 /**
  * SEO helper. Wraps react-helmet-async and injects sensible defaults for AussieBack.
  * Also supports injecting arbitrary JSON-LD structured data (Article, FAQPage, etc).
+ * Reads /api/site-config once per mount to inject google-site-verification when set.
  */
 export default function SEO({
   title,
@@ -13,6 +16,22 @@ export default function SEO({
   jsonLd,
   keywords,
 }) {
+  const [siteConfig, setSiteConfig] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await api.get("/site-config");
+        if (!cancelled) setSiteConfig(data);
+      } catch (e) {
+        /* silent — SEO defaults still work */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const finalTitle = title
     ? `${title} · AussieBack`
     : "AussieBack — Claim Your Australian Super Refund (DASP) in 3 Minutes";
@@ -45,6 +64,13 @@ export default function SEO({
       <meta name="twitter:title" content={finalTitle} />
       <meta name="twitter:description" content={finalDescription} />
       <meta name="twitter:image" content={finalImage} />
+
+      {siteConfig?.google_site_verification && (
+        <meta
+          name="google-site-verification"
+          content={siteConfig.google_site_verification}
+        />
+      )}
 
       {jsonLd && (
         <script type="application/ld+json">

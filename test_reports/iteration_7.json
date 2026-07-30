@@ -1,0 +1,39 @@
+{
+  "summary": "Iteration 7 verified end-to-end. Backend pytest: 17 passed, 1 xfailed (see below). SEO plumbing (/api/site-config, /sitemap.xml, /robots.txt), threaded public comments + admin moderation, Claude Sonnet 4.6 draft generator, admin blog CRUD (create/update/delete), and iter5/6 regression all green. Frontend: comment form + threaded reply flow works on seeded blog post (new comment appears in [data-testid='comments-list'] with 'your comment is live' toast; reply banner activates and nested reply appears). Admin Blog Studio: login → [data-testid='blog-studio-btn'] on /admin → /admin/blog form → Generate calls Claude (~25s) → editable fields populated (4755-char content) → slug changed to 'aussie-super-back' → Publish → 'Published /blog/aussie-super-back' toast → /blog/aussie-super-back renders full article (h2/lists/CTA sidebar).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/google{token}.html", "issue": "Kubernetes/Cloudflare ingress does NOT route /google*.html to the backend — the SPA catch-all returns 200 with index.html. Backend endpoint is unreachable via the public URL, so Google Search Console file verification will not work in this preview environment until the ingress is configured to route /google*.html to the backend service (like /sitemap.xml and /robots.txt already are). The endpoint itself is implemented correctly and would return 404 (empty token) / 200 (matching token) if reached."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration7.py",
+    "/app/test_reports/pytest/iter7.xml"
+  ],
+  "action_items": [
+    "Add an ingress route for /google*.html → backend (mirror the /sitemap.xml + /robots.txt rule) so the Google Search Console HTML verification file works once GOOGLE_SITE_VERIFICATION is populated. Alternative: serve the verification file from /app/frontend/public/ at deploy-time from env, or use the DNS TXT record method instead."
+  ],
+  "critical_code_review_comments": [
+    "server.py is now ~1130 lines — consider splitting into routers (auth, leads, blog, comments, admin_blog, seo) for maintainability.",
+    "SEO/site-config values (SITE_URL, GOOGLE_SITE_VERIFICATION) are read from env at import time. Any change requires a supervisorctl restart; document this in operator notes.",
+    "Comments never expose author_email in list/create responses — good. However admin GET /api/admin/comments does return email (expected for moderation). Consider adding a rate-limit on GET /api/blog/posts/{slug}/comments to prevent scraping.",
+    "_generate_article_draft accepts model output that could be missing keys — currently uses data['title']/data['content'] directly which will KeyError → 500 if Claude omits them. Wrap in a try/except and return 502 with clear message.",
+    "Root-level /sitemap.xml still shadowed by static /app/frontend/public/sitemap.xml in this preview; confirmed backend is winning here (18 <url> entries, application/xml) but leaving the stale file around is a footgun — remove it or mark it as generated.",
+    "AdminBlogStudio uses [data-testid='studio-cat'] for the draft category field (right-hand pane) but the review request expected 'studio-category' (which is used only on the left-hand prompt form). Both exist but naming is confusing — consider renaming."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration7.py"
+  ],
+  "success_rate": {"backend": "94% (17/18, 1 xfailed due to ingress)", "frontend": "100% (comment threading + Claude studio publish flow verified)"},
+  "test_credentials": "admin@aussieback.com / Admin@123",
+  "seed_data_creation": "Backend seeded 6 blog posts on startup. Test run inserted 4 TEST_ / E2E comments on the seeded 'how-to-claim-australian-super-refund-2026-guide' post (approved=true) — safe to leave, they are prefixed for cleanup. The published-then-deleted 'aussie-super-back' post was cleaned up after the E2E test.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend test file: /app/backend/tests/test_iteration7.py (loads REACT_APP_BACKEND_URL from /app/frontend/.env). Public URL for automation: https://aussie-super-back.preview.emergentagent.com. Seeded main blog slug is 'how-to-claim-australian-super-refund-2026-guide' (NOT 'aussie-super-back' — the latter is only created transiently by the admin studio flow). Claude drafter typically returns in 15-30s; give it 60s in tests. Rate limits: /api/leads 5/hr, /api/blog/posts/{slug}/comments 10/hr. Root routes /sitemap.xml and /robots.txt are backend-served through ingress; /google*.html is NOT — flag this ingress gap.",
+  "rca of the issue": "N/A — the only red is an environment/ingress limitation (google verification file route not exposed publicly), not a code bug."
+}

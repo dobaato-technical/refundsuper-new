@@ -5,6 +5,7 @@ import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import Landing from "@/pages/Landing";
 import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
+import AdminBlogStudio from "@/pages/AdminBlogStudio";
 import BlogList from "@/pages/BlogList";
 import BlogPost from "@/pages/BlogPost";
 import { Toaster } from "@/components/ui/sonner";
@@ -31,6 +32,14 @@ function AppRoutes() {
             element={
               <ProtectedRoute>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/blog"
+            element={
+              <ProtectedRoute>
+                <AdminBlogStudio />
               </ProtectedRoute>
             }
           />
