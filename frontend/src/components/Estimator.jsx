@@ -271,17 +271,17 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
             transition={{ duration: 0.25 }}
           >
             <h3 className="font-display text-2xl md:text-3xl font-medium text-[#0B2B40] mb-1">
-              Almost there.
+              {t("estimator.step2_title")}
             </h3>
             <p className="text-sm text-[#4A5D68] mb-6">
-              We'll WhatsApp you your refund result and a free expert review.
+              {t("estimator.step2_sub")}
             </p>
 
             {/* Blurred result preview */}
             <div className="relative mb-6 rounded-xl overflow-hidden border border-[#E8E6E1] bg-[#FAFAF9]">
               <div className="p-6 text-center">
                 <div className="text-xs uppercase tracking-[0.18em] text-[#4A5D68] mb-2">
-                  Your estimated refund
+                  {t("estimator.estimated_label")}
                 </div>
                 <div className="font-display text-4xl text-[#0B2B40] blur-md select-none">
                   $X,XXX
@@ -289,14 +289,14 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
               </div>
               <div className="absolute inset-0 backdrop-blur-md bg-white/40 flex items-center justify-center">
                 <div className="flex items-center gap-2 text-[#0B2B40] font-medium">
-                  <Lock className="h-4 w-4" /> Unlock below
+                  <Lock className="h-4 w-4" /> {t("estimator.unlock_below")}
                 </div>
               </div>
             </div>
 
             <div className="space-y-4">
               <div>
-                <Label className="text-sm text-[#0B2B40]">First name</Label>
+                <Label className="text-sm text-[#0B2B40]">{t("estimator.first_name")}</Label>
                 <Input
                   data-testid="first-name-input"
                   value={firstName}
@@ -306,7 +306,7 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
                 />
               </div>
               <div>
-                <Label className="text-sm text-[#0B2B40]">Email</Label>
+                <Label className="text-sm text-[#0B2B40]">{t("estimator.email")}</Label>
                 <Input
                   data-testid="email-input"
                   type="email"
@@ -317,14 +317,27 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
                 />
               </div>
               <div>
-                <Label className="text-sm text-[#0B2B40]">WhatsApp number (with country code)</Label>
+                <Label className="text-sm text-[#0B2B40]">{t("estimator.whatsapp")}</Label>
                 <Input
                   data-testid="whatsapp-input"
                   value={whatsapp}
-                  onChange={(e) => setWhatsapp(e.target.value)}
-                  placeholder="+44 7700 900123"
-                  className="bg-[#FAFAF9] border-[#E8E6E1] h-11 mt-1"
+                  onChange={(e) => {
+                    setWhatsapp(e.target.value);
+                    if (whatsappError) setWhatsappError("");
+                  }}
+                  placeholder={t("estimator.whatsapp_placeholder")}
+                  aria-invalid={Boolean(whatsappError)}
+                  className={`bg-[#FAFAF9] h-11 mt-1 ${
+                    whatsappError
+                      ? "border-[#D32F2F] focus-visible:ring-[#D32F2F]/25"
+                      : "border-[#E8E6E1]"
+                  }`}
                 />
+                {whatsappError && (
+                  <p data-testid="whatsapp-error" className="text-xs text-[#D32F2F] mt-1">
+                    {whatsappError}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -335,18 +348,18 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
                 onClick={goBack}
                 className="border-2 border-[#E8E6E1] text-[#0B2B40] hover:border-[#0B2B40] h-12 rounded-lg"
               >
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back
+                <ArrowLeft className="mr-2 h-4 w-4" /> {t("estimator.step2_back")}
               </Button>
               <Button
                 data-testid="step2-reveal"
                 onClick={handleReveal}
                 className="flex-1 bg-[#E05D43] hover:bg-[#C8533B] text-white h-12 rounded-lg shadow-[0_4px_14px_0_rgba(224,93,67,0.39)] hover:-translate-y-0.5 transition-all"
               >
-                Reveal my refund <Sparkles className="ml-2 h-4 w-4" />
+                {t("estimator.step2_reveal")} <Sparkles className="ml-2 h-4 w-4" />
               </Button>
             </div>
             <p className="text-xs text-[#4A5D68] mt-3 text-center">
-              We respect your privacy. No spam, ever.
+              {t("estimator.privacy")}
             </p>
           </motion.div>
         )}

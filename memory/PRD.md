@@ -23,6 +23,12 @@ Build a high-converting lead-magnet platform that captures the "Returning Tempor
 - [x] Admin dashboard: stats cards, lead table, search + status filter, status pipeline (5 stages), lead detail modal, CSV export
 - [x] Integration stubs (WhatsApp, email, webhook) — drop in env vars to enable
 
+## Implemented (Jul 2026 — Iteration 2)
+- [x] **E.164 phone validation** — backend via `phonenumbers`, frontend via `libphonenumber-js`. Inline error UI + normalized to E.164 before persistence.
+- [x] **Google reCAPTCHA v3** — stubbed (no keys). Backend `verify_recaptcha` dependency + frontend `useRecaptcha('leads')` + conditional `GoogleReCaptchaProvider` mount. Drop in `RECAPTCHA_SECRET_KEY` + `REACT_APP_RECAPTCHA_SITE_KEY` to activate.
+- [x] **Rate limiting** — 5 leads / hour / IP on POST `/api/leads` via `slowapi` (`LEAD_RATE_LIMIT` env, default `5/hour`). Returns 429 with friendly message.
+- [x] **i18n scaffolding** — `react-i18next` + `i18next` + browser language detector. All landing/estimator/footer copy centralized in `/i18n/locales/en.json`. Language switcher in header (currently only EN — add new lang by dropping a JSON file & registering it in `/i18n/index.js`).
+
 ## Backlog
 - **P1**: Multi-language support (DE, FR, JA, KO, ES), better phone validation (E.164), reCAPTCHA on lead form, rate-limit POST `/api/leads`.
 - **P1**: Webhook signature signing (HMAC) for CRM forwarding.
