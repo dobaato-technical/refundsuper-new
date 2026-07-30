@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Download, Share2, Link as LinkIcon, Check, LayoutGrid, Smartphone } from "lucide-react";
+import { useTranslation, Trans } from "react-i18next";
+import { Download, Share2, Link as LinkIcon, Check, LayoutGrid, Smartphone, Trophy, Lock } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -25,6 +25,23 @@ export default function ShareCardModal({
   const [dataUrl, setDataUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [aspect, setAspect] = useState("feed"); // "feed" | "story"
+  const [progress, setProgress] = useState(null);
+
+  useEffect(() => {
+    if (!open || !referralCode) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await api.get(`/referrals/${encodeURIComponent(referralCode)}/progress`);
+        if (!cancelled) setProgress(data);
+      } catch (e) {
+        /* new code may not resolve for a beat — silently skip */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, referralCode]);
 
   const visaLabel =
     visaType === "working_holiday" ? t("share.card_visa_wh") : t("share.card_visa_other");
@@ -196,6 +213,64 @@ export default function ShareCardModal({
             <div className="text-[10px] text-[#4A5D68] max-w-[190px] leading-snug text-right">
               {t("share.referral_hint")}
             </div>
+          </div>
+        )}
+
+        {progress && (
+          <div
+            data-testid="reward-tier-block"
+            className="rounded-lg border border-[#E8E6E1] bg-white p-3 space-y-2"
+          >
+            <div className="flex items-center gap-2">
+              <Trophy className="h-4 w-4 text-[#E05D43]" />
+              <div className="text-xs uppercase tracking-[0.15em] text-[#4A5D68] font-medium">
+                {t("reward.title")}
+              </div>
+            </div>
+            <p className="text-sm text-[#0B2B40]" data-testid="reward-count">
+              {t("reward.referred_count", { count: progress.referred_count })}
+            </p>
+
+            {progress.next_tier ? (
+              <p className="text-sm text-[#4A5D68]" data-testid="reward-next">
+                <Trans
+                  i18nKey="reward.next_reward"
+                  values={{
+                    remaining: progress.remaining_to_next,
+                    reward: progress.next_tier.reward,
+                  }}
+                  components={{ strong: <strong className="text-[#0B2B40]" /> }}
+                />
+              </p>
+            ) : (
+              <p className="text-sm text-[#2E7D32] font-medium" data-testid="reward-max">
+                {t("reward.unlocked_all")}
+              </p>
+            )}
+
+            <ul className="space-y-1.5 pt-1" data-testid="reward-tiers-list">
+              {progress.tiers.map((tier) => {
+                const isUnlocked = progress.referred_count >= tier.threshold;
+                return (
+                  <li
+                    key={tier.threshold}
+                    data-testid={`reward-tier-${tier.threshold}`}
+                    className="flex items-center gap-2 text-xs"
+                  >
+                    <span
+                      className={`h-5 w-5 rounded-full flex items-center justify-center shrink-0 ${
+                        isUnlocked ? "bg-[#E6EFD8] text-[#2E7D32]" : "bg-[#F0EEE9] text-[#8A9199]"
+                      }`}
+                    >
+                      {isUnlocked ? <Check className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                    </span>
+                    <span className={isUnlocked ? "text-[#0B2B40]" : "text-[#4A5D68]"}>
+                      <strong>{tier.threshold}</strong> · {tier.reward}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         )}
 

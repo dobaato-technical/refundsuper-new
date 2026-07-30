@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   Users, TrendingUp, DollarSign, Trophy, LogOut, Search,
-  Download, RefreshCw, ChevronDown,
+  Download, RefreshCw, ChevronDown, Mail,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -101,6 +101,15 @@ export default function AdminDashboard() {
     }
   };
 
+  const runWeeklyDigest = async () => {
+    try {
+      const { data } = await api.post("/admin/weekly-digest/run");
+      toast.success(`Digest generated · ${data.digest.new_leads_count} new leads`);
+    } catch (e) {
+      toast.error("Digest run failed");
+    }
+  };
+
   const statCards = useMemo(() => {
     if (!stats) return [];
     return [
@@ -157,6 +166,14 @@ export default function AdminDashboard() {
           </div>
           <div className="flex gap-2">
             <Button
+              data-testid="digest-btn"
+              onClick={runWeeklyDigest}
+              variant="outline"
+              className="border-2 border-[#E8E6E1] text-[#0B2B40] hover:border-[#0B2B40]"
+            >
+              <Mail className="h-4 w-4 mr-2" /> Run digest
+            </Button>
+            <Button
               data-testid="refresh-btn"
               onClick={load}
               variant="outline"
@@ -200,6 +217,7 @@ export default function AdminDashboard() {
 
         {/* Share & Referral Analytics */}
         {analytics && (
+          <>
           <div className="grid lg:grid-cols-3 gap-4 mb-8" data-testid="analytics-panel">
             <div className="bg-white border border-[#E8E6E1] rounded-xl p-5" data-testid="share-channels-card">
               <div className="flex items-center justify-between mb-4">
@@ -294,6 +312,46 @@ export default function AdminDashboard() {
               )}
             </div>
           </div>
+
+          {/* UTM sources card */}
+          <div className="bg-white border border-[#E8E6E1] rounded-xl p-5 mb-8" data-testid="utm-sources-card">
+            <div className="text-xs uppercase tracking-[0.15em] text-[#4A5D68] mb-3">
+              UTM sources
+            </div>
+            {(!analytics.utm_sources || analytics.utm_sources.length === 0) ? (
+              <p className="text-sm text-[#4A5D68]" data-testid="no-utm">
+                No UTM-tagged traffic yet. Share links like <code className="bg-[#FAFAF9] px-1 rounded">/?ref=CODE&amp;utm_source=tiktok</code> to see which channels drive claims.
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-[11px] uppercase tracking-[0.15em] text-[#4A5D68] border-b border-[#E8E6E1]">
+                      <th className="py-2">Source</th>
+                      <th className="py-2 text-right">Leads</th>
+                      <th className="py-2 text-right">Pipeline</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {analytics.utm_sources.map((u) => (
+                      <tr
+                        key={u.source}
+                        className="border-b border-[#E8E6E1] last:border-0"
+                        data-testid={`utm-row-${u.source}`}
+                      >
+                        <td className="py-3 font-medium text-[#0B2B40] capitalize">{u.source}</td>
+                        <td className="py-3 text-right">{u.leads}</td>
+                        <td className="py-3 text-right text-[#4A5D68] tabular-nums">
+                          {formatAUD(u.pipeline)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+          </>
         )}
 
         {/* Filters */}

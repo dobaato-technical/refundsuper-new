@@ -24,6 +24,8 @@ from slowapi.middleware import SlowAPIMiddleware
 from fastapi.responses import JSONResponse
 import secrets
 import string
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -55,6 +57,18 @@ RECAPTCHA_ACTION = os.environ.get('RECAPTCHA_ACTION', 'leads')
 RECAPTCHA_SITEVERIFY_URL = 'https://www.google.com/recaptcha/api/siteverify'
 
 LEAD_RATE_LIMIT = os.environ.get('LEAD_RATE_LIMIT', '5/hour')
+
+# Referral reward tiers — the frontend also mirrors this list for local previews.
+REFERRAL_TIERS = [
+    {"threshold": 1, "reward": "Priority WhatsApp support"},
+    {"threshold": 3, "reward": "Free premium claim review"},
+    {"threshold": 5, "reward": "$50 travel voucher"},
+    {"threshold": 10, "reward": "Full concierge claim (we do everything)"},
+]
+
+# Weekly digest cron: Monday 09:00 in this timezone.
+WEEKLY_DIGEST_TZ = os.environ.get('WEEKLY_DIGEST_TZ', 'Australia/Sydney')
+WEEKLY_DIGEST_ENABLED = os.environ.get('WEEKLY_DIGEST_ENABLED', 'true').lower() == 'true'
 
 # ---------------- DB ----------------
 client = AsyncIOMotorClient(MONGO_URL)
@@ -125,6 +139,10 @@ class LeadCreate(BaseModel):
     date_left_australia: Optional[str] = None  # ISO date string
     # Referral
     referred_by_code: Optional[str] = Field(default=None, max_length=32)
+    # Attribution (UTM)
+    utm_source: Optional[str] = Field(default=None, max_length=80)
+    utm_medium: Optional[str] = Field(default=None, max_length=80)
+    utm_campaign: Optional[str] = Field(default=None, max_length=120)
 
     @field_validator("whatsapp_number")
     @classmethod
@@ -157,6 +175,9 @@ class Lead(BaseModel):
     referral_code: Optional[str] = None
     referred_by_code: Optional[str] = None
     referred_by_lead_id: Optional[str] = None
+    utm_source: Optional[str] = None
+    utm_medium: Optional[str] = None
+    utm_campaign: Optional[str] = None
 
 class AdminLogin(BaseModel):
     email: EmailStr
@@ -399,6 +420,9 @@ async def create_lead(
         "referral_code": referral_code,
         "referred_by_code": referred_by_code,
         "referred_by_lead_id": referred_by_lead_id,
+        "utm_source": (payload.utm_source or None),
+        "utm_medium": (payload.utm_medium or None),
+        "utm_campaign": (payload.utm_campaign or None),
     }
     await leads_collection.insert_one({**doc})
     # Schedule outbound integrations
@@ -501,6 +525,45 @@ async def export_leads(current: dict = Depends(get_current_admin)):
         headers={"Content-Disposition": "attachment; filename=aussieback_leads.csv"},
     )
 
+# --- Referral lookup + progress (public) ---
+@api_router.get("/referrals/{code}")
+async def get_referrer_public(code: str):
+    """Public: returns minimal referrer info (first name only) for greeting banners."""
+    code_up = (code or "").strip().upper()
+    if not code_up:
+        raise HTTPException(status_code=404, detail="Not found")
+    doc = await leads_collection.find_one(
+        {"referral_code": code_up},
+        {"_id": 0, "first_name": 1, "referral_code": 1},
+    )
+    if not doc:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {
+        "referral_code": doc["referral_code"],
+        "first_name": doc.get("first_name", ""),
+    }
+
+@api_router.get("/referrals/{code}/progress")
+async def get_referral_progress(code: str):
+    code_up = (code or "").strip().upper()
+    ref = await leads_collection.find_one(
+        {"referral_code": code_up},
+        {"_id": 0, "id": 1, "referral_code": 1, "first_name": 1},
+    )
+    if not ref:
+        raise HTTPException(status_code=404, detail="Not found")
+    referred_count = await leads_collection.count_documents({"referred_by_lead_id": ref["id"]})
+    next_tier = next((t for t in REFERRAL_TIERS if t["threshold"] > referred_count), None)
+    unlocked = [t for t in REFERRAL_TIERS if t["threshold"] <= referred_count]
+    return {
+        "referral_code": ref["referral_code"],
+        "referred_count": referred_count,
+        "tiers": REFERRAL_TIERS,
+        "unlocked_tiers": unlocked,
+        "next_tier": next_tier,
+        "remaining_to_next": (next_tier["threshold"] - referred_count) if next_tier else 0,
+    }
+
 # --- Share events (public) ---
 @api_router.post("/share-events")
 @limiter.limit("60/hour")
@@ -557,6 +620,25 @@ async def admin_analytics(current: dict = Depends(get_current_admin)):
     referred_leads_total = await leads_collection.count_documents({"referred_by_lead_id": {"$ne": None}})
     all_leads_total = await leads_collection.count_documents({})
 
+    # UTM breakdown
+    utm_cursor = leads_collection.aggregate([
+        {"$match": {"utm_source": {"$ne": None}}},
+        {"$group": {
+            "_id": {"$ifNull": ["$utm_source", "unknown"]},
+            "leads": {"$sum": 1},
+            "pipeline": {"$sum": "$estimated_refund"},
+        }},
+        {"$sort": {"leads": -1}},
+        {"$limit": 10},
+    ])
+    utm_sources: List[dict] = []
+    async for row in utm_cursor:
+        utm_sources.append({
+            "source": row["_id"] or "unknown",
+            "leads": row["leads"],
+            "pipeline": round(float(row["pipeline"]), 2),
+        })
+
     return {
         "share_events": {
             "by_channel": channel_counts,
@@ -567,7 +649,106 @@ async def admin_analytics(current: dict = Depends(get_current_admin)):
             "all_leads_total": all_leads_total,
             "top_referrers": top,
         },
+        "utm_sources": utm_sources,
     }
+
+# ---------------- Weekly digest ----------------
+async def _build_weekly_digest() -> dict:
+    now = datetime.now(timezone.utc)
+    week_ago = (now - timedelta(days=7)).isoformat()
+    new_leads_count = await leads_collection.count_documents({"created_at": {"$gte": week_ago}})
+    pipeline_row = leads_collection.aggregate([
+        {"$match": {"created_at": {"$gte": week_ago}}},
+        {"$group": {"_id": None, "total": {"$sum": "$estimated_refund"}}},
+    ])
+    new_pipeline = 0.0
+    async for r in pipeline_row:
+        new_pipeline = float(r.get("total", 0))
+
+    # Top channel
+    channels = ["download", "native", "copy", "story_download"]
+    channel_counts = {}
+    for ch in channels:
+        channel_counts[ch] = await share_events_collection.count_documents(
+            {"channel": ch, "created_at": {"$gte": week_ago}}
+        )
+    top_channel = max(channel_counts.items(), key=lambda kv: kv[1]) if channel_counts else ("-", 0)
+
+    # Top 3 referrers this week
+    top_cursor = leads_collection.aggregate([
+        {"$match": {"referred_by_lead_id": {"$ne": None}, "created_at": {"$gte": week_ago}}},
+        {"$group": {"_id": "$referred_by_lead_id", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 3},
+    ])
+    top_referrers = []
+    async for row in top_cursor:
+        ref = await leads_collection.find_one(
+            {"id": row["_id"]},
+            {"_id": 0, "first_name": 1, "email": 1, "referral_code": 1},
+        )
+        if ref:
+            top_referrers.append({**ref, "referred_count": row["count"]})
+
+    return {
+        "since": week_ago,
+        "new_leads_count": new_leads_count,
+        "new_pipeline_value": round(new_pipeline, 2),
+        "share_events_by_channel": channel_counts,
+        "top_channel": {"channel": top_channel[0], "count": top_channel[1]},
+        "top_referrers": top_referrers,
+    }
+
+def _digest_to_html(d: dict) -> str:
+    rows = "".join(
+        f"<li><strong>{r['first_name']}</strong> ({r.get('email', '')}) — "
+        f"code <code>{r.get('referral_code', '')}</code> — "
+        f"{r['referred_count']} new referrals</li>"
+        for r in d["top_referrers"]
+    ) or "<li>No referred leads this week.</li>"
+    return f"""
+    <h2>AussieBack — weekly digest</h2>
+    <p>Since {d['since'][:10]}</p>
+    <ul>
+      <li><strong>{d['new_leads_count']}</strong> new leads</li>
+      <li><strong>${d['new_pipeline_value']:,.0f}</strong> new pipeline value</li>
+      <li>Top share channel: <strong>{d['top_channel']['channel']}</strong>
+          ({d['top_channel']['count']} events)</li>
+    </ul>
+    <h3>Top referrers this week</h3>
+    <ol>{rows}</ol>
+    <p style="color:#4A5D68;font-size:12px;">This digest was generated automatically. Configure ADMIN_NOTIFICATION_EMAILS + RESEND_API_KEY to deliver it.</p>
+    """
+
+async def send_weekly_digest() -> dict:
+    digest = await _build_weekly_digest()
+    html = _digest_to_html(digest)
+    admin_recipients = [e.strip() for e in ADMIN_NOTIFICATION_EMAILS.split(",") if e.strip()]
+    if RESEND_API_KEY and RESEND_FROM_EMAIL and admin_recipients:
+        try:
+            import resend
+            resend.api_key = RESEND_API_KEY
+            resend.Emails.send({
+                "from": RESEND_FROM_EMAIL,
+                "to": admin_recipients,
+                "subject": f"AussieBack weekly digest — {digest['new_leads_count']} new leads",
+                "html": html,
+            })
+            logger.info("Weekly digest sent to %s", admin_recipients)
+        except Exception as e:
+            logger.exception("Weekly digest send failed: %s", e)
+    else:
+        logger.info(
+            "[STUB] Weekly digest not sent — RESEND / ADMIN_NOTIFICATION_EMAILS not configured. Digest: %s",
+            digest,
+        )
+    return digest
+
+# --- Admin: manually trigger digest ---
+@api_router.post("/admin/weekly-digest/run")
+async def run_weekly_digest_now(current: dict = Depends(get_current_admin)):
+    digest = await send_weekly_digest()
+    return {"ok": True, "digest": digest}
 
 app.include_router(api_router)
 
@@ -580,12 +761,16 @@ app.add_middleware(
 )
 
 # ---------------- Startup ----------------
+scheduler: Optional[AsyncIOScheduler] = None
+
 @app.on_event("startup")
 async def seed_admin_and_indexes():
+    global scheduler
     await leads_collection.create_index("id", unique=True)
     await leads_collection.create_index("created_at")
     await leads_collection.create_index("referral_code", unique=True, sparse=True)
     await leads_collection.create_index("referred_by_lead_id")
+    await leads_collection.create_index("utm_source")
     await admins_collection.create_index("email", unique=True)
     await share_events_collection.create_index("created_at")
     await share_events_collection.create_index("channel")
@@ -600,6 +785,27 @@ async def seed_admin_and_indexes():
     else:
         logger.info("Admin already exists: %s", ADMIN_SEED_EMAIL)
 
+    # Weekly digest scheduler: Monday 09:00 in WEEKLY_DIGEST_TZ.
+    if WEEKLY_DIGEST_ENABLED:
+        try:
+            scheduler = AsyncIOScheduler(timezone=WEEKLY_DIGEST_TZ)
+            scheduler.add_job(
+                send_weekly_digest,
+                CronTrigger(day_of_week="mon", hour=9, minute=0),
+                id="weekly_digest",
+                replace_existing=True,
+            )
+            scheduler.start()
+            logger.info("Weekly digest scheduler started (tz=%s, Mon 09:00)", WEEKLY_DIGEST_TZ)
+        except Exception as e:
+            logger.exception("Failed to start weekly digest scheduler: %s", e)
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    global scheduler
+    if scheduler is not None:
+        try:
+            scheduler.shutdown(wait=False)
+        except Exception:
+            pass
     client.close()

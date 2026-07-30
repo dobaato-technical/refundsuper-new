@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Estimator from "@/components/Estimator";
 import WhatsAppChatButton from "@/components/WhatsAppChatButton";
+import RefBanner from "@/components/RefBanner";
 import { Button } from "@/components/ui/button";
 
 const HERO_BG =
@@ -59,6 +60,7 @@ export default function Landing() {
   return (
     <div className="bg-[#F7F5F0] min-h-screen text-[#0B2B40]">
       <Header onCtaClick={scrollToEstimator} />
+      <RefBanner />
 
       {/* HERO */}
       <section className="relative overflow-hidden">

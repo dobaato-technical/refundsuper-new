@@ -15,6 +15,7 @@ import { api } from "@/lib/api";
 import { formatAUD } from "@/lib/format";
 import { useRecaptcha } from "@/lib/recaptcha";
 import { captureReferralFromUrl } from "@/lib/referral";
+import { captureUtmFromUrl } from "@/lib/utm";
 
 const TAX_INFO = {
   working_holiday: { tax: 0.65, keepLabel: "35%" },
@@ -51,9 +52,11 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
   const [shareOpen, setShareOpen] = useState(false);
   const [createdLead, setCreatedLead] = useState(null);
   const [inboundRef, setInboundRef] = useState(null);
+  const [inboundUtm, setInboundUtm] = useState(null);
 
   useEffect(() => {
     setInboundRef(captureReferralFromUrl());
+    setInboundUtm(captureUtmFromUrl());
   }, []);
 
   const estimate = useMemo(
@@ -111,6 +114,9 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
           super_fund_name: superFund || null,
           date_left_australia: dateLeft || null,
           referred_by_code: inboundRef || null,
+          utm_source: inboundUtm?.utm_source || null,
+          utm_medium: inboundUtm?.utm_medium || null,
+          utm_campaign: inboundUtm?.utm_campaign || null,
         },
         { headers }
       );

@@ -1,0 +1,45 @@
+{
+  "summary": "Iteration 5 end-to-end testing for AussieBack: Referral Tier Progress, Landing Ref Banner, Weekly Analytics Email digest, and UTM Passthrough. Backend: 11/11 pytest cases pass (test_iteration5.py) covering GET /api/referrals/{code} (existing, case-insensitive, unknown 404, whitespace 404), GET /api/referrals/{code}/progress (4-tier shape [1,3,5,10], next_tier logic, unknown 404), POST /api/leads with utm_source/medium/campaign persisted and echoed, GET /api/admin/analytics.utm_sources sorted desc, POST /api/admin/weekly-digest/run (401 without auth, returns full digest shape with auth) and STUB log confirmed in backend logs. Frontend: full Playwright flow verified — RefBanner shows 'Alice invited you' with data-testid=ref-banner-name, ab_utm + ab_ref persisted in localStorage, dismiss hides banner; complete estimator POST payload includes referred_by_code=DLBS7KUT and utm_source/medium/campaign; ShareCardModal shows reward-tier-block with 'YOUR REWARD PROGRESS' + reward-count + reward-next + reward-tiers-list containing all 4 reward-tier-1/3/5/10 rows; AdminDashboard renders utm-sources-card with 3 rows (tiktok/instagram/whatsapp) and digest-btn fires POST /api/admin/weekly-digest/run and shows 'Digest generated · 42 new leads' toast.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "verified_features": [
+    "GET /api/referrals/{code}: 200 for existing code (case-insensitive), 404 for unknown, 404 for whitespace-only path.",
+    "GET /api/referrals/{code}/progress: returns tiers array of exactly 4 items with thresholds [1,3,5,10] matching REFERRAL_TIERS; unlocked_tiers + next_tier + remaining_to_next correct when referred_count=0 (next_tier=1, remaining=1). Unknown code -> 404.",
+    "POST /api/leads with utm_source='tiktok', utm_medium='paid', utm_campaign='summer26' persists and echoes all three fields.",
+    "GET /api/admin/analytics returns utm_sources: list of {source, leads, pipeline} sorted DESC by leads (verified: tiktok=4/$13050, instagram=1, whatsapp=1).",
+    "POST /api/admin/weekly-digest/run: 401 unauthenticated; 200 authenticated -> {ok:true, digest:{since, new_leads_count, new_pipeline_value, share_events_by_channel, top_channel:{channel,count}, top_referrers}}. Backend log shows '[STUB] Weekly digest not sent — RESEND / ADMIN_NOTIFICATION_EMAILS not configured'.",
+    "Frontend RefBanner: /?ref=DLBS7KUT shows data-testid='ref-banner' with data-testid='ref-banner-name'='Alice'; ref-banner-dismiss hides banner.",
+    "Frontend UTM capture: /?utm_source=tiktok&utm_medium=organic writes {utm_source:'tiktok',utm_medium:'organic'} to localStorage 'ab_utm'; POST /api/leads body includes utm_source/utm_medium/utm_campaign fields (verified via network intercept).",
+    "Frontend ShareCardModal reward tier: reward-tier-block, reward-count ('0 friends have claimed with your code'), reward-next ('1 more = Priority WhatsApp support'), reward-tiers-list, and reward-tier-1/-3/-5/-10 all render with expected labels.",
+    "Frontend Admin: utm-sources-card renders with 3 rows (utm-row-tiktok/-instagram/-whatsapp). digest-btn click triggers POST /api/admin/weekly-digest/run and displays 'Digest generated · 42 new leads' toast.",
+    "Regression: all prior iteration 4 backend behaviour intact (estimate, leads listing, admin login, share-events, CSV export, phone E.164 normalisation)."
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_iteration5.py",
+    "/app/test_reports/pytest/iter5.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "APScheduler runs in-process (single-pod). Documented in problem statement; acceptable for MVP.",
+    "send_weekly_digest logs the entire digest dict at INFO level when RESEND is absent — includes lead emails. In production with real recipients, this becomes PII in logs; consider debug-level or redacting emails.",
+    "GET /api/referrals/{code}/progress is public and returns tier definitions + counts without rate-limiting. Low risk but consider slowapi limit to prevent scraping enumeration of all referral codes.",
+    "utm_sources aggregation matches only utm_source not-null — 'unknown' fallback in $ifNull is unreachable because of the $match filter (dead code)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration5.py (new)"
+  ],
+  "success_rate": {"backend": "100% (11/11)", "frontend": "100%"},
+  "test_credentials": "admin@aussieback.com / Admin@123 (read from /app/memory/test_credentials.md).",
+  "seed_data_creation": "Created ~5 test leads via pytest (with utm_source=tiktok/paid/summer26) + 2 frontend leads (IterFive, IterFive2) with referred_by_code=DLBS7KUT and utm_source=tiktok/organic/summer26. Backend log shows 44 total leads; digest reported 42 new leads within last 7d.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Rate limit is 5/hr per IP on /api/leads. If exceeded, restart backend via 'sudo supervisorctl restart backend' to reset slowapi counters. Admin dashboard testids include: digest-btn, utm-sources-card, utm-row-<source>, no-utm (empty state), share-channels-card, top-referrers-card. Estimator flow: step1 (visa+mode+balance -> step1-next) -> step2 (first-name-input + email-input + whatsapp-input -> step2-reveal advances to step3) -> step3 (step3-submit fires POST /api/leads). Share modal opens via share-estimate-btn. RESEND_API_KEY intentionally empty — weekly digest STUB logs are expected and correct.",
+  "rca of the issue": "No issues found. All Iteration 5 acceptance criteria met."
+}

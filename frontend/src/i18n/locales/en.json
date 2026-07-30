@@ -114,6 +114,19 @@
     "referral_hint": "Friends who claim through this code help you earn a thank-you bonus.",
     "download_story": "Download Story"
   },
+  "reward": {
+    "title": "Your reward progress",
+    "referred_count_one": "{{count}} friend has claimed with your code",
+    "referred_count_other": "{{count}} friends have claimed with your code",
+    "unlocked_all": "You've unlocked every reward — legend! 🏆",
+    "next_reward": "{{remaining}} more = <strong>{{reward}}</strong>",
+    "unlocked": "Unlocked",
+    "locked": "Locked",
+    "tiers_label": "Reward tiers"
+  },
+  "banner": {
+    "body": "invited you — get a free expert review on us. Estimate your refund below in 3 minutes."
+  },
   "chat": {
     "float_label": "Chat on WhatsApp",
     "bubble_title": "Still there? 👋",
