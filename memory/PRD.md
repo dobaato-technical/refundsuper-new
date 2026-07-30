@@ -44,6 +44,11 @@ Build a high-converting lead-magnet platform that captures the "Returning Tempor
 - [x] **Weekly Analytics Email** — APScheduler cron job (Mon 09:00 Australia/Sydney) calls `send_weekly_digest()`; body includes new-lead count, pipeline $, top share channel and top 3 referrers. Admin can trigger manually via `POST /api/admin/weekly-digest/run` + "Run digest" button in dashboard. STUB-logs (with PII redacted) when Resend keys absent.
 - [x] **UTM Passthrough** — `utm_source/medium/campaign` captured from URL to localStorage `ab_utm` and forwarded on POST /api/leads. Admin analytics returns `utm_sources` aggregation; dashboard renders a UTM Sources card.
 
+## Implemented (Jul 2026 — Iteration 6)
+- [x] **Blog section** — 6 SEO-optimised seed articles (DASP guide, Working Holiday 417/462, Student 500, UK backpackers, 5 mistakes, JP case study). Public `/api/blog/posts` (with category/tag filters) + `/api/blog/posts/{slug}`. `/blog` list + `/blog/:slug` detail routes.
+- [x] **Blog lead capture** — inline `BlogCTA` card at bottom of every article + sticky sidebar "Estimate your refund" widget that scrolls the visitor straight into the funnel via `/#estimator`.
+- [x] **SEO overhaul** — react-helmet-async powered per-page `<SEO>` component injecting title/description/canonical/OG/Twitter/JSON-LD. Landing exposes FAQPage schema; Blog list exposes Blog schema; Blog posts expose BlogPosting schema. Global Organization + WebSite schema in index.html. robots.txt + sitemap.xml served from /public. Keyword-rich titles/H1s targeting "australian super refund", "DASP", "super back australia", "working holiday super refund".
+
 ## Backlog
 - **P1**: Multi-language support (DE, FR, JA, KO, ES), better phone validation (E.164), reCAPTCHA on lead form, rate-limit POST `/api/leads`.
 - **P1**: Webhook signature signing (HMAC) for CRM forwarding.
