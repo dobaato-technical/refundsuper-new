@@ -49,6 +49,18 @@ Build a high-converting lead-magnet platform that captures the "Returning Tempor
 - [x] **Blog lead capture** — inline `BlogCTA` card at bottom of every article + sticky sidebar "Estimate your refund" widget that scrolls the visitor straight into the funnel via `/#estimator`.
 - [x] **SEO overhaul** — react-helmet-async powered per-page `<SEO>` component injecting title/description/canonical/OG/Twitter/JSON-LD. Landing exposes FAQPage schema; Blog list exposes Blog schema; Blog posts expose BlogPosting schema. Global Organization + WebSite schema in index.html. robots.txt + sitemap.xml served from /public. Keyword-rich titles/H1s targeting "australian super refund", "DASP", "super back australia", "working holiday super refund".
 
+## Implemented (Jul 2026 — Iteration 7)
+- [x] **Google Search Console plumbing** — env-driven `SITE_URL` + `GOOGLE_SITE_VERIFICATION`. `/api/site-config` endpoint exposes them; `<SEO>` fetches once and injects `<meta name="google-site-verification">` when set. Root-level `/sitemap.xml` and `/robots.txt` now dynamically served by backend using the real domain + live blog slugs. `/google<token>.html` verification-file endpoint implemented (note: preview ingress does not route this to backend — production ingress must add the rule, or use DNS TXT method).
+- [x] **Threaded comments on blog posts** — public `POST/GET /api/blog/posts/{slug}/comments` (rate-limited 10/hr), moderation-ready via `COMMENTS_AUTO_APPROVE` env flag. Admin endpoints for listing all + approving + deleting. Author email never leaked in public responses. `<Comments>` UI at the bottom of every article with reply threading.
+- [x] **Auto-Article Generator** — Admin `/admin/blog` studio page. Enter topic + keywords → Claude Sonnet 4.6 (via Emergent LLM key + emergentintegrations) drafts a 500-900 word markdown article with H2/lists/CTA. Admin edits inline and 1-click publishes to `/blog/{slug}`. Defensive JSON parsing returns 502 with a clear message when the model deviates from the schema.
+
+## Backlog
+- **P0**: Real domain migration — update `SITE_URL` in prod .env and register at Google Search Console (DNS TXT verification recommended over HTML-file for the preview environment).
+- **P1**: SSR migration (Next.js) — needed for crawler-friendly server-rendered blog posts. Current CRA setup relies on client-side rendering; JSON-LD + meta tags still work but H1s are only visible to bots that execute JS.
+- **P1**: Split `server.py` (~1130 lines) into routers (auth / leads / blog / comments / admin_blog / seo).
+- **P2**: Rate-limit `GET /api/blog/posts/{slug}/comments` to prevent scraping.
+- **P2**: Admin comment moderation UI (queue of pending comments) — endpoints exist, page not yet built.
+
 ## Backlog
 - **P1**: Multi-language support (DE, FR, JA, KO, ES), better phone validation (E.164), reCAPTCHA on lead form, rate-limit POST `/api/leads`.
 - **P1**: Webhook signature signing (HMAC) for CRM forwarding.

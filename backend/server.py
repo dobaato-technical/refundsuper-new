@@ -952,19 +952,23 @@ async def _generate_article_draft(topic: str, keywords: List[str], category: Opt
         if not match:
             raise HTTPException(status_code=502, detail="LLM did not return JSON")
         data = json.loads(match.group(0))
-    return {
-        "slug": _slugify(data.get("title", topic)),
-        "title": data["title"],
-        "meta_description": data["meta_description"],
-        "excerpt": data["excerpt"],
-        "category": data.get("category") or category or "Guide",
-        "tags": data.get("tags", []),
-        "keywords": data.get("keywords", keywords),
-        "reading_time_minutes": int(data.get("reading_time_minutes", 5)),
-        "content": data["content"],
-        "hero_image": None,
-        "author": "AussieBack Team",
-    }
+    try:
+        return {
+            "slug": _slugify(data.get("title") or topic),
+            "title": data["title"],
+            "meta_description": data["meta_description"],
+            "excerpt": data["excerpt"],
+            "category": data.get("category") or category or "Guide",
+            "tags": data.get("tags", []),
+            "keywords": data.get("keywords", keywords),
+            "reading_time_minutes": int(data.get("reading_time_minutes", 5)),
+            "content": data["content"],
+            "hero_image": None,
+            "author": "AussieBack Team",
+        }
+    except (KeyError, TypeError, ValueError) as e:
+        logger.warning("LLM draft parse missing keys: %s | payload=%s", e, data)
+        raise HTTPException(status_code=502, detail="LLM draft missing required fields — try again")
 
 @api_router.post("/admin/blog/generate-draft")
 async def admin_generate_draft(payload: BlogPostDraftRequest, current: dict = Depends(get_current_admin)):
