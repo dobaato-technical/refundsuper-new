@@ -1,157 +1,75 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Download, Share2, Link as LinkIcon, Check } from "lucide-react";
+import { Download, Share2, Link as LinkIcon, Check, LayoutGrid, Smartphone } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { api } from "@/lib/api";
 import { formatAUD } from "@/lib/format";
+import { buildShareUrl } from "@/lib/referral";
 
-const CARD_W = 1080;
-const CARD_H = 1350;
+const FEED = { w: 1080, h: 1350 };
+const STORY = { w: 1080, h: 1920 };
 
 /**
- * Renders a shareable PNG summarising the user's DASP refund estimate.
- * Uses HTML5 Canvas — no external deps.
+ * Canvas-rendered refund share card with Feed (4:5) and Story (9:16) presets.
+ * Also tracks share events (download/native/copy/story_download) via POST /api/share-events.
  */
-export default function ShareCardModal({ open, onOpenChange, amount, visaType, firstName }) {
+export default function ShareCardModal({
+  open, onOpenChange, amount, visaType, firstName, referralCode, leadId,
+}) {
   const { t } = useTranslation();
   const canvasRef = useRef(null);
   const [dataUrl, setDataUrl] = useState("");
   const [copied, setCopied] = useState(false);
+  const [aspect, setAspect] = useState("feed"); // "feed" | "story"
 
   const visaLabel =
-    visaType === "working_holiday"
-      ? t("share.card_visa_wh")
-      : t("share.card_visa_other");
-
-  const shareUrl = typeof window !== "undefined" ? window.location.origin : "https://aussieback.com";
+    visaType === "working_holiday" ? t("share.card_visa_wh") : t("share.card_visa_other");
+  const shareUrl = buildShareUrl(referralCode);
 
   useEffect(() => {
     if (!open) return;
-    // Defer one animation frame so the Radix Dialog portal commits and the canvas ref binds.
     const raf = requestAnimationFrame(() => {
       const cvs = canvasRef.current;
       if (!cvs) return;
       const ctx = cvs.getContext("2d");
-      cvs.width = CARD_W;
-      cvs.height = CARD_H;
-
-    // Background — warm cream base
-    ctx.fillStyle = "#F7F5F0";
-    ctx.fillRect(0, 0, CARD_W, CARD_H);
-
-    // Coral top swash
-    ctx.fillStyle = "#E05D43";
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(CARD_W, 0);
-    ctx.lineTo(CARD_W, 380);
-    ctx.quadraticCurveTo(CARD_W / 2, 500, 0, 380);
-    ctx.closePath();
-    ctx.fill();
-
-    // Grain dots (subtle)
-    ctx.fillStyle = "rgba(11,43,64,0.05)";
-    for (let x = 30; x < CARD_W; x += 46) {
-      for (let y = 500; y < CARD_H; y += 46) {
-        ctx.beginPath();
-        ctx.arc(x, y, 1.6, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-
-    // Logo mark
-    ctx.fillStyle = "#F7F5F0";
-    roundRect(ctx, 80, 90, 96, 96, 22);
-    ctx.fill();
-    ctx.fillStyle = "#E05D43";
-    ctx.font = "700 62px 'Clash Display', system-ui, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("A", 128, 138);
-
-    // Brand name
-    ctx.fillStyle = "#FFFFFF";
-    ctx.font = "600 44px 'Clash Display', system-ui, sans-serif";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillText("AussieBack", 200, 138);
-
-    // Eyebrow
-    ctx.fillStyle = "rgba(255,255,255,0.85)";
-    ctx.font = "600 26px 'Outfit', system-ui, sans-serif";
-    ctx.textAlign = "center";
-    const eyebrow = "DASP REFUND · CLAIMED";
-    ctx.fillText(spaced(eyebrow, 4), CARD_W / 2, 300);
-
-    // Headline
-    ctx.fillStyle = "#0B2B40";
-    ctx.font = "600 82px 'Clash Display', system-ui, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
-    ctx.fillText(t("share.card_headline"), CARD_W / 2, 560);
-
-    // Big amount
-    ctx.fillStyle = "#E05D43";
-    ctx.font = "700 200px 'Clash Display', system-ui, sans-serif";
-    ctx.fillText(formatAUD(amount || 0), CARD_W / 2, 660);
-
-    // "back from Australia"
-    ctx.fillStyle = "#0B2B40";
-    ctx.font = "500 60px 'Clash Display', system-ui, sans-serif";
-    ctx.fillText(t("share.card_from"), CARD_W / 2, 900);
-
-    // Visa chip
-    const chipText = visaLabel;
-    ctx.font = "600 30px 'Outfit', system-ui, sans-serif";
-    const chipTextWidth = ctx.measureText(chipText).width;
-    const chipW = chipTextWidth + 70;
-    const chipH = 68;
-    const chipX = (CARD_W - chipW) / 2;
-    const chipY = 1010;
-    ctx.fillStyle = "#0B2B40";
-    roundRect(ctx, chipX, chipY, chipW, chipH, 34);
-    ctx.fill();
-    ctx.fillStyle = "#FFFFFF";
-    ctx.textBaseline = "middle";
-    ctx.fillText(chipText, CARD_W / 2, chipY + chipH / 2 + 2);
-
-    // Divider
-    ctx.strokeStyle = "rgba(11,43,64,0.15)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(180, 1170);
-    ctx.lineTo(CARD_W - 180, 1170);
-    ctx.stroke();
-
-    // Footer — brand url + tagline
-    ctx.fillStyle = "#4A5D68";
-    ctx.font = "500 30px 'Outfit', system-ui, sans-serif";
-    ctx.textBaseline = "top";
-    ctx.fillText("Estimate yours in 3 minutes →", CARD_W / 2, 1200);
-
-    ctx.fillStyle = "#0B2B40";
-    ctx.font = "600 34px 'Outfit', system-ui, sans-serif";
-    ctx.fillText(t("share.card_via"), CARD_W / 2, 1250);
-
-    // Signature bottom-right (first name)
-    if (firstName) {
-      ctx.fillStyle = "rgba(11,43,64,0.35)";
-      ctx.font = "italic 500 26px 'Outfit', system-ui, sans-serif";
-      ctx.textAlign = "right";
-      ctx.textBaseline = "bottom";
-      ctx.fillText(`— ${firstName}`, CARD_W - 60, CARD_H - 50);
-    }
-
-    // Convert to data url for preview
-    setDataUrl(cvs.toDataURL("image/png"));
+      drawCard(ctx, cvs, {
+        aspect,
+        amount,
+        visaLabel,
+        firstName,
+        referralCode,
+        t,
+      });
+      setDataUrl(cvs.toDataURL("image/png"));
     });
     return () => cancelAnimationFrame(raf);
-  }, [open, amount, visaType, firstName, t, visaLabel]);
+  }, [open, aspect, amount, visaLabel, firstName, referralCode, t]);
 
-  const downloadPng = async () => {
+  const trackShare = async (channel) => {
+    try {
+      await api.post("/share-events", {
+        channel,
+        referral_code: referralCode || null,
+        lead_id: leadId || null,
+        aspect,
+      });
+    } catch (e) {
+      /* non-blocking analytics — ignore */
+    }
+  };
+
+  const filename = () => {
+    const amt = Math.round(amount || 0);
+    return aspect === "story"
+      ? `aussieback-story-${amt}.png`
+      : `aussieback-refund-${amt}.png`;
+  };
+
+  const downloadPng = () => {
     const cvs = canvasRef.current;
     if (!cvs) return;
     cvs.toBlob((blob) => {
@@ -159,10 +77,11 @@ export default function ShareCardModal({ open, onOpenChange, amount, visaType, f
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `aussieback-refund-${Math.round(amount || 0)}.png`;
+      a.download = filename();
       a.click();
       URL.revokeObjectURL(url);
     }, "image/png");
+    trackShare(aspect === "story" ? "story_download" : "download");
   };
 
   const nativeShare = async () => {
@@ -171,7 +90,7 @@ export default function ShareCardModal({ open, onOpenChange, amount, visaType, f
     try {
       const blob = await new Promise((res) => cvs.toBlob(res, "image/png"));
       if (!blob) return;
-      const file = new File([blob], "aussieback-refund.png", { type: "image/png" });
+      const file = new File([blob], filename(), { type: "image/png" });
       const shareData = {
         title: "AussieBack",
         text: `I'm claiming ${formatAUD(amount || 0)} back from Australia via AussieBack.`,
@@ -180,14 +99,16 @@ export default function ShareCardModal({ open, onOpenChange, amount, visaType, f
       };
       if (navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData);
+        trackShare("native");
       } else if (navigator.share) {
         await navigator.share({ title: shareData.title, text: shareData.text, url: shareData.url });
+        trackShare("native");
       } else {
         downloadPng();
         toast.message("Downloaded — share it anywhere!");
       }
     } catch (e) {
-      // user cancelled or unsupported — fall back silently
+      /* user cancelled or unsupported */
     }
   };
 
@@ -196,6 +117,7 @@ export default function ShareCardModal({ open, onOpenChange, amount, visaType, f
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       toast.success(t("share.copied"));
+      trackShare("copy");
       setTimeout(() => setCopied(false), 1600);
     } catch (e) {
       toast.error("Could not copy link");
@@ -214,30 +136,78 @@ export default function ShareCardModal({ open, onOpenChange, amount, visaType, f
           </DialogDescription>
         </DialogHeader>
 
+        {/* Aspect ratio toggle */}
+        <div className="inline-flex rounded-lg bg-[#FAFAF9] border border-[#E8E6E1] p-1 w-full">
+          <button
+            type="button"
+            data-testid="aspect-feed"
+            onClick={() => setAspect("feed")}
+            className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm rounded-md transition-colors ${
+              aspect === "feed"
+                ? "bg-white text-[#0B2B40] shadow-sm border border-[#E8E6E1] font-medium"
+                : "text-[#4A5D68] hover:text-[#0B2B40]"
+            }`}
+          >
+            <LayoutGrid className="h-3.5 w-3.5" /> {t("share.format_feed")}
+          </button>
+          <button
+            type="button"
+            data-testid="aspect-story"
+            onClick={() => setAspect("story")}
+            className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm rounded-md transition-colors ${
+              aspect === "story"
+                ? "bg-white text-[#0B2B40] shadow-sm border border-[#E8E6E1] font-medium"
+                : "text-[#4A5D68] hover:text-[#0B2B40]"
+            }`}
+          >
+            <Smartphone className="h-3.5 w-3.5" /> {t("share.format_story")}
+          </button>
+        </div>
+
         {/* Preview */}
-        <div className="rounded-xl overflow-hidden border border-[#E8E6E1] bg-[#FAFAF9] flex items-center justify-center">
+        <div className="rounded-xl overflow-hidden border border-[#E8E6E1] bg-[#FAFAF9] flex items-center justify-center max-h-[420px]">
           {dataUrl ? (
             <img
               src={dataUrl}
               alt="Refund share card"
-              className="w-full h-auto"
+              className="w-full h-auto object-contain"
+              style={{ maxHeight: 420 }}
               data-testid="share-card-preview"
             />
           ) : (
             <div className="p-10 text-sm text-[#4A5D68]">Rendering...</div>
           )}
         </div>
-        {/* Hidden high-res canvas used for actual download/share */}
         <canvas ref={canvasRef} className="hidden" />
 
-        <div className="grid grid-cols-3 gap-2 mt-2">
+        {referralCode && (
+          <div
+            data-testid="referral-block"
+            className="rounded-lg border border-[#E8E6E1] bg-[#FFF6F2] px-3 py-2.5 flex items-center justify-between gap-2"
+          >
+            <div className="text-xs">
+              <div className="uppercase tracking-[0.15em] text-[#9B3A26] font-medium mb-0.5">
+                {t("share.referral_label")}
+              </div>
+              <div className="font-mono text-[#0B2B40] text-base font-semibold" data-testid="referral-code">
+                {referralCode}
+              </div>
+            </div>
+            <div className="text-[10px] text-[#4A5D68] max-w-[190px] leading-snug text-right">
+              {t("share.referral_hint")}
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-3 gap-2 mt-1">
           <Button
             data-testid="share-download"
             onClick={downloadPng}
             variant="outline"
             className="border-2 border-[#E8E6E1] text-[#0B2B40] hover:border-[#0B2B40]"
           >
-            <Download className="h-4 w-4 mr-2" /> {t("share.download")}
+            <Download className="h-4 w-4 mr-2" />
+            {aspect === "story" ? t("share.download_story") : t("share.download")}
           </Button>
           <Button
             data-testid="share-native"
@@ -261,6 +231,145 @@ export default function ShareCardModal({ open, onOpenChange, amount, visaType, f
   );
 }
 
+// -----------------------------------------------------------------------------
+// Canvas drawing
+// -----------------------------------------------------------------------------
+function drawCard(ctx, cvs, { aspect, amount, visaLabel, firstName, referralCode, t }) {
+  const { w: W, h: H } = aspect === "story" ? STORY : FEED;
+  cvs.width = W;
+  cvs.height = H;
+
+  // Background
+  ctx.fillStyle = "#F7F5F0";
+  ctx.fillRect(0, 0, W, H);
+
+  // Coral top swash — height scales with format
+  const swashH = aspect === "story" ? 520 : 380;
+  const swashDip = aspect === "story" ? 120 : 120;
+  ctx.fillStyle = "#E05D43";
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(W, 0);
+  ctx.lineTo(W, swashH);
+  ctx.quadraticCurveTo(W / 2, swashH + swashDip, 0, swashH);
+  ctx.closePath();
+  ctx.fill();
+
+  // Grain
+  ctx.fillStyle = "rgba(11,43,64,0.05)";
+  const grainStart = swashH + swashDip + 40;
+  for (let x = 30; x < W; x += 46) {
+    for (let y = grainStart; y < H; y += 46) {
+      ctx.beginPath();
+      ctx.arc(x, y, 1.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // Logo mark
+  ctx.fillStyle = "#F7F5F0";
+  roundRect(ctx, 80, 90, 96, 96, 22);
+  ctx.fill();
+  ctx.fillStyle = "#E05D43";
+  ctx.font = "700 62px 'Clash Display', system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("A", 128, 138);
+
+  // Brand name
+  ctx.fillStyle = "#FFFFFF";
+  ctx.font = "600 44px 'Clash Display', system-ui, sans-serif";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillText("AussieBack", 200, 138);
+
+  // Eyebrow
+  ctx.fillStyle = "rgba(255,255,255,0.85)";
+  ctx.font = "600 26px 'Outfit', system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(spaced("DASP REFUND · CLAIMED"), W / 2, aspect === "story" ? 350 : 300);
+
+  // Compose content block Y-positions (relative)
+  const contentTop = aspect === "story" ? 780 : 560;
+
+  ctx.fillStyle = "#0B2B40";
+  ctx.font = "600 82px 'Clash Display', system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillText(t("share.card_headline"), W / 2, contentTop);
+
+  ctx.fillStyle = "#E05D43";
+  ctx.font = "700 200px 'Clash Display', system-ui, sans-serif";
+  ctx.fillText(formatAUD(amount || 0), W / 2, contentTop + 100);
+
+  ctx.fillStyle = "#0B2B40";
+  ctx.font = "500 60px 'Clash Display', system-ui, sans-serif";
+  ctx.fillText(t("share.card_from"), W / 2, contentTop + 340);
+
+  // Visa chip
+  ctx.font = "600 30px 'Outfit', system-ui, sans-serif";
+  const chipTextWidth = ctx.measureText(visaLabel).width;
+  const chipW = chipTextWidth + 70;
+  const chipH = 68;
+  const chipX = (W - chipW) / 2;
+  const chipY = contentTop + 450;
+  ctx.fillStyle = "#0B2B40";
+  roundRect(ctx, chipX, chipY, chipW, chipH, 34);
+  ctx.fill();
+  ctx.fillStyle = "#FFFFFF";
+  ctx.textBaseline = "middle";
+  ctx.fillText(visaLabel, W / 2, chipY + chipH / 2 + 2);
+
+  // Divider
+  ctx.strokeStyle = "rgba(11,43,64,0.15)";
+  ctx.lineWidth = 2;
+  const divY = aspect === "story" ? H - 500 : H - 180;
+  ctx.beginPath();
+  ctx.moveTo(180, divY);
+  ctx.lineTo(W - 180, divY);
+  ctx.stroke();
+
+  // Footer / URL block
+  ctx.fillStyle = "#4A5D68";
+  ctx.font = "500 30px 'Outfit', system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillText("Estimate yours in 3 minutes →", W / 2, divY + 30);
+
+  ctx.fillStyle = "#0B2B40";
+  ctx.font = "600 34px 'Outfit', system-ui, sans-serif";
+  ctx.fillText(t("share.card_via"), W / 2, divY + 80);
+
+  // Referral code pill
+  if (referralCode) {
+    ctx.font = "600 26px 'Outfit', system-ui, sans-serif";
+    const refText = `REF · ${referralCode}`;
+    const refTextW = ctx.measureText(refText).width;
+    const refChipW = refTextW + 44;
+    const refChipH = 52;
+    const refChipX = (W - refChipW) / 2;
+    const refChipY = divY + 140;
+    ctx.fillStyle = "#FFF6F2";
+    ctx.strokeStyle = "#E05D43";
+    ctx.lineWidth = 2;
+    roundRect(ctx, refChipX, refChipY, refChipW, refChipH, 26);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#9B3A26";
+    ctx.textBaseline = "middle";
+    ctx.fillText(refText, W / 2, refChipY + refChipH / 2 + 2);
+  }
+
+  // Signature
+  if (firstName) {
+    ctx.fillStyle = "rgba(11,43,64,0.35)";
+    ctx.font = "italic 500 26px 'Outfit', system-ui, sans-serif";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(`— ${firstName}`, W - 60, H - 50);
+  }
+}
+
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -275,7 +384,6 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-function spaced(str, px) {
-  // simulate letter-spacing by inserting hair spaces (canvas has no letterSpacing before v2)
+function spaced(str) {
   return str.split("").join(" ");
 }

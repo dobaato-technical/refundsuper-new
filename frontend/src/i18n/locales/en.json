@@ -107,7 +107,12 @@
     "card_from": "back from Australia",
     "card_via": "aussieback.com",
     "card_visa_wh": "Working Holiday Maker",
-    "card_visa_other": "Student / Temporary Visa"
+    "card_visa_other": "Student / Temporary Visa",
+    "format_feed": "Post (4:5)",
+    "format_story": "Story (9:16)",
+    "referral_label": "Referral code",
+    "referral_hint": "Friends who claim through this code help you earn a thank-you bonus.",
+    "download_story": "Download Story"
   },
   "chat": {
     "float_label": "Chat on WhatsApp",

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Plane, GraduationCap, ArrowRight, ArrowLeft, Sparkles, Check, Share2 } from "lucide-react";
@@ -14,6 +14,7 @@ import ShareCardModal from "@/components/ShareCardModal";
 import { api } from "@/lib/api";
 import { formatAUD } from "@/lib/format";
 import { useRecaptcha } from "@/lib/recaptcha";
+import { captureReferralFromUrl } from "@/lib/referral";
 
 const TAX_INFO = {
   working_holiday: { tax: 0.65, keepLabel: "35%" },
@@ -48,6 +49,12 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
   const [submitted, setSubmitted] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [createdLead, setCreatedLead] = useState(null);
+  const [inboundRef, setInboundRef] = useState(null);
+
+  useEffect(() => {
+    setInboundRef(captureReferralFromUrl());
+  }, []);
 
   const estimate = useMemo(
     () => compute(visaType, mode, balance, earnings[0]),
@@ -90,7 +97,7 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
         parsePhoneNumberFromString(whatsapp.trim())?.format("E.164") || whatsapp.trim();
       const recaptchaToken = await getRecaptchaToken();
       const headers = recaptchaToken ? { "X-Recaptcha-Token": recaptchaToken } : {};
-      await api.post(
+      const { data: lead } = await api.post(
         "/leads",
         {
           visa_type: visaType,
@@ -103,9 +110,11 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
           whatsapp_number: normalizedPhone,
           super_fund_name: superFund || null,
           date_left_australia: dateLeft || null,
+          referred_by_code: inboundRef || null,
         },
         { headers }
       );
+      setCreatedLead(lead);
       setSubmitted(true);
       toast.success(t("estimator.success_toast"));
     } catch (e) {
@@ -468,6 +477,8 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
         amount={estimate}
         visaType={visaType}
         firstName={firstName}
+        referralCode={createdLead?.referral_code || null}
+        leadId={createdLead?.id || null}
       />
     </div>
   );

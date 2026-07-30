@@ -22,6 +22,8 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from slowapi.middleware import SlowAPIMiddleware
 from fastapi.responses import JSONResponse
+import secrets
+import string
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -59,6 +61,7 @@ client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
 leads_collection = db['leads']
 admins_collection = db['admins']
+share_events_collection = db['share_events']
 
 # ---------------- Logging ----------------
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -120,6 +123,8 @@ class LeadCreate(BaseModel):
     # Step 3 (optional, may be added in follow-up call but we ask in same submit)
     super_fund_name: Optional[str] = None
     date_left_australia: Optional[str] = None  # ISO date string
+    # Referral
+    referred_by_code: Optional[str] = Field(default=None, max_length=32)
 
     @field_validator("whatsapp_number")
     @classmethod
@@ -149,6 +154,9 @@ class Lead(BaseModel):
     status: LeadStatus
     created_at: str
     updated_at: str
+    referral_code: Optional[str] = None
+    referred_by_code: Optional[str] = None
+    referred_by_lead_id: Optional[str] = None
 
 class AdminLogin(BaseModel):
     email: EmailStr
@@ -161,6 +169,14 @@ class TokenResp(BaseModel):
 
 class StatusUpdate(BaseModel):
     status: LeadStatus
+
+ShareChannel = Literal["download", "native", "copy", "story_download"]
+
+class ShareEventCreate(BaseModel):
+    channel: ShareChannel
+    referral_code: Optional[str] = Field(default=None, max_length=32)
+    lead_id: Optional[str] = Field(default=None, max_length=64)
+    aspect: Optional[Literal["feed", "story"]] = None
 
 # ---------------- Calculator ----------------
 SUPER_RATE = 0.12  # 12% Super Guarantee
@@ -292,6 +308,24 @@ def verify_recaptcha(
 # ---------------- Rate limiter ----------------
 limiter = Limiter(key_func=get_remote_address, default_limits=[])
 
+# ---------------- Referral codes ----------------
+_REFERRAL_ALPHABET = string.ascii_uppercase + string.digits  # base36 minus lowercase, easier to read
+REFERRAL_CODE_LEN = 8
+
+def _generate_referral_code() -> str:
+    # Avoid ambiguous chars 0/O/1/I for readability
+    banned = {"0", "O", "1", "I"}
+    alphabet = "".join(ch for ch in _REFERRAL_ALPHABET if ch not in banned)
+    return "".join(secrets.choice(alphabet) for _ in range(REFERRAL_CODE_LEN))
+
+async def _new_unique_referral_code(max_attempts: int = 6) -> str:
+    for _ in range(max_attempts):
+        code = _generate_referral_code()
+        if not await leads_collection.find_one({"referral_code": code}, {"_id": 1}):
+            return code
+    # extremely unlikely fallback
+    return _generate_referral_code() + _generate_referral_code()[:2]
+
 # ---------------- App & Router ----------------
 app = FastAPI(title="AussieBack API")
 app.state.limiter = limiter
@@ -333,6 +367,20 @@ async def create_lead(
     # Recompute on server to ensure trustworthy figure
     calc = compute_refund(payload.visa_type, payload.input_mode, payload.super_balance, payload.gross_earnings)
     now = datetime.now(timezone.utc).isoformat()
+    # Referral code + inbound attribution
+    referral_code = await _new_unique_referral_code()
+    referred_by_code = (payload.referred_by_code or "").strip().upper() or None
+    referred_by_lead_id: Optional[str] = None
+    if referred_by_code:
+        referrer = await leads_collection.find_one(
+            {"referral_code": referred_by_code}, {"id": 1, "_id": 0}
+        )
+        if referrer:
+            referred_by_lead_id = referrer["id"]
+        else:
+            # Unknown code — keep the raw code for audit but don't error
+            logger.info("Referral code not found: %s", referred_by_code)
+
     doc = {
         "id": str(uuid.uuid4()),
         "visa_type": payload.visa_type,
@@ -348,6 +396,9 @@ async def create_lead(
         "status": "new_estimate",
         "created_at": now,
         "updated_at": now,
+        "referral_code": referral_code,
+        "referred_by_code": referred_by_code,
+        "referred_by_lead_id": referred_by_lead_id,
     }
     await leads_collection.insert_one({**doc})
     # Schedule outbound integrations
@@ -450,6 +501,74 @@ async def export_leads(current: dict = Depends(get_current_admin)):
         headers={"Content-Disposition": "attachment; filename=aussieback_leads.csv"},
     )
 
+# --- Share events (public) ---
+@api_router.post("/share-events")
+@limiter.limit("60/hour")
+async def create_share_event(request: Request, payload: ShareEventCreate):
+    doc = {
+        "id": str(uuid.uuid4()),
+        "channel": payload.channel,
+        "referral_code": (payload.referral_code or "").strip().upper() or None,
+        "lead_id": payload.lead_id,
+        "aspect": payload.aspect,
+        "user_agent": request.headers.get("user-agent", "")[:300],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await share_events_collection.insert_one({**doc})
+    return {"ok": True, "id": doc["id"]}
+
+# --- Admin: analytics ---
+@api_router.get("/admin/analytics")
+async def admin_analytics(current: dict = Depends(get_current_admin)):
+    channels = ["download", "native", "copy", "story_download"]
+    channel_counts: dict = {}
+    for ch in channels:
+        channel_counts[ch] = await share_events_collection.count_documents({"channel": ch})
+    total_shares = sum(channel_counts.values())
+
+    # Top referrers: aggregate referred leads count grouped by referred_by_lead_id
+    top_referrers_cursor = leads_collection.aggregate([
+        {"$match": {"referred_by_lead_id": {"$ne": None}}},
+        {"$group": {
+            "_id": "$referred_by_lead_id",
+            "referred_count": {"$sum": 1},
+            "total_estimated": {"$sum": "$estimated_refund"},
+        }},
+        {"$sort": {"referred_count": -1}},
+        {"$limit": 10},
+    ])
+    top: List[dict] = []
+    async for row in top_referrers_cursor:
+        ref = await leads_collection.find_one(
+            {"id": row["_id"]},
+            {"_id": 0, "id": 1, "first_name": 1, "email": 1, "referral_code": 1},
+        )
+        if not ref:
+            continue
+        top.append({
+            "lead_id": ref["id"],
+            "first_name": ref.get("first_name"),
+            "email": ref.get("email"),
+            "referral_code": ref.get("referral_code"),
+            "referred_count": row["referred_count"],
+            "total_estimated": round(float(row["total_estimated"]), 2),
+        })
+
+    referred_leads_total = await leads_collection.count_documents({"referred_by_lead_id": {"$ne": None}})
+    all_leads_total = await leads_collection.count_documents({})
+
+    return {
+        "share_events": {
+            "by_channel": channel_counts,
+            "total": total_shares,
+        },
+        "referrals": {
+            "referred_leads_total": referred_leads_total,
+            "all_leads_total": all_leads_total,
+            "top_referrers": top,
+        },
+    }
+
 app.include_router(api_router)
 
 app.add_middleware(
@@ -465,7 +584,11 @@ app.add_middleware(
 async def seed_admin_and_indexes():
     await leads_collection.create_index("id", unique=True)
     await leads_collection.create_index("created_at")
+    await leads_collection.create_index("referral_code", unique=True, sparse=True)
+    await leads_collection.create_index("referred_by_lead_id")
     await admins_collection.create_index("email", unique=True)
+    await share_events_collection.create_index("created_at")
+    await share_events_collection.create_index("channel")
     existing = await admins_collection.find_one({"email": ADMIN_SEED_EMAIL})
     if not existing:
         await admins_collection.insert_one({

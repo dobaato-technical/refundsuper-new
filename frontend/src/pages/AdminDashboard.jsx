@@ -29,6 +29,7 @@ const VISA_LABEL = {
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
@@ -41,12 +42,14 @@ export default function AdminDashboard() {
       const params = {};
       if (q) params.q = q;
       if (statusFilter && statusFilter !== "all") params.status = statusFilter;
-      const [statsResp, leadsResp] = await Promise.all([
+      const [statsResp, leadsResp, analyticsResp] = await Promise.all([
         api.get("/admin/stats"),
         api.get("/admin/leads", { params }),
+        api.get("/admin/analytics"),
       ]);
       setStats(statsResp.data);
       setLeads(leadsResp.data.leads);
+      setAnalytics(analyticsResp.data);
     } catch (e) {
       toast.error("Failed to load dashboard");
     } finally {
@@ -195,6 +198,104 @@ export default function AdminDashboard() {
           })}
         </div>
 
+        {/* Share & Referral Analytics */}
+        {analytics && (
+          <div className="grid lg:grid-cols-3 gap-4 mb-8" data-testid="analytics-panel">
+            <div className="bg-white border border-[#E8E6E1] rounded-xl p-5" data-testid="share-channels-card">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.15em] text-[#4A5D68]">
+                    Share events
+                  </div>
+                  <div className="font-display text-2xl font-medium">
+                    {analytics.share_events.total}
+                  </div>
+                </div>
+                <div className="h-10 w-10 rounded-lg bg-[#FFF6F2] text-[#E05D43] flex items-center justify-center text-lg">
+                  ⇗
+                </div>
+              </div>
+              <ul className="space-y-2">
+                {Object.entries(analytics.share_events.by_channel).map(([ch, count]) => {
+                  const total = Math.max(1, analytics.share_events.total);
+                  const pct = Math.round((count / total) * 100);
+                  return (
+                    <li key={ch} data-testid={`share-channel-${ch}`}>
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="text-[#0B2B40] capitalize">
+                          {ch.replace("_", " ")}
+                        </span>
+                        <span className="text-[#4A5D68] tabular-nums">
+                          {count} <span className="opacity-60">· {pct}%</span>
+                        </span>
+                      </div>
+                      <div className="h-1.5 bg-[#F0EEE9] rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-[#E05D43]"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
+            <div className="bg-white border border-[#E8E6E1] rounded-xl p-5 lg:col-span-2" data-testid="top-referrers-card">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.15em] text-[#4A5D68]">
+                    Top referrers
+                  </div>
+                  <div className="font-display text-2xl font-medium">
+                    {analytics.referrals.referred_leads_total}
+                    <span className="text-sm text-[#4A5D68] font-normal ml-2">
+                      referred leads · {analytics.referrals.all_leads_total} total
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {analytics.referrals.top_referrers.length === 0 ? (
+                <p className="text-sm text-[#4A5D68]" data-testid="no-referrals">
+                  No referred leads yet. Every submitted lead now gets a unique code — as friends claim through it, the top referrers will show here.
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-[11px] uppercase tracking-[0.15em] text-[#4A5D68] border-b border-[#E8E6E1]">
+                        <th className="py-2">Name</th>
+                        <th className="py-2">Code</th>
+                        <th className="py-2 text-right">Referred</th>
+                        <th className="py-2 text-right">Pipeline</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analytics.referrals.top_referrers.map((r) => (
+                        <tr
+                          key={r.lead_id}
+                          className="border-b border-[#E8E6E1] last:border-0"
+                          data-testid={`referrer-row-${r.referral_code}`}
+                        >
+                          <td className="py-3 font-medium text-[#0B2B40]">
+                            {r.first_name}
+                            <div className="text-xs text-[#4A5D68] font-normal">{r.email}</div>
+                          </td>
+                          <td className="py-3 font-mono text-[#E05D43]">{r.referral_code}</td>
+                          <td className="py-3 text-right font-medium">{r.referred_count}</td>
+                          <td className="py-3 text-right text-[#4A5D68] tabular-nums">
+                            {formatAUD(r.total_estimated)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Filters */}
         <div className="bg-white border border-[#E8E6E1] rounded-xl p-4 mb-4 flex flex-col md:flex-row gap-3 items-stretch md:items-center">
           <form onSubmit={handleSearch} className="flex-1 flex items-center gap-2 bg-[#FAFAF9] border border-[#E8E6E1] rounded-lg px-3">
@@ -320,6 +421,18 @@ export default function AdminDashboard() {
               <Row label="Estimated refund" value={<span className="font-display text-xl text-[#E05D43]">{formatAUD(selected.estimated_refund)}</span>} />
               <Row label="Super fund" value={selected.super_fund_name || "—"} />
               <Row label="Date left AU" value={selected.date_left_australia || "—"} />
+              {selected.referral_code && (
+                <Row
+                  label="Referral code"
+                  value={<span className="font-mono text-[#E05D43]" data-testid="modal-referral-code">{selected.referral_code}</span>}
+                />
+              )}
+              {selected.referred_by_code && (
+                <Row
+                  label="Referred by"
+                  value={<span className="font-mono text-[#0B2B40]" data-testid="modal-referred-by">{selected.referred_by_code}</span>}
+                />
+              )}
               <Row label="Status" value={
                 <Badge variant="outline" className={`border ${statusBadgeClass(selected.status)}`}>
                   {statusLabel(selected.status)}

@@ -1,0 +1,46 @@
+{
+  "summary": "Iteration 4 end-to-end testing for AussieBack referral tracking, share analytics, and Instagram Story preset. Backend: 14/14 pytest tests pass (referral code generation, referral linking, share-events CRUD + validation, admin analytics shape + auth guard, and full regression on estimate/leads/stats/export/status update). Frontend: full Playwright flow passes — ?ref=ABCDEFGH captured to localStorage 'ab_ref', sent as referred_by_code on POST /api/leads, Share modal Feed/Story toggle re-renders canvas at 1080x1350 vs 1080x1920, Download button label switches to 'Download Story', share-events fired on interactions with correct channel+aspect, admin analytics panel renders share-channels-card + top-referrers-card, lead detail modal shows modal-referral-code and modal-referred-by rows.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Lead detail modal & Share modal", "issues": ["Radix DialogContent emits console warning: 'Missing Description or aria-describedby'. Non-blocking a11y warning — consider adding DialogDescription or aria-describedby=undefined suppressor."]}
+    ]
+  },
+  "verified_features": [
+    "POST /api/leads returns a unique 8-char uppercase referral_code matching alphabet [A-HJ-NP-Z2-9] (banned 0/O/1/I). Two consecutive submits produce different codes.",
+    "referred_by_code lower-case input is uppercased and resolved to the correct referred_by_lead_id when the code exists; unknown codes pass through with referred_by_lead_id=null.",
+    "POST /api/share-events accepts {channel,referral_code,lead_id,aspect} and returns {ok:true,id:<uuid>}; invalid channel returns 422; story_download and story aspect accepted.",
+    "GET /api/admin/analytics: 401 without token; with token returns share_events.by_channel for all 4 channels + total (equal to sum) + referrals.top_referrers with lead_id/first_name/email/referral_code/referred_count/total_estimated fields.",
+    "Regression: /api/estimate math (working_holiday 65% => 3500 for 10k balance), admin login, /api/admin/leads list, /api/admin/stats, CSV export, PATCH status persistence.",
+    "Frontend: /?ref=ABCDEFGH persisted to localStorage 'ab_ref' on mount; complete estimator flow sends referred_by_code:'ABCDEFGH' in POST /api/leads body.",
+    "ShareCardModal: aspect-feed / aspect-story toggle switches canvas preview between 1080x1350 and 1080x1920; download label changes to 'Download Story' when Story is active; story_download event fires with aspect='story'.",
+    "AdminDashboard: analytics-panel mounts with share-channels-card (4 channels + total + progress bars) and top-referrers-card (list of 3 top referrers with code, referred_count, total_estimated).",
+    "Lead detail modal: modal-referral-code and modal-referred-by rows both render correctly (verified with newly submitted IterFour lead: referral_code=2AMJBU4J, referred_by=ABCDEFGH)."
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_referral_analytics.py",
+    "/app/test_reports/pytest/pytest_referral_analytics.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "AdminDashboard load() uses Promise.all for stats/leads/analytics — good. But no separate error handling if analytics fails specifically; whole dashboard would show 'Failed to load dashboard' even if only analytics 500s. Minor UX concern.",
+    "ShareCardModal copyLink uses navigator.clipboard.writeText which fails silently on non-HTTPS or restricted contexts (like headless Playwright). Currently shows toast.error and does NOT fire the share-events 'copy' channel on failure — this is correct behavior but means the 'copy' channel is under-reported when clipboard perms are missing. Consider a document.execCommand fallback.",
+    "Referral capture side-effect writes to localStorage on every mount if ?ref= is present — no TTL. Could grow stale attribution weeks later. Consider timestamping and expiring after ~30 days.",
+    "backend/server.py: _new_unique_referral_code falls back to _generate_referral_code() + _generate_referral_code()[:2] which produces a 10-char code (violates the 'always 8 chars' contract). Extremely unlikely path but should either raise or truncate to 8."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_referral_analytics.py (new)"
+  ],
+  "success_rate": {"backend": "100% (14/14)", "frontend": "100%"},
+  "test_credentials": "admin@aussieback.com / Admin@123 (read from /app/memory/test_credentials.md).",
+  "seed_data_creation": "Created 5 test leads via backend tests (TEST_Alice, TEST_Bob, TEST_Charlie referred by Alice, TEST_Dan referred by unknown ZZZZ0000) + 1 frontend lead 'IterFour' referred by ABCDEFGH. Also inserted 2 share-events (feed download + story_download) from pytest suite plus 1 story_download from frontend flow.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend rate limit is 5/hr per IP for /api/leads — test_referral_analytics.py creates 4 leads which is under the limit. Restart backend to reset slowapi counters if you need to do another submission-heavy pass. The referral alphabet regex is ^[A-HJ-NP-Z2-9]{8}$ (excludes 0/O/1/I). Admin dashboard now expects analytics endpoint — if it 500s or 401s, the whole dashboard shows a generic error toast. The AussieBack DB currently has 36 leads including the referred chain (ABCDEFGH -> not resolved; DLBS7KUT-alice / ARCP8F4P / KWMWHAVL as top referrers with 1 referred each).",
+  "rca of the issue": "No issues found. All Iteration 4 acceptance criteria met."
+}
