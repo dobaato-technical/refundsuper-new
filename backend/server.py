@@ -544,7 +544,8 @@ async def get_referrer_public(code: str):
     }
 
 @api_router.get("/referrals/{code}/progress")
-async def get_referral_progress(code: str):
+@limiter.limit("60/hour")
+async def get_referral_progress(request: Request, code: str):
     code_up = (code or "").strip().upper()
     ref = await leads_collection.find_one(
         {"referral_code": code_up},
@@ -624,7 +625,7 @@ async def admin_analytics(current: dict = Depends(get_current_admin)):
     utm_cursor = leads_collection.aggregate([
         {"$match": {"utm_source": {"$ne": None}}},
         {"$group": {
-            "_id": {"$ifNull": ["$utm_source", "unknown"]},
+            "_id": "$utm_source",
             "leads": {"$sum": 1},
             "pipeline": {"$sum": "$estimated_refund"},
         }},
@@ -739,8 +740,11 @@ async def send_weekly_digest() -> dict:
             logger.exception("Weekly digest send failed: %s", e)
     else:
         logger.info(
-            "[STUB] Weekly digest not sent — RESEND / ADMIN_NOTIFICATION_EMAILS not configured. Digest: %s",
-            digest,
+            "[STUB] Weekly digest not sent — RESEND / ADMIN_NOTIFICATION_EMAILS not configured. "
+            "%d new leads · $%s pipeline · top channel=%s",
+            digest["new_leads_count"],
+            f"{digest['new_pipeline_value']:,.0f}",
+            digest["top_channel"]["channel"],
         )
     return digest
 

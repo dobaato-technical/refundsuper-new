@@ -38,6 +38,12 @@ Build a high-converting lead-magnet platform that captures the "Returning Tempor
 - [x] **Share Analytics** — new `POST /api/share-events` and admin collection `share_events`. ShareCardModal fires an event on each Download/Native/Copy/Story Download. Admin dashboard renders a Share Channels breakdown card + Top Referrers table.
 - [x] **Instagram Story preset** — Feed (1080×1350) / Story (1080×1920) toggle in ShareCardModal. Story downloads are tracked as `story_download` channel; button label switches to "Download Story".
 
+## Implemented (Jul 2026 — Iteration 5)
+- [x] **Referral Reward Tier** — public `GET /api/referrals/{code}/progress` (rate-limited 60/hr) returns 4-tier ladder (1→Priority WhatsApp support, 3→Free premium claim review, 5→$50 travel voucher, 10→Full concierge claim). ShareCardModal renders "Your Reward Progress" with unlocked ✓ / locked 🔒 rows + `X more = <next reward>` copy.
+- [x] **Landing Ref Banner** — `RefBanner` component fetches `GET /api/referrals/{code}` (public) and warmly greets visitors with "<Name> invited you — get a free expert review on us." Dismissable.
+- [x] **Weekly Analytics Email** — APScheduler cron job (Mon 09:00 Australia/Sydney) calls `send_weekly_digest()`; body includes new-lead count, pipeline $, top share channel and top 3 referrers. Admin can trigger manually via `POST /api/admin/weekly-digest/run` + "Run digest" button in dashboard. STUB-logs (with PII redacted) when Resend keys absent.
+- [x] **UTM Passthrough** — `utm_source/medium/campaign` captured from URL to localStorage `ab_utm` and forwarded on POST /api/leads. Admin analytics returns `utm_sources` aggregation; dashboard renders a UTM Sources card.
+
 ## Backlog
 - **P1**: Multi-language support (DE, FR, JA, KO, ES), better phone validation (E.164), reCAPTCHA on lead form, rate-limit POST `/api/leads`.
 - **P1**: Webhook signature signing (HMAC) for CRM forwarding.
