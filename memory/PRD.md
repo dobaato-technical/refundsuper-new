@@ -33,6 +33,11 @@ Build a high-converting lead-magnet platform that captures the "Returning Tempor
 - [x] **Refund Share Card** — after submission, users can open a canvas-rendered 1080×1350 PNG summary card (`ShareCardModal`) and Download / Web-Share / Copy-Link. Native share invokes WhatsApp/Instagram/etc on mobile; falls back to download on desktop.
 - [x] **Live Chat Widget** — floating WhatsApp button (bottom-right of landing) linked via `wa.me/<REACT_APP_SUPPORT_WHATSAPP>` with pre-filled greeting. After 20s of inactivity, a nudge bubble pops up. Dismissable.
 
+## Implemented (Jul 2026 — Iteration 4)
+- [x] **Referral Tracking** — every submitted lead now gets a unique 8-char referral_code (alphabet excludes 0/O/1/I). URLs like `/?ref=CODE` capture the code to localStorage `ab_ref` and forward it as `referred_by_code` on the next submission. Backend resolves it to `referred_by_lead_id`. Lead detail modal shows both.
+- [x] **Share Analytics** — new `POST /api/share-events` and admin collection `share_events`. ShareCardModal fires an event on each Download/Native/Copy/Story Download. Admin dashboard renders a Share Channels breakdown card + Top Referrers table.
+- [x] **Instagram Story preset** — Feed (1080×1350) / Story (1080×1920) toggle in ShareCardModal. Story downloads are tracked as `story_download` channel; button label switches to "Download Story".
+
 ## Backlog
 - **P1**: Multi-language support (DE, FR, JA, KO, ES), better phone validation (E.164), reCAPTCHA on lead form, rate-limit POST `/api/leads`.
 - **P1**: Webhook signature signing (HMAC) for CRM forwarding.

@@ -318,13 +318,13 @@ def _generate_referral_code() -> str:
     alphabet = "".join(ch for ch in _REFERRAL_ALPHABET if ch not in banned)
     return "".join(secrets.choice(alphabet) for _ in range(REFERRAL_CODE_LEN))
 
-async def _new_unique_referral_code(max_attempts: int = 6) -> str:
+async def _new_unique_referral_code(max_attempts: int = 8) -> str:
     for _ in range(max_attempts):
         code = _generate_referral_code()
         if not await leads_collection.find_one({"referral_code": code}, {"_id": 1}):
             return code
-    # extremely unlikely fallback
-    return _generate_referral_code() + _generate_referral_code()[:2]
+    # Extremely unlikely: fall back to a fresh code (accept the very small collision risk on next insert)
+    return _generate_referral_code()
 
 # ---------------- App & Router ----------------
 app = FastAPI(title="AussieBack API")
