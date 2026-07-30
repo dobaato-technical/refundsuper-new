@@ -6,6 +6,7 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Estimator from "@/components/Estimator";
+import WhatsAppChatButton from "@/components/WhatsAppChatButton";
 import { Button } from "@/components/ui/button";
 
 const HERO_BG =
@@ -303,6 +304,7 @@ export default function Landing() {
       </section>
 
       <Footer />
+      <WhatsAppChatButton watchInactivity />
     </div>
   );
 }

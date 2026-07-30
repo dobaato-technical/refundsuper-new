@@ -93,7 +93,30 @@
     "start_new": "Start a new estimate",
     "err_missing_contact": "Please complete name, email and WhatsApp number",
     "success_toast": "Submitted! Our team will WhatsApp you shortly.",
-    "err_generic": "Could not submit. Please try again."
+    "err_generic": "Could not submit. Please try again.",
+    "share_button": "Share my refund"
+  },
+  "share": {
+    "title": "Share your refund win",
+    "subtitle": "Save the card and post it to WhatsApp, Instagram or wherever your travel crew hangs out.",
+    "download": "Download image",
+    "share_native": "Share",
+    "copy_link": "Copy link",
+    "copied": "Link copied!",
+    "card_headline": "I'm claiming",
+    "card_from": "back from Australia",
+    "card_via": "aussieback.com",
+    "card_visa_wh": "Working Holiday Maker",
+    "card_visa_other": "Student / Temporary Visa"
+  },
+  "chat": {
+    "float_label": "Chat on WhatsApp",
+    "bubble_title": "Still there? 👋",
+    "bubble_body": "Any questions about your refund? Our team replies on WhatsApp in under an hour.",
+    "bubble_cta": "Message us",
+    "dismiss": "Dismiss",
+    "prefill_generic": "Hi AussieBack! I have a question about my Australian Super refund.",
+    "prefill_with_estimate": "Hi AussieBack! I just got an estimate of {{amount}} — can you help me claim it?"
   },
   "footer": {
     "tagline": "Helping returning temporary residents recover their Australian Super refund — fast, simple, secure.",

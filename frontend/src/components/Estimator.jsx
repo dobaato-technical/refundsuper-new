@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Plane, GraduationCap, ArrowRight, ArrowLeft, Sparkles, Check } from "lucide-react";
+import { Lock, Plane, GraduationCap, ArrowRight, ArrowLeft, Sparkles, Check, Share2 } from "lucide-react";
 import { isValidPhoneNumber, parsePhoneNumberFromString } from "libphonenumber-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import CountUp from "@/components/CountUp";
+import ShareCardModal from "@/components/ShareCardModal";
 import { api } from "@/lib/api";
 import { formatAUD } from "@/lib/format";
 import { useRecaptcha } from "@/lib/recaptcha";
@@ -46,6 +47,7 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [revealed, setRevealed] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const estimate = useMemo(
     () => compute(visaType, mode, balance, earnings[0]),
@@ -433,23 +435,40 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
                 <p className="text-sm text-[#4A5D68] mb-4">
                   {t("estimator.submitted_body", { amount: formatAUD(estimate) })}
                 </p>
-                <Button
-                  data-testid="restart-estimator"
-                  variant="outline"
-                  className="border-2 border-[#E8E6E1] text-[#0B2B40] hover:border-[#0B2B40]"
-                  onClick={() => {
-                    setStep(1);
-                    setSubmitted(false);
-                    setRevealed(false);
-                  }}
-                >
-                  {t("estimator.start_new")}
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                  <Button
+                    data-testid="share-estimate-btn"
+                    onClick={() => setShareOpen(true)}
+                    className="bg-[#E05D43] hover:bg-[#C8533B] text-white h-11 rounded-lg shadow-[0_4px_14px_0_rgba(224,93,67,0.39)] hover:-translate-y-0.5 transition-all"
+                  >
+                    <Share2 className="h-4 w-4 mr-2" /> {t("estimator.share_button")}
+                  </Button>
+                  <Button
+                    data-testid="restart-estimator"
+                    variant="outline"
+                    className="border-2 border-[#E8E6E1] text-[#0B2B40] hover:border-[#0B2B40] h-11"
+                    onClick={() => {
+                      setStep(1);
+                      setSubmitted(false);
+                      setRevealed(false);
+                    }}
+                  >
+                    {t("estimator.start_new")}
+                  </Button>
+                </div>
               </div>
             )}
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ShareCardModal
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        amount={estimate}
+        visaType={visaType}
+        firstName={firstName}
+      />
     </div>
   );
 }
