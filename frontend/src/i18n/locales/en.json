@@ -1,0 +1,108 @@
+{
+  "nav": {
+    "how": "How it works",
+    "stories": "Stories",
+    "faq": "FAQ",
+    "admin": "Admin",
+    "cta": "Calculate my refund"
+  },
+  "hero": {
+    "eyebrow": "DASP refund — backpackers, students, temp visas",
+    "title_1": "Left Australia?",
+    "title_2": "Don't leave your cash behind.",
+    "subtitle": "Estimate and claim your Australian Super refund in under 3 minutes. Free estimate. Expert review. Paid straight to your bank — anywhere in the world.",
+    "cta_primary": "Calculate my refund",
+    "cta_secondary": "How it works",
+    "badge_paperwork": "No paperwork up front",
+    "badge_free": "Free estimate",
+    "badge_security": "Bank-grade security"
+  },
+  "trust": {
+    "ssl": "256-bit SSL secured",
+    "gdpr": "GDPR-compliant",
+    "tpb": "Partnered with TPB tax agents",
+    "speed": "Avg 3-min estimate",
+    "unclaimed": "$87M+ in super sitting unclaimed*",
+    "whatsapp": "WhatsApp support, 6 languages"
+  },
+  "how": {
+    "eyebrow": "How it works",
+    "title": "From \"is this real?\" to refund-in-bank in three steps.",
+    "subtitle": "We've stripped out the admin nightmare. Here's all you do.",
+    "step1_title": "Get an instant estimate",
+    "step1_body": "Pick your visa type. Enter your super balance — or slide your earnings. See your refund in seconds.",
+    "step2_title": "Confirm your details",
+    "step2_body": "Tell us your name, email, and WhatsApp. We'll reach out within 1 business day with next steps.",
+    "step3_title": "Get paid, anywhere",
+    "step3_body": "Our TPB-partnered agents file your DASP claim. Your refund lands in your bank — even overseas."
+  },
+  "stories": {
+    "eyebrow": "Stories",
+    "title": "Travellers, students, and working holidaymakers — paid.",
+    "subtitle": "Real people who didn't realise they had thousands waiting in Australia.",
+    "recovered": "Recovered"
+  },
+  "faq": {
+    "eyebrow": "FAQ",
+    "title": "Questions, answered.",
+    "subtitle": "Still wondering? WhatsApp us — we usually reply in under an hour."
+  },
+  "final_cta": {
+    "title": "Your super is still waiting in Australia.",
+    "subtitle": "Free estimate. Zero risk. You only pay if we successfully recover your refund.",
+    "button": "Start my free estimate"
+  },
+  "estimator": {
+    "step_of": "Step {{n}} of 3",
+    "step1_title": "Let's estimate your refund.",
+    "step1_sub": "Two quick questions. No data leaves this screen yet.",
+    "visa_label": "Your visa type",
+    "visa_wh_title": "Working Holiday",
+    "visa_wh_sub": "Visa 417 / 462",
+    "visa_other_title": "Student / Other",
+    "visa_other_sub": "500, 482, 485, etc.",
+    "mode_balance": "I know my balance",
+    "mode_earnings": "Estimate from earnings",
+    "balance_label": "Super balance (AUD)",
+    "earnings_label": "Approx gross AU earnings: {{amount}}",
+    "earnings_note": "We'll calculate super at the standard 12% rate.",
+    "preview_label": "Live preview",
+    "preview_retention": "You'd keep ~{{keep}} of your super after ATO tax.",
+    "step1_next": "See my refund",
+    "step2_title": "Almost there.",
+    "step2_sub": "We'll WhatsApp you your refund result and a free expert review.",
+    "estimated_label": "Your estimated refund",
+    "unlock_below": "Unlock below",
+    "first_name": "First name",
+    "email": "Email",
+    "whatsapp": "WhatsApp number (with country code)",
+    "whatsapp_placeholder": "+44 7700 900123",
+    "whatsapp_invalid": "Enter a valid international WhatsApp number, e.g. +61 412 345 678",
+    "step2_back": "Back",
+    "step2_reveal": "Reveal my refund",
+    "privacy": "We respect your privacy. No spam, ever.",
+    "step3_retention": "Based on a {{keep}} retention rate.",
+    "step3_intro": "Want our team to recover this for you? Tell us your super fund and we'll fast-track your review.",
+    "super_fund": "Super fund name (optional)",
+    "super_fund_placeholder": "AustralianSuper, Hostplus, Rest...",
+    "date_left": "Approx. date you left Australia (optional)",
+    "step3_submit": "Submit for free expert review",
+    "step3_submitting": "Submitting...",
+    "submitted_title": "You're all set, {{name}}!",
+    "submitted_body": "We've received your details and our team will WhatsApp you within 1 business day. Estimated refund: {{amount}}.",
+    "start_new": "Start a new estimate",
+    "err_missing_contact": "Please complete name, email and WhatsApp number",
+    "success_toast": "Submitted! Our team will WhatsApp you shortly.",
+    "err_generic": "Could not submit. Please try again."
+  },
+  "footer": {
+    "tagline": "Helping returning temporary residents recover their Australian Super refund — fast, simple, secure.",
+    "product": "Product",
+    "contact": "Contact",
+    "compliance": "Compliance",
+    "compliance_body": "AussieBack operates as a facilitation platform. Formal DASP claims are managed in partnership with TPB-registered tax agents. Estimates shown are indicative and not financial advice. Always consult your super fund and the ATO.",
+    "rights": "All rights reserved.",
+    "privacy": "Privacy",
+    "terms": "Terms"
+  }
+}

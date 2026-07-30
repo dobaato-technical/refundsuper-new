@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, BackgroundTasks, Query
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, BackgroundTasks, Query, Request, Header
 from fastapi.responses import StreamingResponse
 from fastapi.security import OAuth2PasswordBearer
 from dotenv import load_dotenv
@@ -10,12 +10,18 @@ import csv
 import logging
 import requests
 from pathlib import Path
-from pydantic import BaseModel, Field, EmailStr, ConfigDict
+from pydantic import BaseModel, Field, EmailStr, ConfigDict, field_validator
 from typing import List, Optional, Literal
 import uuid
 from datetime import datetime, timezone, timedelta
 from jose import jwt, JWTError
 from passlib.context import CryptContext
+import phonenumbers
+from slowapi import Limiter
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
+from slowapi.middleware import SlowAPIMiddleware
+from fastapi.responses import JSONResponse
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -40,6 +46,13 @@ RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL')
 ADMIN_NOTIFICATION_EMAILS = os.environ.get('ADMIN_NOTIFICATION_EMAILS', '')
 
 WEBHOOK_URL = os.environ.get('WEBHOOK_URL')
+
+RECAPTCHA_SECRET_KEY = os.environ.get('RECAPTCHA_SECRET_KEY')
+RECAPTCHA_MIN_SCORE = float(os.environ.get('RECAPTCHA_MIN_SCORE', '0.5'))
+RECAPTCHA_ACTION = os.environ.get('RECAPTCHA_ACTION', 'leads')
+RECAPTCHA_SITEVERIFY_URL = 'https://www.google.com/recaptcha/api/siteverify'
+
+LEAD_RATE_LIMIT = os.environ.get('LEAD_RATE_LIMIT', '5/hour')
 
 # ---------------- DB ----------------
 client = AsyncIOMotorClient(MONGO_URL)
@@ -107,6 +120,18 @@ class LeadCreate(BaseModel):
     # Step 3 (optional, may be added in follow-up call but we ask in same submit)
     super_fund_name: Optional[str] = None
     date_left_australia: Optional[str] = None  # ISO date string
+
+    @field_validator("whatsapp_number")
+    @classmethod
+    def validate_whatsapp_e164(cls, v: str) -> str:
+        v = (v or "").strip()
+        try:
+            parsed = phonenumbers.parse(v, None)
+        except phonenumbers.NumberParseException as e:
+            raise ValueError("WhatsApp number must be in international E.164 format (e.g. +44 7700 900123)") from e
+        if not phonenumbers.is_valid_number(parsed):
+            raise ValueError("WhatsApp number is not a valid international phone number")
+        return phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
 
 class Lead(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -236,8 +261,48 @@ def dispatch_lead_integrations(lead: dict):
     send_emails(lead)
     post_webhook(lead)
 
+# ---------------- reCAPTCHA v3 verification (stub-capable) ----------------
+def verify_recaptcha(
+    request: Request,
+    x_recaptcha_token: Optional[str] = Header(default=None, alias="X-Recaptcha-Token"),
+) -> None:
+    if not RECAPTCHA_SECRET_KEY:
+        logger.info("[STUB] reCAPTCHA not configured — skipping verification")
+        return
+    if not x_recaptcha_token:
+        raise HTTPException(status_code=400, detail="Missing X-Recaptcha-Token header")
+    remote_ip = request.client.host if request.client else None
+    payload = {"secret": RECAPTCHA_SECRET_KEY, "response": x_recaptcha_token}
+    if remote_ip:
+        payload["remoteip"] = remote_ip
+    try:
+        r = requests.post(RECAPTCHA_SITEVERIFY_URL, data=payload, timeout=(3, 8))
+        r.raise_for_status()
+        result = r.json()
+    except Exception as e:
+        logger.exception("reCAPTCHA verification error: %s", e)
+        raise HTTPException(status_code=503, detail="reCAPTCHA verification unavailable")
+    if not result.get("success"):
+        raise HTTPException(status_code=403, detail={"reason": "recaptcha_failed", "errors": result.get("error-codes", [])})
+    if result.get("action") and result.get("action") != RECAPTCHA_ACTION:
+        raise HTTPException(status_code=403, detail="reCAPTCHA action mismatch")
+    if float(result.get("score", 0.0)) < RECAPTCHA_MIN_SCORE:
+        raise HTTPException(status_code=403, detail="reCAPTCHA score too low")
+
+# ---------------- Rate limiter ----------------
+limiter = Limiter(key_func=get_remote_address, default_limits=[])
+
 # ---------------- App & Router ----------------
 app = FastAPI(title="AussieBack API")
+app.state.limiter = limiter
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={"detail": f"Too many submissions. Please try again later ({exc.detail})."},
+    )
+
 api_router = APIRouter(prefix="/api")
 
 @api_router.get("/")
@@ -258,7 +323,13 @@ async def estimate(payload: EstimateRequest):
 
 # --- Lead creation ---
 @api_router.post("/leads", response_model=Lead)
-async def create_lead(payload: LeadCreate, background_tasks: BackgroundTasks):
+@limiter.limit(LEAD_RATE_LIMIT)
+async def create_lead(
+    request: Request,
+    payload: LeadCreate,
+    background_tasks: BackgroundTasks,
+    _rc: None = Depends(verify_recaptcha),
+):
     # Recompute on server to ensure trustworthy figure
     calc = compute_refund(payload.visa_type, payload.input_mode, payload.super_balance, payload.gross_earnings)
     now = datetime.now(timezone.utc).isoformat()

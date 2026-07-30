@@ -1,0 +1,43 @@
+{
+  "summary": "Focused testing of iteration-2 follow-up features: E.164 phone validation (backend+frontend), reCAPTCHA v3 stub, slowapi rate-limit on POST /api/leads, and i18n scaffolding with EN-only language switcher. 5/5 new backend tests pass. Full regression suite still green: 16/16. Frontend landing + language switcher + estimator step-2 phone validation + full E2E lead submission with normalized E.164 all working. Verified admin dashboard shows new leads with normalized +61412345678 numbers. Verified no google.com/gstatic reCAPTCHA scripts loaded (site key empty). One frontend bug: the inline error element with data-testid='whatsapp-error' is MISSING — `whatsappError` state is declared/set in Estimator.jsx but never rendered in JSX; only the toast fires. Blocking behavior still correct (user cannot advance to step 3 with invalid phone).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Estimator.jsx (Step 2)",
+        "issue": "Inline whatsapp-error message required by spec is not rendered. The `whatsappError` state variable is defined (line 41) and set on invalid phone (line 64), but there is no JSX element with data-testid='whatsapp-error' anywhere in the component. Only the toast fires. Add e.g. `{whatsappError && <p data-testid='whatsapp-error' className='text-sm text-red-600 mt-1'>{whatsappError}</p>}` under the whatsapp input.",
+        "selector": "[data-testid=\"whatsapp-error\"]",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_new_features.py",
+    "/app/backend/tests/test_aussieback_api.py",
+    "/app/test_reports/pytest/pytest_new_features.xml"
+  ],
+  "action_items": [
+    "Render the inline `whatsapp-error` element in Estimator.jsx Step 2 so the data-testid required by the spec is satisfied (also improves a11y — screen readers may miss the toast)."
+  ],
+  "critical_code_review_comments": [
+    "Estimator.jsx: `whatsappError` state is dead — set but never rendered (see ui_bugs above).",
+    "backend/server.py verify_recaptcha() uses a synchronous `requests.post` inside an async request path. Currently harmless because RECAPTCHA_SECRET_KEY is empty and the function returns early, but when keys are configured this blocks the event loop; consider httpx.AsyncClient or run_in_executor.",
+    "slowapi Limiter uses in-memory storage which is per-worker (uvicorn spawns multiple workers behind gunicorn). As noted in the request, 429s therefore appear inconsistently — for production consider a Redis-backed storage_uri (`Limiter(..., storage_uri='redis://...')`) so limits are shared across workers.",
+    "LEAD_RATE_LIMIT is read at import time; changing the env var requires a full restart (not just hot reload). Acceptable but worth documenting."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_new_features.py"
+  ],
+  "success_rate": {"backend": "100% (21/21: 16 regression + 5 new)", "frontend": "~90% (1 missing testid)"},
+  "test_credentials": "admin@aussieback.com / Admin@123 — verified working.",
+  "seed_data_creation": "Multiple TEST_Phone leads created with whatsapp_number=+61412345678 during E.164 tests; visible in admin dashboard. Safe to leave; searchable by 'TEST_Phone' or by email prefix TEST_.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "New feature suite at /app/backend/tests/test_new_features.py (phone validation, recaptcha stub, rate limit). Run both suites via `pytest backend/tests/ -v` from /app. Frontend Estimator uses data-testid='step1-next', 'step2-reveal', 'step3-submit', 'balance-input', 'first-name-input', 'email-input', 'whatsapp-input'. Language switcher: 'lang-switcher' + 'lang-option-en'. reCAPTCHA site key intentionally empty in /app/frontend/.env — GoogleReCaptchaProvider is conditionally NOT mounted (verified 0 google.com/recaptcha requests).",
+  "rca of the issue": "Missing whatsapp-error inline element: developer added state + setter and toast handler but forgot to add the JSX render for the state; likely because the toast covered the UX requirement in isolated dev testing. Fix: single-line JSX addition; no logic change required."
+}

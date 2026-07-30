@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { ShieldCheck, Lock, Award, Zap, Globe2, Headphones, ChevronRight } from "lucide-react";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
@@ -15,12 +16,12 @@ const TESTI_2 =
   "https://images.unsplash.com/photo-1548213238-0da7521bd6e0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwyfHxoYXBweSUyMGJhY2twYWNrZXIlMjB0cmF2ZWxlcnxlbnwwfHx8fDE3ODIxMzE5MjV8MA&ixlib=rb-4.1.0&q=85&w=400&h=400";
 
 const TRUST_ITEMS = [
-  { icon: ShieldCheck, label: "256-bit SSL secured" },
-  { icon: Lock, label: "GDPR-compliant" },
-  { icon: Award, label: "Partnered with TPB tax agents" },
-  { icon: Zap, label: "Avg 3-min estimate" },
-  { icon: Globe2, label: "$87M+ in super sitting unclaimed*" },
-  { icon: Headphones, label: "WhatsApp support, 6 languages" },
+  { icon: ShieldCheck, key: "trust.ssl" },
+  { icon: Lock, key: "trust.gdpr" },
+  { icon: Award, key: "trust.tpb" },
+  { icon: Zap, key: "trust.speed" },
+  { icon: Globe2, key: "trust.unclaimed" },
+  { icon: Headphones, key: "trust.whatsapp" },
 ];
 
 const FAQ = [
@@ -47,6 +48,7 @@ const FAQ = [
 ];
 
 export default function Landing() {
+  const { t } = useTranslation();
   const estimatorRef = useRef(null);
 
   const scrollToEstimator = () => {
@@ -75,15 +77,14 @@ export default function Landing() {
           >
             <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur border border-[#E8E6E1] rounded-full px-4 py-1.5 text-xs uppercase tracking-[0.18em] text-[#0B2B40] mb-6">
               <span className="h-1.5 w-1.5 rounded-full bg-[#E05D43] animate-pulse" />
-              DASP refund — backpackers, students, temp visas
+              {t("hero.eyebrow")}
             </div>
             <h1 className="font-display text-5xl sm:text-6xl md:text-7xl font-semibold leading-[1.02] tracking-tight text-[#0B2B40] mb-6">
-              Left Australia? <br />
-              <span className="text-[#E05D43]">Don't leave your cash behind.</span>
+              {t("hero.title_1")} <br />
+              <span className="text-[#E05D43]">{t("hero.title_2")}</span>
             </h1>
             <p className="text-lg md:text-xl text-[#4A5D68] max-w-xl mb-8 leading-relaxed">
-              Estimate and claim your Australian Super refund in under 3 minutes.
-              Free estimate. Expert review. Paid straight to your bank — anywhere in the world.
+              {t("hero.subtitle")}
             </p>
             <div className="flex flex-wrap gap-3 mb-8">
               <Button
@@ -91,20 +92,20 @@ export default function Landing() {
                 onClick={scrollToEstimator}
                 className="bg-[#E05D43] hover:bg-[#C8533B] text-white h-14 px-7 rounded-lg shadow-[0_4px_14px_0_rgba(224,93,67,0.39)] hover:-translate-y-0.5 transition-all text-base"
               >
-                Calculate my refund <ChevronRight className="ml-1 h-5 w-5" />
+                {t("hero.cta_primary")} <ChevronRight className="ml-1 h-5 w-5" />
               </Button>
               <a
                 href="#how"
                 className="inline-flex items-center justify-center border-2 border-[#0B2B40]/15 hover:border-[#0B2B40]/40 text-[#0B2B40] h-14 px-7 rounded-lg transition-colors text-base"
                 data-testid="hero-secondary"
               >
-                How it works
+                {t("hero.cta_secondary")}
               </a>
             </div>
             <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-[#4A5D68]">
-              <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-[#2E7D32]" /> No paperwork up front</span>
-              <span className="flex items-center gap-1.5"><Zap className="h-4 w-4 text-[#E05D43]" /> Free estimate</span>
-              <span className="flex items-center gap-1.5"><Lock className="h-4 w-4 text-[#0B2B40]" /> Bank-grade security</span>
+              <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-[#2E7D32]" /> {t("hero.badge_paperwork")}</span>
+              <span className="flex items-center gap-1.5"><Zap className="h-4 w-4 text-[#E05D43]" /> {t("hero.badge_free")}</span>
+              <span className="flex items-center gap-1.5"><Lock className="h-4 w-4 text-[#0B2B40]" /> {t("hero.badge_security")}</span>
             </div>
           </motion.div>
 
@@ -193,13 +194,13 @@ export default function Landing() {
         <div className="grid lg:grid-cols-12 gap-10">
           <div className="lg:col-span-5">
             <div className="text-xs uppercase tracking-[0.18em] text-[#E05D43] mb-3 font-medium">
-              Stories
+              {t("stories.eyebrow")}
             </div>
             <h2 className="font-display text-4xl md:text-5xl font-medium tracking-tight mb-4">
-              Travellers, students, and working holidaymakers — paid.
+              {t("stories.title")}
             </h2>
             <p className="text-lg text-[#4A5D68]">
-              Real people who didn't realise they had thousands waiting in Australia.
+              {t("stories.subtitle")}
             </p>
           </div>
 
@@ -221,24 +222,24 @@ export default function Landing() {
                   "Total no-brainer. I sent two screenshots over WhatsApp. They handled the rest.",
                 img: TESTI_2,
               },
-            ].map((t, i) => (
+            ].map((testi, i) => (
               <div
                 key={i}
                 data-testid={`testimonial-${i + 1}`}
                 className="bg-[#FAFAF9] border border-[#E8E6E1] rounded-2xl p-6 flex flex-col"
               >
                 <div className="flex items-center gap-3 mb-4">
-                  <img src={t.img} alt={t.name} className="h-12 w-12 rounded-full object-cover" />
+                  <img src={testi.img} alt={testi.name} className="h-12 w-12 rounded-full object-cover" />
                   <div>
-                    <div className="font-display font-medium text-[#0B2B40]">{t.name}</div>
-                    <div className="text-xs text-[#4A5D68]">{t.visa}</div>
+                    <div className="font-display font-medium text-[#0B2B40]">{testi.name}</div>
+                    <div className="text-xs text-[#4A5D68]">{testi.visa}</div>
                   </div>
                 </div>
-                <p className="text-[#0B2B40] leading-relaxed flex-1 mb-4">"{t.quote}"</p>
+                <p className="text-[#0B2B40] leading-relaxed flex-1 mb-4">"{testi.quote}"</p>
                 <div className="text-xs uppercase tracking-[0.15em] text-[#4A5D68]">
-                  Recovered
+                  {t("stories.recovered")}
                 </div>
-                <div className="font-display text-2xl text-[#E05D43] font-medium">{t.amount}</div>
+                <div className="font-display text-2xl text-[#E05D43] font-medium">{testi.amount}</div>
               </div>
             ))}
           </div>
@@ -250,13 +251,13 @@ export default function Landing() {
         <div className="grid lg:grid-cols-12 gap-10">
           <div className="lg:col-span-4">
             <div className="text-xs uppercase tracking-[0.18em] text-[#E05D43] mb-3 font-medium">
-              FAQ
+              {t("faq.eyebrow")}
             </div>
             <h2 className="font-display text-4xl md:text-5xl font-medium tracking-tight mb-4">
-              Questions, answered.
+              {t("faq.title")}
             </h2>
             <p className="text-[#4A5D68]">
-              Still wondering? WhatsApp us — we usually reply in under an hour.
+              {t("faq.subtitle")}
             </p>
           </div>
           <div className="lg:col-span-8">
@@ -285,17 +286,17 @@ export default function Landing() {
           <div className="absolute inset-0 ab-grain opacity-30" />
           <div className="relative">
             <h2 className="font-display text-4xl md:text-5xl font-medium tracking-tight mb-4">
-              Your super is still waiting in Australia.
+              {t("final_cta.title")}
             </h2>
             <p className="text-[#A9BDCB] text-lg mb-8 max-w-2xl mx-auto">
-              Free estimate. Zero risk. You only pay if we successfully recover your refund.
+              {t("final_cta.subtitle")}
             </p>
             <Button
               data-testid="final-cta"
               onClick={scrollToEstimator}
               className="bg-[#E05D43] hover:bg-[#C8533B] text-white h-14 px-8 rounded-lg shadow-[0_4px_14px_0_rgba(224,93,67,0.39)] hover:-translate-y-0.5 transition-all text-base"
             >
-              Start my free estimate <ChevronRight className="ml-1 h-5 w-5" />
+              {t("final_cta.button")} <ChevronRight className="ml-1 h-5 w-5" />
             </Button>
           </div>
         </div>
