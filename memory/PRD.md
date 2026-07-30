@@ -29,6 +29,10 @@ Build a high-converting lead-magnet platform that captures the "Returning Tempor
 - [x] **Rate limiting** — 5 leads / hour / IP on POST `/api/leads` via `slowapi` (`LEAD_RATE_LIMIT` env, default `5/hour`). Returns 429 with friendly message.
 - [x] **i18n scaffolding** — `react-i18next` + `i18next` + browser language detector. All landing/estimator/footer copy centralized in `/i18n/locales/en.json`. Language switcher in header (currently only EN — add new lang by dropping a JSON file & registering it in `/i18n/index.js`).
 
+## Implemented (Jul 2026 — Iteration 3)
+- [x] **Refund Share Card** — after submission, users can open a canvas-rendered 1080×1350 PNG summary card (`ShareCardModal`) and Download / Web-Share / Copy-Link. Native share invokes WhatsApp/Instagram/etc on mobile; falls back to download on desktop.
+- [x] **Live Chat Widget** — floating WhatsApp button (bottom-right of landing) linked via `wa.me/<REACT_APP_SUPPORT_WHATSAPP>` with pre-filled greeting. After 20s of inactivity, a nudge bubble pops up. Dismissable.
+
 ## Backlog
 - **P1**: Multi-language support (DE, FR, JA, KO, ES), better phone validation (E.164), reCAPTCHA on lead form, rate-limit POST `/api/leads`.
 - **P1**: Webhook signature signing (HMAC) for CRM forwarding.
