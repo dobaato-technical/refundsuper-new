@@ -1,10 +1,25 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function Header({ onCtaClick }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleCta = () => {
+    if (onCtaClick) {
+      onCtaClick();
+      return;
+    }
+    if (location.pathname === "/") {
+      const el = document.getElementById("estimator");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else {
+      navigate("/#estimator");
+    }
+  };
   return (
     <header
       data-testid="site-header"
@@ -21,13 +36,13 @@ export default function Header({ onCtaClick }) {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 text-sm text-[#4A5D68]">
-          <a href="#how" className="hover:text-[#0B2B40] transition-colors" data-testid="nav-how">
+          <a href="/#how" className="hover:text-[#0B2B40] transition-colors" data-testid="nav-how">
             {t("nav.how")}
           </a>
-          <a href="#testimonials" className="hover:text-[#0B2B40] transition-colors" data-testid="nav-testimonials">
-            {t("nav.stories")}
-          </a>
-          <a href="#faq" className="hover:text-[#0B2B40] transition-colors" data-testid="nav-faq">
+          <Link to="/blog" className="hover:text-[#0B2B40] transition-colors" data-testid="nav-blog">
+            {t("nav.blog")}
+          </Link>
+          <a href="/#faq" className="hover:text-[#0B2B40] transition-colors" data-testid="nav-faq">
             {t("nav.faq")}
           </a>
           <Link to="/admin/login" className="hover:text-[#0B2B40] transition-colors" data-testid="nav-admin">
@@ -39,7 +54,7 @@ export default function Header({ onCtaClick }) {
           <LanguageSwitcher />
           <Button
             data-testid="header-cta"
-            onClick={onCtaClick}
+            onClick={handleCta}
             className="bg-[#E05D43] hover:bg-[#C8533B] text-white shadow-[0_4px_14px_0_rgba(224,93,67,0.39)] rounded-lg font-medium hover:-translate-y-0.5 transition-all"
           >
             {t("nav.cta")}

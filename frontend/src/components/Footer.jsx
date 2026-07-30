@@ -27,8 +27,9 @@ export default function Footer() {
         <div>
           <h4 className="font-display text-white text-base mb-3">{t("footer.product")}</h4>
           <ul className="space-y-2 text-sm text-[#A9BDCB]">
-            <li><a href="#how" className="hover:text-white" data-testid="footer-how">{t("nav.how")}</a></li>
-            <li><a href="#faq" className="hover:text-white" data-testid="footer-faq">{t("nav.faq")}</a></li>
+            <li><a href="/#how" className="hover:text-white" data-testid="footer-how">{t("nav.how")}</a></li>
+            <li><Link to="/blog" className="hover:text-white" data-testid="footer-blog">{t("nav.blog")}</Link></li>
+            <li><a href="/#faq" className="hover:text-white" data-testid="footer-faq">{t("nav.faq")}</a></li>
             <li><Link to="/admin/login" className="hover:text-white" data-testid="footer-admin">{t("nav.admin")}</Link></li>
           </ul>
         </div>

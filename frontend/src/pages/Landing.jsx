@@ -1,14 +1,18 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { ShieldCheck, Lock, Award, Zap, Globe2, Headphones, ChevronRight } from "lucide-react";
+import { ShieldCheck, Lock, Award, Zap, Globe2, Headphones, ChevronRight, ArrowRight, Clock } from "lucide-react";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Estimator from "@/components/Estimator";
 import WhatsAppChatButton from "@/components/WhatsAppChatButton";
 import RefBanner from "@/components/RefBanner";
+import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
+import { api } from "@/lib/api";
 
 const HERO_BG =
   "https://images.pexels.com/photos/542811/pexels-photo-542811.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940";
@@ -51,14 +55,70 @@ const FAQ = [
 
 export default function Landing() {
   const { t } = useTranslation();
+  const location = useLocation();
   const estimatorRef = useRef(null);
+  const [blogPosts, setBlogPosts] = useState([]);
 
   const scrollToEstimator = () => {
     estimatorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
+  // If we land here with a #estimator hash (e.g. from a blog CTA), scroll into view.
+  useEffect(() => {
+    if (location.hash === "#estimator") {
+      setTimeout(scrollToEstimator, 100);
+    }
+  }, [location]);
+
+  // Load 3 latest blog posts for the snippet section
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get("/blog/posts", { params: { limit: 3 } });
+        setBlogPosts(data.posts || []);
+      } catch (e) {
+        /* silent */
+      }
+    })();
+  }, []);
+
   return (
     <div className="bg-[#F7F5F0] min-h-screen text-[#0B2B40]">
+      <SEO
+        title="Claim Your Australian Super Refund (DASP)"
+        description="Left Australia? Estimate and claim your Australian Super refund (DASP) in under 3 minutes. Free estimate for backpackers, working holiday makers and international students. Up to 65% back."
+        keywords="australian super refund, super back australia, DASP, working holiday super refund, student visa super, backpacker tax refund australia"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Am I eligible for a DASP refund?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "If you held a temporary visa (Working Holiday 417/462, Student 500, Temporary Work 482, etc.) and have permanently left Australia with your visa cancelled or expired, you can claim your super through the Departing Australia Superannuation Payment (DASP) scheme.",
+              },
+            },
+            {
+              "@type": "Question",
+              "name": "How much of my super will I get back?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Working Holiday Maker visas (417/462) have 65% tax withheld so you keep 35%. Student 500 and most other temporary visas have 35% tax withheld so you keep 65% of your super balance.",
+              },
+            },
+            {
+              "@type": "Question",
+              "name": "How long does the Australian super refund take?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Once your application is lodged with your super fund and the ATO, payments usually take 28 days.",
+              },
+            },
+          ],
+        }}
+      />
       <Header onCtaClick={scrollToEstimator} />
       <RefBanner />
 
@@ -282,6 +342,61 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* FROM THE BLOG */}
+      {blogPosts.length > 0 && (
+        <section id="blog" className="px-6 md:px-12 lg:px-24 py-20 md:py-24 bg-white border-y border-[#E8E6E1]">
+          <div className="flex items-end justify-between mb-10 flex-wrap gap-4">
+            <div className="max-w-2xl">
+              <div className="text-xs uppercase tracking-[0.18em] text-[#E05D43] mb-3 font-medium">
+                {t("blog_snippet.eyebrow")}
+              </div>
+              <h2 className="font-display text-4xl md:text-5xl font-medium tracking-tight mb-3">
+                {t("blog_snippet.title")}
+              </h2>
+              <p className="text-lg text-[#4A5D68]">{t("blog_snippet.subtitle")}</p>
+            </div>
+            <Link
+              to="/blog"
+              data-testid="landing-blog-all"
+              className="inline-flex items-center gap-1 text-sm font-medium text-[#0B2B40] hover:text-[#E05D43] transition-colors"
+            >
+              {t("blog_snippet.cta")} <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6" data-testid="landing-blog-grid">
+            {blogPosts.map((p) => (
+              <Link
+                key={p.slug}
+                to={`/blog/${p.slug}`}
+                data-testid={`landing-blog-card-${p.slug}`}
+                className="group bg-[#FAFAF9] border border-[#E8E6E1] rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-[0_18px_40px_-20px_rgba(11,43,64,0.15)] transition-all flex flex-col"
+              >
+                {p.hero_image && (
+                  <div className="aspect-[16/10] overflow-hidden">
+                    <img
+                      src={p.hero_image}
+                      alt={p.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                )}
+                <div className="p-5 flex flex-col flex-1">
+                  <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.15em] text-[#4A5D68] mb-2">
+                    <span className="text-[#E05D43] font-medium">{p.category}</span>
+                    <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" /> {p.reading_time_minutes} min</span>
+                  </div>
+                  <h3 className="font-display text-lg font-medium text-[#0B2B40] leading-snug group-hover:text-[#E05D43] transition-colors">
+                    {p.title}
+                  </h3>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* FINAL CTA */}
       <section className="px-6 md:px-12 lg:px-24 pb-20">

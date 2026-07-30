@@ -26,6 +26,7 @@ import secrets
 import string
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+from blog_seed import SEED_BLOG_POSTS
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -76,6 +77,7 @@ db = client[DB_NAME]
 leads_collection = db['leads']
 admins_collection = db['admins']
 share_events_collection = db['share_events']
+blog_posts_collection = db['blog_posts']
 
 # ---------------- Logging ----------------
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -198,6 +200,22 @@ class ShareEventCreate(BaseModel):
     referral_code: Optional[str] = Field(default=None, max_length=32)
     lead_id: Optional[str] = Field(default=None, max_length=64)
     aspect: Optional[Literal["feed", "story"]] = None
+
+class BlogPostSummary(BaseModel):
+    slug: str
+    title: str
+    meta_description: str
+    excerpt: str
+    category: str
+    tags: List[str] = Field(default_factory=list)
+    hero_image: Optional[str] = None
+    author: str
+    reading_time_minutes: int
+    published_at: str
+
+class BlogPost(BlogPostSummary):
+    content: str
+    keywords: List[str] = Field(default_factory=list)
 
 # ---------------- Calculator ----------------
 SUPER_RATE = 0.12  # 12% Super Guarantee
@@ -748,6 +766,41 @@ async def send_weekly_digest() -> dict:
         )
     return digest
 
+# --- Blog (public) ---
+BLOG_LIST_PROJECTION = {
+    "_id": 0, "slug": 1, "title": 1, "meta_description": 1, "excerpt": 1,
+    "category": 1, "tags": 1, "hero_image": 1, "author": 1,
+    "reading_time_minutes": 1, "published_at": 1,
+}
+
+@api_router.get("/blog/posts")
+async def list_blog_posts(
+    category: Optional[str] = None,
+    tag: Optional[str] = None,
+    limit: int = 20,
+):
+    q: dict = {}
+    if category:
+        q["category"] = category
+    if tag:
+        q["tags"] = tag
+    docs = await blog_posts_collection.find(q, BLOG_LIST_PROJECTION).sort("published_at", -1).to_list(limit)
+    categories_cursor = blog_posts_collection.aggregate([
+        {"$group": {"_id": "$category", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+    ])
+    categories: List[dict] = []
+    async for row in categories_cursor:
+        categories.append({"name": row["_id"], "count": row["count"]})
+    return {"posts": docs, "count": len(docs), "categories": categories}
+
+@api_router.get("/blog/posts/{slug}", response_model=BlogPost)
+async def get_blog_post(slug: str):
+    doc = await blog_posts_collection.find_one({"slug": slug}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return BlogPost(**doc)
+
 # --- Admin: manually trigger digest ---
 @api_router.post("/admin/weekly-digest/run")
 async def run_weekly_digest_now(current: dict = Depends(get_current_admin)):
@@ -778,6 +831,20 @@ async def seed_admin_and_indexes():
     await admins_collection.create_index("email", unique=True)
     await share_events_collection.create_index("created_at")
     await share_events_collection.create_index("channel")
+    await blog_posts_collection.create_index("slug", unique=True)
+    await blog_posts_collection.create_index("category")
+    await blog_posts_collection.create_index("tags")
+
+    # Seed blog posts if collection is empty
+    existing_posts = await blog_posts_collection.count_documents({})
+    if existing_posts == 0:
+        now_iso = datetime.now(timezone.utc).isoformat()
+        docs = [
+            {**p, "published_at": now_iso, "updated_at": now_iso}
+            for p in SEED_BLOG_POSTS
+        ]
+        await blog_posts_collection.insert_many(docs)
+        logger.info("Seeded %d blog posts", len(docs))
     existing = await admins_collection.find_one({"email": ADMIN_SEED_EMAIL})
     if not existing:
         await admins_collection.insert_one({

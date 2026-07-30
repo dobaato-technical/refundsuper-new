@@ -1,9 +1,12 @@
 import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import Landing from "@/pages/Landing";
 import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
+import BlogList from "@/pages/BlogList";
+import BlogPost from "@/pages/BlogPost";
 import { Toaster } from "@/components/ui/sonner";
 import { isAuthed } from "@/lib/auth";
 
@@ -20,6 +23,8 @@ function AppRoutes() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/blog" element={<BlogList />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route
             path="/admin"
@@ -38,18 +43,17 @@ function AppRoutes() {
 }
 
 function App() {
-  // Only wrap with reCAPTCHA provider when a site key is configured.
-  if (RECAPTCHA_SITE_KEY) {
-    return (
-      <GoogleReCaptchaProvider
-        reCaptchaKey={RECAPTCHA_SITE_KEY}
-        scriptProps={{ async: true, defer: true, appendTo: "head" }}
-      >
-        <AppRoutes />
-      </GoogleReCaptchaProvider>
-    );
-  }
-  return <AppRoutes />;
+  const content = RECAPTCHA_SITE_KEY ? (
+    <GoogleReCaptchaProvider
+      reCaptchaKey={RECAPTCHA_SITE_KEY}
+      scriptProps={{ async: true, defer: true, appendTo: "head" }}
+    >
+      <AppRoutes />
+    </GoogleReCaptchaProvider>
+  ) : (
+    <AppRoutes />
+  );
+  return <HelmetProvider>{content}</HelmetProvider>;
 }
 
 export default App;

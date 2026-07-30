@@ -4,6 +4,7 @@
     "stories": "Stories",
     "faq": "FAQ",
     "admin": "Admin",
+    "blog": "Blog",
     "cta": "Calculate my refund"
   },
   "hero": {
@@ -145,5 +146,39 @@
     "rights": "All rights reserved.",
     "privacy": "Privacy",
     "terms": "Terms"
+  },
+  "blog_list": {
+    "seo_title": "Super Refund Guides & DASP Resources",
+    "seo_description": "In-depth guides on claiming your Australian Super refund (DASP) — for backpackers, working holiday makers, students and every temporary visa in between.",
+    "eyebrow": "AussieBack Blog",
+    "title": "Everything you need to claim your Australian Super.",
+    "subtitle": "Straightforward guides on DASP refunds, tax rates, visa rules and real stories from travellers who got their money back.",
+    "filter_label": "Filter",
+    "filter_all": "All",
+    "read_more": "Read guide",
+    "empty": "No articles yet. Check back soon."
+  },
+  "blog_post": {
+    "all_articles": "All articles",
+    "share": "Share",
+    "link_copied": "Link copied — share it anywhere",
+    "sidebar_estimate_title": "Estimate your refund",
+    "sidebar_estimate_body": "See what your Australian super claim is worth. Free, no signup, 3 minutes.",
+    "sidebar_estimate_button": "Start now",
+    "related_title": "Related guides"
+  },
+  "blog_cta": {
+    "eyebrow": "Ready when you are",
+    "title": "Estimate your Australian Super refund in 3 minutes.",
+    "body": "Free estimate. Zero risk. You only pay if we successfully recover your refund.",
+    "button": "Calculate my refund",
+    "badge_fast": "3 min",
+    "badge_free": "Free & secure"
+  },
+  "blog_snippet": {
+    "eyebrow": "From the blog",
+    "title": "Guides that get you paid.",
+    "subtitle": "Dip into the AussieBack knowledge base — real, hands-on advice for reclaiming your super.",
+    "cta": "See all articles"
   }
 }
