@@ -1,0 +1,39 @@
+{
+  "summary": "Iteration 10 (Router-split refactor + HMAC-signed CRM webhook + IndexNow/GSC sitemap ping) tested end-to-end. All 27 backend pytest cases pass, including 19 regression checks across the router-split modules, 3 root-level SEO endpoints (tested via localhost:8001 because ingress doesn't route them), the live HMAC-signed webhook capture (spun up a local http.server, injected WEBHOOK_URL+WEBHOOK_SECRET into backend/.env, restarted supervisor, submitted lead → status-change → comment → share-event, and verified all 4 events arrived with X-AussieBack-Event + X-AussieBack-Signature=sha256=<64-hex>, then recomputed HMAC-SHA256 in Python and compared with hmac.compare_digest — all matched), and the unchanged-status idempotency test (patching same status returns {ok:true, unchanged:true} and does NOT fire the webhook). Env restored to original after test and backend restarted. Frontend smoke: landing page hero, blog list H1, blog post SSR H1, and admin login all render correctly (unchanged from iter 9 — backend-only refactor).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration10.py",
+    "/app/test_reports/pytest/iteration10.xml"
+  ],
+  "action_items": [
+    "Cosmetic (carried over from iter 9): review_request references slug 'aussie-super-back' which doesn't exist in seeded data — either seed that slug or update the checklist to the real slug 'working-holiday-visa-super-refund-guide'. Test asserts 404 for the non-existent slug to document this.",
+    "Optional hardening: sitemap.xml and robots.txt live at root and are ONLY reachable inside the container (ingress strips non-/api paths to the Next frontend). Considered acceptable per the design note in the review request, but worth documenting for the production deployment agent — production ingress must route these two paths to backend."
+  ],
+  "critical_code_review_comments": [
+    "Excellent router split — server.py now ~140 lines, each routes/*.py is single-responsibility and imports only what it needs from deps.py.",
+    "integrations._sign_payload correctly uses hmac.new(...).hexdigest() and the sha256=<hex> convention matching GitHub/Stripe. Verified format: exactly 'sha256=' + 64 hex chars.",
+    "send_webhook is fire-and-forget via BackgroundTasks — good — but a webhook consumer failure only logs, does not retry. Consider a durable outbox table + retry job if reliability becomes important (currently acceptable for MVP CRM handoff).",
+    "share-events endpoint webhook redacts nothing — payload includes user_agent and IP-derivable data. Acceptable for internal CRM but flag for privacy review if this ever goes to third-party integrations.",
+    "comment.created webhook correctly strips author_email before dispatch — good privacy hygiene.",
+    "routes/seo.py catch-all `/{indexnow_key}.txt` is scoped to only match when INDEXNOW_KEY is set AND equal to the requested filename — verified 404 works for random .txt paths when unset. But this route pattern also catches things like `/foo.txt` before Next.js gets them if backend ever gets front-mounted. Currently fine because ingress isolates paths.",
+    "ping_indexnow / ping_gsc_sitemap correctly no-op with logger.info stub messages when env keys are unset — confirmed via /api/admin/blog/ping-search-engines returning {indexnow: null, gsc: null, urls: [...]} in default config.",
+    "PATCH /admin/leads/{id}/status early-return `{ok:true, unchanged:true}` before firing background webhook — perfect idempotency. Verified in live-capture test that no lead.status_changed event lands on the wire when status is unchanged."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration10.py"
+  ],
+  "success_rate": {"backend": "100% (27/27)", "frontend": "100% (smoke: landing, blog list, blog post SSR, admin login)"},
+  "test_credentials": "admin@aussieback.com / Admin@123 (confirmed working)",
+  "seed_data_creation": "Temporarily appended WEBHOOK_URL=http://127.0.0.1:<port> and WEBHOOK_SECRET=iter10-test-secret to /app/backend/.env for the webhook-capture test, restarted backend, then restored original .env content and restarted again in the fixture teardown. Also inserted TEST_UNCH / TEST_NW leads directly via pymongo to bypass the 5/hour rate limit and cleaned them up. No residual test data.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Preview URL: https://aussie-super-back.preview.emergentagent.com. Backend was split into routes/{leads,admin,blog_public,admin_blog,seo}.py — all previously working endpoints continue to respond identically. To reproduce the HMAC webhook test: run test_iteration10.py::TestWebhookLive — it self-manages the local capture server + backend restart + .env restore. Root-level /sitemap.xml, /robots.txt, /{indexnow_key}.txt MUST be tested via http://localhost:8001 (ingress won't route them through the preview URL). IndexNow key-verification file endpoint uses `/{indexnow_key}.txt` and only responds when INDEXNOW_KEY env is set. Blog slugs: real seeded posts include 'working-holiday-visa-super-refund-guide'; 'aussie-super-back' referenced in the review checklist does NOT exist — the test asserts 404 for it."
+}
