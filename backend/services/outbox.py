@@ -179,10 +179,19 @@ async def process_outbox(limit: int = 25) -> dict:
 
 
 async def force_retry(row_id: str) -> bool:
-    """Admin action: reset a dead/failed row to pending and retry immediately."""
+    """Admin action: reset a `pending` or `dead` row to `pending` and retry immediately.
+
+    Rows that already have `status='success'` are protected — an admin fat-fingering
+    Retry on a delivered row would otherwise re-fire the webhook and duplicate the
+    downstream CRM record.
+    """
     now_iso = _now().isoformat()
     res = await webhook_outbox_collection.update_one(
-        {"id": row_id},
-        {"$set": {"status": "pending", "next_attempt_at": now_iso, "updated_at": now_iso}},
+        {"id": row_id, "status": {"$in": ["pending", "dead"]}},
+        {"$set": {
+            "status": "pending",
+            "next_attempt_at": now_iso,
+            "updated_at": now_iso,
+        }},
     )
     return res.matched_count > 0

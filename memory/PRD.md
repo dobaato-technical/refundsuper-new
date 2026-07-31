@@ -81,7 +81,12 @@ All other paths continue to route to the Next.js frontend. In preview, `/robots.
 - [x] **Comment Moderation UI** — new `/admin/comments` page listing all comments with filter chips (all / pending / approved), Approve + Delete actions, links back to the source article. "Comments" button added to admin dashboard toolbar.
 - [x] **Bulk Article Autopilot** — new `settings.autopilot` config + `autopilot_queue` collection. Weekly APScheduler cron (Mon 10:00 Australia/Sydney) pops one queued topic and publishes it via Claude Sonnet. Admin can Add/Remove queue items, toggle enable/pause, and manually "Run now" from the Blog Studio "Content Autopilot" card.
 
-## Implemented (Feb 2026 — Iteration 11: Durable outbox + live integrations turned on)
+## Implemented (Feb 2026 — Iteration 12: Resend live + Outbox UI + ISR revalidation)
+- [x] **Resend Email activated** — `RESEND_API_KEY` and `RESEND_FROM_EMAIL=hello@aussieback.com` in backend `.env`. Send path fires on every lead creation and is wrapped in try/except so a Resend outage never breaks lead capture. **⚠️ Domain `aussieback.com` is NOT yet verified in Resend** — sends currently fail with `not authorized to send emails from aussieback.com`. Verify the domain in the Resend dashboard to activate delivery. User opted out of `ADMIN_NOTIFICATION_EMAILS` (admin new-lead alerts skipped).
+- [x] **Outbox Admin UI** at `/admin/outbox` — three count cards (pending / delivered / dead), filter chips, "Flush now" toolbar button, table with per-row copy / retry / delete icons, row-click opens a Dialog showing the full JSON payload sent to the CRM. Auto-refreshes every 15s. New "Outbox" toolbar button on `/admin` dashboard links straight to it. Guard: `force_retry` refuses to reset `status=success` rows (prevents accidental double-send).
+- [x] **Next.js ISR revalidation** — new `POST /api/revalidate` route on the Next.js dev server (port 3000), guarded by shared `REVALIDATE_SECRET`. Backend hits it automatically from BOTH the manual publish endpoint (`POST /api/admin/blog/posts`) and the autopilot cron. Revalidates `/`, `/blog`, and `/blog/{slug}` so new articles appear on the live site in **~200ms** instead of waiting for the 60-second ISR window. Full pipeline verified: publish → `IndexNow ping status=202` + `[REVALIDATE] status=200` both logged, article visible on preview immediately.
+- [x] Testing: 16/16 backend tests pass in `test_iteration12.py`, full frontend UI validated.
+- **⚠️ SKIPPED per user**: Twilio WhatsApp, GSC service-account JSON (both still stubbed).
 - [x] **IndexNow live** — Auto-generated `INDEXNOW_KEY` stored in backend `.env`, key-verification file served at `/{key}.txt`. Every blog publish + autopilot cron auto-fires `POST https://api.indexnow.org/indexnow` (**verified: returns 202 Accepted** for Bing/Yandex/DuckDuckGo/Naver). Manual re-fire: `POST /api/admin/blog/ping-search-engines[?slug=<slug>]`.
 - [x] **Custom CRM webhook wired** — `WEBHOOK_URL=https://flowtax.io/api/lead-webhook/intake?org_id=…&token=…` (bearer token embedded in query string, HMAC signing intentionally disabled). Verified live delivery to flowtax.io for `share_event.created` and `lead.status_changed` events (HTTP 2xx on first attempt).
 - [x] **Durable webhook outbox** — new `webhook_outbox` collection + `services/outbox.py`. `send_webhook()` now enqueues rows synchronously (pymongo) instead of firing HTTP directly. APScheduler `webhook_outbox_retry` job runs every minute, POSTs up to 25 due rows per tick. Exponential backoff (2, 4, 8, 16, 30, 30, 30 min) up to 8 attempts, then row marked `status=dead` for manual retry. Admin API:
@@ -107,11 +112,18 @@ All other paths continue to route to the Next.js frontend. In preview, `/robots.
 - [x] **Autopilot Requeue** — `POST /api/admin/autopilot/queue/{id}/requeue` — returns 400 for non-failed items, 200 + resets status to `queued` (also clears `error`, `finished_at`, `started_at`). Blog Studio queue list surfaces failed items in a red-tinted row with a "Requeue" button (with spinner) alongside the existing delete action.
 - [x] **Delete Confirm on Comment Moderation** — `/admin/comments` "Delete" now opens a Shadcn `AlertDialog` showing the author name, first 3 lines of the comment body, and the affected `/blog/{slug}`. Cancel + Confirm both disabled while a delete is in flight.
 - [x] **PRD Ingress Rules** — see the Ingress Rules table above.
-## Backlog
+## Implemented (Feb 2026 — Iteration 11: Durable outbox + live integrations turned on)
 - **P0**: Real domain migration — update `SITE_URL` in prod .env and register at Google Search Console (DNS TXT verification recommended over HTML-file for the preview environment).
 - **P1**: Un-stub Twilio WhatsApp + Resend Email + reCAPTCHA (all currently keyed as env-configurable stubs — user opted to skip in iter 11).
 - **P1**: Configure `GSC_SERVICE_ACCOUNT_JSON` so Google Search Console gets pinged alongside IndexNow (currently IndexNow-only in prod).
 - **P2**: Admin Outbox UI — visual list of pending/dead webhook rows with one-click retry (endpoints exist, no UI panel yet).
+- **P2**: Rate-limit `GET /api/blog/posts/{slug}/comments` to prevent scraping.
+
+## Backlog
+- **P0**: Verify `aussieback.com` in the Resend dashboard so `hello@aussieback.com` sender can actually deliver (currently returns "not authorized").
+- **P1**: Un-stub Twilio WhatsApp notification (still stubbed — user deferred).
+- **P1**: Configure `GSC_SERVICE_ACCOUNT_JSON` so Google Search Console gets pinged alongside IndexNow.
+- **P1**: Move `_revalidate_nextjs` HTTP call from sync `requests` inside a coroutine to `asyncio.to_thread` or `httpx.AsyncClient` — currently OK because it's only called from BackgroundTasks (threadpool) but should be cleaned up before scaling.
 - **P2**: Rate-limit `GET /api/blog/posts/{slug}/comments` to prevent scraping.
 
 ## Older Backlog (still valid)

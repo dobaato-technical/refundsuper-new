@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
@@ -277,6 +277,9 @@ function OutboxInner() {
               <Radio className="h-4 w-4 text-[#E05D43]" />
               {selected?.event}
             </DialogTitle>
+            <DialogDescription className="text-xs text-[#4A5D68]">
+              Delivery details and signed JSON payload sent to your CRM webhook.
+            </DialogDescription>
           </DialogHeader>
           {selected && (
             <div className="space-y-4 text-sm">
