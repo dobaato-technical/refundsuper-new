@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Users, TrendingUp, DollarSign, Trophy, LogOut, Search,
-  Download, RefreshCw, ChevronDown, Mail, Sparkles, MessageCircle,
+  Download, RefreshCw, ChevronDown, Mail, Sparkles, MessageCircle, Radio,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -185,6 +185,16 @@ function AdminDashboardInner() {
             >
               <Link href="/admin/comments">
                 <MessageCircle className="h-4 w-4 mr-2" /> Comments
+              </Link>
+            </Button>
+            <Button
+              data-testid="outbox-btn"
+              asChild
+              variant="outline"
+              className="border-2 border-[#E8E6E1] text-[#0B2B40] hover:border-[#0B2B40]"
+            >
+              <Link href="/admin/outbox">
+                <Radio className="h-4 w-4 mr-2" /> Outbox
               </Link>
             </Button>
             <Button

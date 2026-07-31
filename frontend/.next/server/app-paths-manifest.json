@@ -1,8 +1,7 @@
 {
-  "/page": "app/page.js",
+  "/api/revalidate/route": "app/api/revalidate/route.js",
   "/admin/login/page": "app/admin/login/page.js",
-  "/admin/blog/page": "app/admin/blog/page.js",
-  "/admin/comments/page": "app/admin/comments/page.js",
-  "/blog/page": "app/blog/page.js",
-  "/blog/[slug]/page": "app/blog/[slug]/page.js"
+  "/page": "app/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/admin/outbox/page": "app/admin/outbox/page.js"
 }

@@ -9,6 +9,7 @@ import uuid
 from deps import (
     autopilot_queue_collection, blog_posts_collection, settings_collection,
     EMERGENT_LLM_KEY, logger, effective_site_settings,
+    NEXTJS_INTERNAL_URL, REVALIDATE_SECRET,
 )
 from integrations import ping_search_engines_for_slug
 
@@ -93,6 +94,36 @@ async def notify_search_engines_for_slug(slug: str) -> dict:
     return result
 
 
+def _revalidate_nextjs(paths: list[str]) -> Optional[dict]:
+    """Poke Next.js to purge the ISR cache for the given paths.
+
+    Called after a publish so the article shows up on the live site within
+    seconds instead of waiting for the 60-second revalidate window.
+    """
+    if not REVALIDATE_SECRET or not NEXTJS_INTERNAL_URL:
+        logger.info("[REVALIDATE] disabled — set REVALIDATE_SECRET + NEXTJS_INTERNAL_URL")
+        return None
+    import requests
+    try:
+        r = requests.post(
+            f"{NEXTJS_INTERNAL_URL}/api/revalidate",
+            json={"paths": paths},
+            headers={"x-revalidate-secret": REVALIDATE_SECRET, "Content-Type": "application/json"},
+            timeout=(2, 5),
+        )
+        logger.info("[REVALIDATE] status=%s paths=%s", r.status_code, paths)
+        if r.status_code == 200:
+            return r.json()
+        return {"error": r.status_code}
+    except Exception as e:
+        logger.exception("[REVALIDATE] failed: %s", e)
+        return {"error": str(e)}
+
+
+async def revalidate_for_slug(slug: str) -> Optional[dict]:
+    return _revalidate_nextjs(["/", "/blog", f"/blog/{slug}"])
+
+
 async def run_autopilot_once() -> dict:
     cfg = await autopilot_config()
     if not cfg["enabled"]:
@@ -119,11 +150,15 @@ async def run_autopilot_once() -> dict:
             {"id": item["id"]},
             {"$set": {"status": "published", "published_slug": draft["slug"], "finished_at": now}},
         )
-        # Fresh article → poke search engines
+        # Fresh article → poke search engines + Next.js ISR cache
         try:
             await notify_search_engines_for_slug(draft["slug"])
         except Exception as e:
             logger.exception("[AUTOPILOT] search-engine ping failed: %s", e)
+        try:
+            await revalidate_for_slug(draft["slug"])
+        except Exception as e:
+            logger.exception("[AUTOPILOT] Next.js revalidate failed: %s", e)
         logger.info("[AUTOPILOT] published /blog/%s from topic %r", draft["slug"], item["topic"])
         return {"ok": True, "slug": draft["slug"], "topic": item["topic"]}
     except Exception as e:

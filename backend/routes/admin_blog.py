@@ -16,7 +16,7 @@ from models import (
 )
 from services.blog import (
     slugify, generate_article_draft, run_autopilot_once, notify_search_engines_for_slug,
-    autopilot_config,
+    autopilot_config, revalidate_for_slug,
 )
 
 router = APIRouter()
@@ -80,6 +80,10 @@ async def _ping_search_engines(slug: str):
         await notify_search_engines_for_slug(slug)
     except Exception as e:
         logger.exception("[SEO PING] failed for slug=%s: %s", slug, e)
+    try:
+        await revalidate_for_slug(slug)
+    except Exception as e:
+        logger.exception("[REVALIDATE] failed for slug=%s: %s", slug, e)
 
 
 @router.delete("/admin/blog/posts/{slug}")

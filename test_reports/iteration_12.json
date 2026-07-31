@@ -1,0 +1,39 @@
+{
+  "summary": "Iteration 12 tested end-to-end. 16/16 backend pytest cases pass in test_iteration12.py covering: env-secret parity (backend & frontend REVALIDATE_SECRET match), Next.js /api/revalidate route (403 without header, 403 wrong header, 200 with correct header + revalidated paths echoed), Admin outbox API (list shape with 3 counts + max_attempts=8, status filter, process-now, retry/delete 404s, auth required), lead pipeline (POST /api/leads creates lead + enqueues lead.created row in webhook_outbox), Resend live path fires (log lines confirm it attempted — expected auth failure on unverified domain is present but does NOT crash lead-creation), publish pipeline (POST /api/admin/blog/posts on an existing slug triggers BOTH 'IndexNow ping status=202' AND '[REVALIDATE] status=200' in backend logs), rate-limit still enforced (429 within 7-burst). Frontend UI verified: /admin/outbox loads after admin login via new 'outbox-btn' toolbar button, all 3 count cards (pending/success/dead), all 4 filter chips (all/pending/success/dead), Flush now button, row table with copy/delete/retry icons, row-click opens outbox-detail-modal with outbox-payload rendered as JSON, count-card click filters the list, page shows 'Auto-refreshes every 15s · max attempts 8'. Flush now delivered 2 pending rows to the live flowtax.io CRM webhook (2 delivered / 0 failed) confirming the outbox → HTTP → status update path works end-to-end.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "/admin/outbox (and other admin dialogs)", "issues": ["Console warning: 'Missing Description or aria-describedby={undefined} for DialogContent' on the outbox-detail-modal. Radix wants a DialogDescription for a11y. Minor a11y nit — does not affect functionality."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration12.py",
+    "/app/test_reports/pytest/iteration12.xml"
+  ],
+  "action_items": [
+    "Optional a11y polish: add <DialogDescription> (or aria-describedby) to /app/frontend/app/admin/outbox/page.jsx DialogContent to silence the Radix warning. Same nit likely applies to other admin dialogs (lead-detail-modal)."
+  ],
+  "critical_code_review_comments": [
+    "services/blog.py::_revalidate_nextjs uses a sync `requests.post` inside an async coroutine — this blocks the event loop for up to 5s on timeout. Wrap with `asyncio.to_thread(...)` like services/outbox.py already does for its own HTTP calls, or use httpx.AsyncClient. Currently acceptable because it's called from BackgroundTasks (threadpool) and timeouts are tight, but should be addressed if this ever moves onto the request path.",
+    "services/outbox.py opens a dedicated pymongo `MongoClient(MONGO_URL)` at import time (module-global _sync_client). Fine for a single-process gunicorn/uvicorn worker, but if workers>1 each fork will keep its own connection pool — worth noting for production scaling. No leak in dev.",
+    "routes/admin_outbox.py + services/outbox.py: `force_retry` resets any row (including status='success') to 'pending' — an admin fat-fingering retry on a delivered row would re-fire the webhook. Consider guarding with `{'$or':[{'status':'pending'},{'status':'dead'}]}` in the update filter.",
+    "app/api/revalidate/route.js correctly returns 403 for missing OR wrong secret (constant-time comparison would be nicer but the request is server-to-server on localhost — negligible risk).",
+    "integrations.send_emails uses `resend.Emails.send` synchronously in the request path via BackgroundTasks — expected 'not authorized to send emails from aussieback.com' logs are visible and, critically, wrapped in try/except so lead creation still returns 200. Verified in test_resend_code_path_fires_in_logs.",
+    "admin_blog._ping_search_engines correctly awaits notify_search_engines_for_slug (IndexNow, sync inside — see first comment) then revalidate_for_slug — both wrapped in try/except so a Next.js downtime cannot break blog publishing. Verified: publish returns 200 in <1s and both external calls complete in the background."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration12.py"
+  ],
+  "success_rate": {"backend": "100% (16/16)", "frontend": "100% (outbox UI + admin nav all pass)"},
+  "test_credentials": "admin@aussieback.com / Admin@123 (confirmed working)",
+  "seed_data_creation": "Test suite creates and cleans up TEST_ prefixed leads + associated webhook_outbox rows in an autouse session fixture. Additionally, one flush-now cycle in the UI test caused 2 pre-existing pending webhooks to fire to the LIVE flowtax.io CRM — these were already in the outbox before this test run started. No new pollution beyond what the backend was going to flush on its 1-minute schedule anyway.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Preview URL: https://aussie-super-back.preview.emergentagent.com. Next.js /api/revalidate is reachable only at http://localhost:3000/api/revalidate inside the pod (ingress routes external /api/* to FastAPI on 8001). REVALIDATE_SECRET must match between backend/.env and frontend/.env (test_iteration12.TestEnvSync guards this). WEBHOOK_URL=https://flowtax.io/... is a LIVE production CRM — every lead / status change / share event / comment goes to real customer data; use TEST_ prefix for all seed data and rely on the autouse cleanup fixture. Resend hello@aussieback.com sender is NOT yet domain-verified — expect 'not authorized to send emails from aussieback.com' in logs; this is NOT a regression. Backend logs are at /var/log/supervisor/backend.err.log — grep for 'IndexNow ping status=202' and '[REVALIDATE] status=200' after any publish to confirm the pipeline.",
+  "rca of the issue": "N/A — no bugs found this iteration."
+}

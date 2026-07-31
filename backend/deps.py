@@ -67,6 +67,10 @@ SITE_URL = os.environ.get("SITE_URL", "https://aussieback.com").rstrip("/")
 GOOGLE_SITE_VERIFICATION = os.environ.get("GOOGLE_SITE_VERIFICATION", "").strip()
 COMMENTS_AUTO_APPROVE = os.environ.get("COMMENTS_AUTO_APPROVE", "true").lower() == "true"
 
+# Iteration 12 — trigger Next.js ISR revalidation from the backend
+NEXTJS_INTERNAL_URL = os.environ.get("NEXTJS_INTERNAL_URL", "http://localhost:3000").rstrip("/")
+REVALIDATE_SECRET = os.environ.get("REVALIDATE_SECRET", "")
+
 # ---------------- DB ----------------
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
