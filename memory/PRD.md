@@ -81,14 +81,29 @@ All other paths continue to route to the Next.js frontend. In preview, `/robots.
 - [x] **Comment Moderation UI** — new `/admin/comments` page listing all comments with filter chips (all / pending / approved), Approve + Delete actions, links back to the source article. "Comments" button added to admin dashboard toolbar.
 - [x] **Bulk Article Autopilot** — new `settings.autopilot` config + `autopilot_queue` collection. Weekly APScheduler cron (Mon 10:00 Australia/Sydney) pops one queued topic and publishes it via Claude Sonnet. Admin can Add/Remove queue items, toggle enable/pause, and manually "Run now" from the Blog Studio "Content Autopilot" card.
 
-## Implemented (Feb 2026 — Iteration 9: Next.js migration + polish)
+## Implemented (Feb 2026 — Iteration 10: Router split + CRM Webhook + Search-engine ping)
+- [x] **Backend router split** — `server.py` shrunk from ~1300 lines to ~140. Now organised as:
+    - `deps.py` — shared config, DB collections, auth helpers, limiter, `effective_site_settings()`
+    - `models.py` — all Pydantic models
+    - `integrations.py` — Twilio, Resend, HMAC-signed webhook, IndexNow, Google Search Console API
+    - `services/{calculator,referrals,blog,digest}.py` — pure business logic
+    - `routes/{leads,admin,blog_public,admin_blog,seo}.py` — per-domain APIRouter groups
+    - `server.py` — FastAPI bootstrap, CORS, startup indexes+seed, APScheduler cron
+  All endpoint URLs + response shapes remain identical (100% regression coverage in iteration_10.json).
+- [x] **HMAC-signed CRM webhook** (`WEBHOOK_URL`, `WEBHOOK_SECRET`) — fires on **every** lead created, lead status changed, comment created, and share event created. Payload envelope: `{event, id, occurred_at, data, previous?}`. Signature header: `X-AussieBack-Signature: sha256=<64-hex>` (GitHub/Stripe convention) — HMAC-SHA256 over the raw body. Additional `X-AussieBack-Event` header for easy routing. Zapier / Zoho / Hubspot / Salesforce compatible. Comment payloads have `author_email` redacted. Idempotency: status PATCH with the same status returns `{unchanged: true}` and does NOT fire a webhook.
+- [x] **Live search-engine ping** — On blog post publish (`POST /api/admin/blog/posts`) AND on autopilot cron publish, a background task pings:
+    - **IndexNow** (Bing, Yandex, DuckDuckGo, Naver — re-crawls in ~15 min). Requires `INDEXNOW_KEY` env var + serves `/{key}.txt` verification file via the seo router.
+    - **Google Search Console API** — Requires `GSC_SERVICE_ACCOUNT_JSON` env (full service-account JSON string) and the service-account email added as an owner in Search Console. Uses `google-api-python-client` + `google-auth` (lazy imports).
+  Manual re-ping: `POST /api/admin/blog/ping-search-engines?slug=<slug>` (or omit slug to ping ALL posts). Both integrations no-op cleanly with `[STUB]` logs when their keys are unset.
 - [x] **SSR Migration to Next.js 15 App Router** — full frontend re-scaffolded. `app/page.jsx` (Landing, client), `app/blog/page.jsx` (SSR list, `revalidate: 60s`), `app/blog/[slug]/page.jsx` (SSR post w/ `generateMetadata` per slug + `notFound()`), `app/admin/*` (client + `AdminGuard`). React Router → `next/link` + `next/navigation`. React Helmet → Next `metadata` API. Google-site-verification injected at runtime by `<SiteVerification>` client component. `next.config.mjs` re-exports `REACT_APP_*` env vars so existing code paths keep working. Server-side `apiFetch` proxies to internal backend when `INTERNAL_BACKEND_URL` is set. Hero image + H1 + article body all render in initial HTML (validated via `curl` grep).
 - [x] **Autopilot Requeue** — `POST /api/admin/autopilot/queue/{id}/requeue` — returns 400 for non-failed items, 200 + resets status to `queued` (also clears `error`, `finished_at`, `started_at`). Blog Studio queue list surfaces failed items in a red-tinted row with a "Requeue" button (with spinner) alongside the existing delete action.
 - [x] **Delete Confirm on Comment Moderation** — `/admin/comments` "Delete" now opens a Shadcn `AlertDialog` showing the author name, first 3 lines of the comment body, and the affected `/blog/{slug}`. Cancel + Confirm both disabled while a delete is in flight.
 - [x] **PRD Ingress Rules** — see the Ingress Rules table above.
 ## Backlog
 - **P0**: Real domain migration — update `SITE_URL` in prod .env and register at Google Search Console (DNS TXT verification recommended over HTML-file for the preview environment).
-- **P1**: Split `server.py` (~1300 lines) into routers (auth / leads / blog / comments / admin_blog / seo).
+- **P1**: Un-stub Twilio WhatsApp + Resend Email + reCAPTCHA (all currently keyed as env-configurable stubs).
+- **P1**: Webhook consumer retry / outbox — currently fire-and-forget with logger.exception on failure; add a durable outbox + retry cron if CRM handoff reliability becomes critical.
+- **P1**: Configure production INDEXNOW_KEY + GSC_SERVICE_ACCOUNT_JSON so IndexNow / GSC ping activates automatically.
 - **P2**: Rate-limit `GET /api/blog/posts/{slug}/comments` to prevent scraping.
 - **P2**: Admin comment moderation UI (queue of pending comments) — endpoints exist, page not yet built.
 
