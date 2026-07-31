@@ -1095,6 +1095,21 @@ async def admin_autopilot_remove(item_id: str, current: dict = Depends(get_curre
         raise HTTPException(status_code=404, detail="Not found")
     return {"ok": True}
 
+@api_router.post("/admin/autopilot/queue/{item_id}/requeue")
+async def admin_autopilot_requeue(item_id: str, current: dict = Depends(get_current_admin)):
+    """Reset a failed autopilot item back to `queued` so the next cron cycle picks it up."""
+    item = await autopilot_queue_collection.find_one({"id": item_id})
+    if not item:
+        raise HTTPException(status_code=404, detail="Not found")
+    if item.get("status") != "failed":
+        raise HTTPException(status_code=400, detail="Only failed items can be requeued")
+    await autopilot_queue_collection.update_one(
+        {"id": item_id},
+        {"$set": {"status": "queued"},
+         "$unset": {"error": "", "finished_at": "", "started_at": ""}},
+    )
+    return {"ok": True, "item_id": item_id}
+
 async def run_autopilot_once() -> dict:
     """Pop the next queued item and publish it as a blog post via Claude Sonnet."""
     cfg = await _autopilot_config()

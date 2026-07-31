@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation, Trans } from "react-i18next";
 import { Download, Share2, Link as LinkIcon, Check, LayoutGrid, Smartphone, Trophy, Lock } from "lucide-react";

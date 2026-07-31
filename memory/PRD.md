@@ -8,7 +8,29 @@ Build a high-converting lead-magnet platform that captures the "Returning Tempor
 2. **Returning Student (Visa 500)** — left after study, often retains larger super. Cares about safety & legitimacy.
 3. **Admin / Ops** — internal team triaging leads through pipeline stages: New Estimate → Contacted → Documents Received → Submitted to ATO → Refund Paid.
 
-## Architecture (v1)
+## Architecture (v2 — Feb 2026)
+- **Frontend:** **Next.js 15 (App Router)** + React 19 + Tailwind + Shadcn UI + Framer Motion + Lucide
+    - Server-rendered `/`, `/blog`, `/blog/[slug]` (SSR for full-HTML Googlebot indexing)
+    - Client components for interactive UI (`Estimator`, `Comments`, `AdminGuard`, admin console)
+    - Metadata + JSON-LD via Next `metadata` export (+ per-post `generateMetadata`)
+    - Env compat: `next.config.mjs` re-exports `REACT_APP_*` to preserve legacy references
+- **Backend:** FastAPI + Motor (Mongo async) + Passlib (bcrypt) + python-jose (JWT) + APScheduler (weekly digest + weekly blog autopilot)
+- **DB:** MongoDB (collections: `leads`, `admins`, `share_events`, `blog_posts`, `comments`, `settings`, `autopilot_queue`)
+- **Integrations (stubbed, env-configurable):** Twilio WhatsApp, Resend, generic webhook (Zapier/Make), Claude Sonnet 4.6 (Blog Autopilot — live)
+
+### Ingress Rules (production runbook)
+Because Next.js and FastAPI live on different pods, the Kubernetes ingress must route these paths to the **backend** (port 8001), not the frontend (port 3000):
+
+| Path                  | Route to | Why |
+|-----------------------|----------|-----|
+| `/api/*`              | backend  | All FastAPI endpoints |
+| `/sitemap.xml`        | backend  | Dynamically generated using live blog slugs + configured `site_url` |
+| `/robots.txt`         | backend  | Uses configured `site_url` for the `Sitemap:` directive |
+| `/google*.html`       | backend  | Google Search Console file-verification token endpoint |
+
+All other paths continue to route to the Next.js frontend. In preview, `/robots.txt` currently returns the static file in `public/`; that's fine for indexing but production **must** add the rules above so the dynamic backend endpoints are reachable (or use DNS-TXT verification for Search Console as a workaround).
+
+## Original Architecture (v1 — pre-Feb 2026, kept for history)
 - **Frontend:** React 19 + CRA + Tailwind + Shadcn UI + Framer Motion + Lucide
 - **Backend:** FastAPI + Motor (Mongo async) + Passlib (bcrypt) + python-jose (JWT)
 - **DB:** MongoDB (collections: `leads`, `admins`)
@@ -59,10 +81,14 @@ Build a high-converting lead-magnet platform that captures the "Returning Tempor
 - [x] **Comment Moderation UI** — new `/admin/comments` page listing all comments with filter chips (all / pending / approved), Approve + Delete actions, links back to the source article. "Comments" button added to admin dashboard toolbar.
 - [x] **Bulk Article Autopilot** — new `settings.autopilot` config + `autopilot_queue` collection. Weekly APScheduler cron (Mon 10:00 Australia/Sydney) pops one queued topic and publishes it via Claude Sonnet. Admin can Add/Remove queue items, toggle enable/pause, and manually "Run now" from the Blog Studio "Content Autopilot" card.
 
+## Implemented (Feb 2026 — Iteration 9: Next.js migration + polish)
+- [x] **SSR Migration to Next.js 15 App Router** — full frontend re-scaffolded. `app/page.jsx` (Landing, client), `app/blog/page.jsx` (SSR list, `revalidate: 60s`), `app/blog/[slug]/page.jsx` (SSR post w/ `generateMetadata` per slug + `notFound()`), `app/admin/*` (client + `AdminGuard`). React Router → `next/link` + `next/navigation`. React Helmet → Next `metadata` API. Google-site-verification injected at runtime by `<SiteVerification>` client component. `next.config.mjs` re-exports `REACT_APP_*` env vars so existing code paths keep working. Server-side `apiFetch` proxies to internal backend when `INTERNAL_BACKEND_URL` is set. Hero image + H1 + article body all render in initial HTML (validated via `curl` grep).
+- [x] **Autopilot Requeue** — `POST /api/admin/autopilot/queue/{id}/requeue` — returns 400 for non-failed items, 200 + resets status to `queued` (also clears `error`, `finished_at`, `started_at`). Blog Studio queue list surfaces failed items in a red-tinted row with a "Requeue" button (with spinner) alongside the existing delete action.
+- [x] **Delete Confirm on Comment Moderation** — `/admin/comments` "Delete" now opens a Shadcn `AlertDialog` showing the author name, first 3 lines of the comment body, and the affected `/blog/{slug}`. Cancel + Confirm both disabled while a delete is in flight.
+- [x] **PRD Ingress Rules** — see the Ingress Rules table above.
 ## Backlog
 - **P0**: Real domain migration — update `SITE_URL` in prod .env and register at Google Search Console (DNS TXT verification recommended over HTML-file for the preview environment).
-- **P1**: SSR migration (Next.js) — needed for crawler-friendly server-rendered blog posts. Current CRA setup relies on client-side rendering; JSON-LD + meta tags still work but H1s are only visible to bots that execute JS.
-- **P1**: Split `server.py` (~1130 lines) into routers (auth / leads / blog / comments / admin_blog / seo).
+- **P1**: Split `server.py` (~1300 lines) into routers (auth / leads / blog / comments / admin_blog / seo).
 - **P2**: Rate-limit `GET /api/blog/posts/{slug}/comments` to prevent scraping.
 - **P2**: Admin comment moderation UI (queue of pending comments) — endpoints exist, page not yet built.
 

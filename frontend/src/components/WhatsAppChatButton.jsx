@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { MessageCircle, X } from "lucide-react";

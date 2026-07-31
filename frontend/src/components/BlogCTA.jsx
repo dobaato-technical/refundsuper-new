@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+"use client";
+import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { ChevronRight, Zap, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -46,7 +47,7 @@ export default function BlogCTA({ variant = "coral" }) {
                 : "bg-[#E05D43] hover:bg-[#C8533B] text-white h-12 px-6 rounded-lg shadow-[0_4px_14px_0_rgba(224,93,67,0.39)] hover:-translate-y-0.5 transition-all"
             }
           >
-            <Link to="/#estimator">
+            <Link href="/#estimator">
               {t("blog_cta.button")} <ChevronRight className="ml-1 h-5 w-5" />
             </Link>
           </Button>

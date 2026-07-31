@@ -1,23 +1,25 @@
-import { Link, useNavigate, useLocation } from "react-router-dom";
+"use client";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function Header({ onCtaClick }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const handleCta = () => {
     if (onCtaClick) {
       onCtaClick();
       return;
     }
-    if (location.pathname === "/") {
+    if (pathname === "/") {
       const el = document.getElementById("estimator");
       if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
     } else {
-      navigate("/#estimator");
+      router.push("/#estimator");
     }
   };
   return (
@@ -26,7 +28,7 @@ export default function Header({ onCtaClick }) {
       className="sticky top-0 z-40 bg-[#F7F5F0]/85 backdrop-blur-md border-b border-[#E8E6E1]"
     >
       <div className="px-6 md:px-12 lg:px-24 py-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2" data-testid="logo-link">
+        <Link href="/" className="flex items-center gap-2" data-testid="logo-link">
           <div className="h-9 w-9 rounded-lg bg-[#E05D43] flex items-center justify-center text-white font-display font-semibold">
             A
           </div>
@@ -39,13 +41,13 @@ export default function Header({ onCtaClick }) {
           <a href="/#how" className="hover:text-[#0B2B40] transition-colors" data-testid="nav-how">
             {t("nav.how")}
           </a>
-          <Link to="/blog" className="hover:text-[#0B2B40] transition-colors" data-testid="nav-blog">
+          <Link href="/blog" className="hover:text-[#0B2B40] transition-colors" data-testid="nav-blog">
             {t("nav.blog")}
           </Link>
           <a href="/#faq" className="hover:text-[#0B2B40] transition-colors" data-testid="nav-faq">
             {t("nav.faq")}
           </a>
-          <Link to="/admin/login" className="hover:text-[#0B2B40] transition-colors" data-testid="nav-admin">
+          <Link href="/admin/login" className="hover:text-[#0B2B40] transition-colors" data-testid="nav-admin">
             {t("nav.admin")}
           </Link>
         </nav>
