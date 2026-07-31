@@ -81,7 +81,15 @@ All other paths continue to route to the Next.js frontend. In preview, `/robots.
 - [x] **Comment Moderation UI** — new `/admin/comments` page listing all comments with filter chips (all / pending / approved), Approve + Delete actions, links back to the source article. "Comments" button added to admin dashboard toolbar.
 - [x] **Bulk Article Autopilot** — new `settings.autopilot` config + `autopilot_queue` collection. Weekly APScheduler cron (Mon 10:00 Australia/Sydney) pops one queued topic and publishes it via Claude Sonnet. Admin can Add/Remove queue items, toggle enable/pause, and manually "Run now" from the Blog Studio "Content Autopilot" card.
 
-## Implemented (Feb 2026 — Iteration 10: Router split + CRM Webhook + Search-engine ping)
+## Implemented (Feb 2026 — Iteration 11: Durable outbox + live integrations turned on)
+- [x] **IndexNow live** — Auto-generated `INDEXNOW_KEY` stored in backend `.env`, key-verification file served at `/{key}.txt`. Every blog publish + autopilot cron auto-fires `POST https://api.indexnow.org/indexnow` (**verified: returns 202 Accepted** for Bing/Yandex/DuckDuckGo/Naver). Manual re-fire: `POST /api/admin/blog/ping-search-engines[?slug=<slug>]`.
+- [x] **Custom CRM webhook wired** — `WEBHOOK_URL=https://flowtax.io/api/lead-webhook/intake?org_id=…&token=…` (bearer token embedded in query string, HMAC signing intentionally disabled). Verified live delivery to flowtax.io for `share_event.created` and `lead.status_changed` events (HTTP 2xx on first attempt).
+- [x] **Durable webhook outbox** — new `webhook_outbox` collection + `services/outbox.py`. `send_webhook()` now enqueues rows synchronously (pymongo) instead of firing HTTP directly. APScheduler `webhook_outbox_retry` job runs every minute, POSTs up to 25 due rows per tick. Exponential backoff (2, 4, 8, 16, 30, 30, 30 min) up to 8 attempts, then row marked `status=dead` for manual retry. Admin API:
+    - `GET /api/admin/outbox?status=pending|success|dead` — list rows + status counts
+    - `POST /api/admin/outbox/process-now` — flush the retry loop synchronously
+    - `POST /api/admin/outbox/{id}/retry` — reset a `dead` row back to `pending` for another try
+    - `DELETE /api/admin/outbox/{id}` — purge (e.g. old success rows)
+  Idempotency preserved: same-status PATCH still returns `{unchanged: true}` and does NOT enqueue.
 - [x] **Backend router split** — `server.py` shrunk from ~1300 lines to ~140. Now organised as:
     - `deps.py` — shared config, DB collections, auth helpers, limiter, `effective_site_settings()`
     - `models.py` — all Pydantic models
@@ -101,16 +109,13 @@ All other paths continue to route to the Next.js frontend. In preview, `/robots.
 - [x] **PRD Ingress Rules** — see the Ingress Rules table above.
 ## Backlog
 - **P0**: Real domain migration — update `SITE_URL` in prod .env and register at Google Search Console (DNS TXT verification recommended over HTML-file for the preview environment).
-- **P1**: Un-stub Twilio WhatsApp + Resend Email + reCAPTCHA (all currently keyed as env-configurable stubs).
-- **P1**: Webhook consumer retry / outbox — currently fire-and-forget with logger.exception on failure; add a durable outbox + retry cron if CRM handoff reliability becomes critical.
-- **P1**: Configure production INDEXNOW_KEY + GSC_SERVICE_ACCOUNT_JSON so IndexNow / GSC ping activates automatically.
+- **P1**: Un-stub Twilio WhatsApp + Resend Email + reCAPTCHA (all currently keyed as env-configurable stubs — user opted to skip in iter 11).
+- **P1**: Configure `GSC_SERVICE_ACCOUNT_JSON` so Google Search Console gets pinged alongside IndexNow (currently IndexNow-only in prod).
+- **P2**: Admin Outbox UI — visual list of pending/dead webhook rows with one-click retry (endpoints exist, no UI panel yet).
 - **P2**: Rate-limit `GET /api/blog/posts/{slug}/comments` to prevent scraping.
-- **P2**: Admin comment moderation UI (queue of pending comments) — endpoints exist, page not yet built.
 
-## Backlog
-- **P1**: Multi-language support (DE, FR, JA, KO, ES), better phone validation (E.164), reCAPTCHA on lead form, rate-limit POST `/api/leads`.
-- **P1**: Webhook signature signing (HMAC) for CRM forwarding.
+## Older Backlog (still valid)
+- **P1**: Multi-admin invitations + audit log.
 - **P2**: Conversion analytics (funnel drop-off), Hotjar/Plausible embed.
-- **P2**: Multi-admin invitations + audit log.
 - **P2**: Real TPB-agent partner onboarding form / signed engagement letter PDF.
 - **P2**: Stripe success-fee invoicing when status moves to `refund_paid`.

@@ -22,6 +22,7 @@ from deps import (
 )
 from services.digest import send_weekly_digest
 from services.blog import run_autopilot_once
+from services.outbox import process_outbox, webhook_outbox_collection
 from blog_seed import SEED_BLOG_POSTS
 
 # Route modules
@@ -29,6 +30,7 @@ from routes import leads as leads_routes
 from routes import admin as admin_routes
 from routes import blog_public as blog_public_routes
 from routes import admin_blog as admin_blog_routes
+from routes import admin_outbox as admin_outbox_routes
 from routes import seo as seo_routes
 
 # ---------------- App ----------------
@@ -50,6 +52,7 @@ api_router.include_router(leads_routes.router)
 api_router.include_router(admin_routes.router)
 api_router.include_router(blog_public_routes.router)
 api_router.include_router(admin_blog_routes.router)
+api_router.include_router(admin_outbox_routes.router)
 app.include_router(api_router)
 
 # Root-level SEO endpoints (sitemap.xml, robots.txt, google*.html, /api/site-config,
@@ -88,6 +91,9 @@ async def seed_and_indexes():
     await blog_posts_collection.create_index("tags")
     await comments_collection.create_index("post_slug")
     await comments_collection.create_index("created_at")
+    await webhook_outbox_collection.create_index("status")
+    await webhook_outbox_collection.create_index([("status", 1), ("next_attempt_at", 1)])
+    await webhook_outbox_collection.create_index("created_at")
 
     if await blog_posts_collection.count_documents({}) == 0:
         now_iso = datetime.now(timezone.utc).isoformat()
@@ -121,9 +127,18 @@ async def seed_and_indexes():
                 id="blog_autopilot",
                 replace_existing=True,
             )
+            # Outbox retry loop — every minute, at most ~25 rows per tick.
+            scheduler.add_job(
+                process_outbox,
+                CronTrigger(minute="*"),
+                id="webhook_outbox_retry",
+                replace_existing=True,
+                max_instances=1,
+                coalesce=True,
+            )
             scheduler.start()
             logger.info(
-                "Schedulers started (tz=%s): weekly_digest Mon 09:00, blog_autopilot Mon 10:00",
+                "Schedulers started (tz=%s): weekly_digest Mon 09:00, blog_autopilot Mon 10:00, webhook_outbox_retry * * *",
                 WEEKLY_DIGEST_TZ,
             )
         except Exception as e:

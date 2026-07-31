@@ -93,44 +93,21 @@ def _sign_payload(payload: bytes) -> str:
 
 
 def send_webhook(event: str, data: dict, *, previous: Optional[dict] = None) -> None:
-    """Forward a generic event to the configured webhook (fire-and-forget).
+    """Enqueue an outbound event into the durable outbox.
 
-    Payload shape (JSON):
-        {
-          "event": "lead.created" | "lead.status_changed" | "comment.created" | "share_event.created",
-          "id": "<uuid>",
-          "occurred_at": "2026-...Z",
-          "data": {...},        # the object itself
-          "previous": {...}     # for status changes only — the old subset
-        }
+    Actual HTTP delivery is handled by `services.outbox.process_outbox`, run
+    every minute by APScheduler. Retries use exponential backoff up to 8
+    attempts (max 30 min between attempts); after that the row is marked
+    `dead` for manual retry via `POST /api/admin/outbox/{id}/retry`.
 
-    Signature: sha256=<hex> HMAC over the raw body, sent as `X-AussieBack-Signature`.
+    Payload envelope: `{event, id, occurred_at, data, previous?}`. When
+    `WEBHOOK_SECRET` is set, requests carry `X-AussieBack-Signature: sha256=<hex>`.
     """
     if not WEBHOOK_URL:
         logger.info("[STUB] Webhook not configured — would forward event=%s id=%s", event, data.get("id"))
         return
-    envelope = {
-        "event": event,
-        "id": str(uuid.uuid4()),
-        "occurred_at": _now_iso(),
-        "data": data,
-    }
-    if previous is not None:
-        envelope["previous"] = previous
-    body = json.dumps(envelope, default=str).encode("utf-8")
-    headers = {
-        "Content-Type": "application/json",
-        "User-Agent": "AussieBack-Webhook/1.0",
-        "X-AussieBack-Event": event,
-    }
-    sig = _sign_payload(body)
-    if sig:
-        headers["X-AussieBack-Signature"] = sig
-    try:
-        resp = requests.post(WEBHOOK_URL, data=body, headers=headers, timeout=(3, 10))
-        logger.info("Webhook POST event=%s status=%s", event, resp.status_code)
-    except Exception as e:
-        logger.exception("Webhook POST failed (event=%s): %s", event, e)
+    from services.outbox import enqueue
+    enqueue(event, data, previous=previous)
 
 
 def _now_iso() -> str:
