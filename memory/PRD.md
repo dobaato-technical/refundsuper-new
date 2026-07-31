@@ -54,6 +54,11 @@ Build a high-converting lead-magnet platform that captures the "Returning Tempor
 - [x] **Threaded comments on blog posts** — public `POST/GET /api/blog/posts/{slug}/comments` (rate-limited 10/hr), moderation-ready via `COMMENTS_AUTO_APPROVE` env flag. Admin endpoints for listing all + approving + deleting. Author email never leaked in public responses. `<Comments>` UI at the bottom of every article with reply threading.
 - [x] **Auto-Article Generator** — Admin `/admin/blog` studio page. Enter topic + keywords → Claude Sonnet 4.6 (via Emergent LLM key + emergentintegrations) drafts a 500-900 word markdown article with H2/lists/CTA. Admin edits inline and 1-click publishes to `/blog/{slug}`. Defensive JSON parsing returns 502 with a clear message when the model deviates from the schema.
 
+## Implemented (Jul 2026 — Iteration 8)
+- [x] **Real-Domain Cutover panel** — `settings.site_config` singleton (DB > env). New admin endpoints `GET/PUT /api/admin/site-settings`. Blog Studio has a "Site settings" card to edit Site URL + Google verification token without a redeploy. `_effective_site_settings()` now feeds `/api/site-config`, `/sitemap.xml`, `/robots.txt` and `/google<token>.html`.
+- [x] **Comment Moderation UI** — new `/admin/comments` page listing all comments with filter chips (all / pending / approved), Approve + Delete actions, links back to the source article. "Comments" button added to admin dashboard toolbar.
+- [x] **Bulk Article Autopilot** — new `settings.autopilot` config + `autopilot_queue` collection. Weekly APScheduler cron (Mon 10:00 Australia/Sydney) pops one queued topic and publishes it via Claude Sonnet. Admin can Add/Remove queue items, toggle enable/pause, and manually "Run now" from the Blog Studio "Content Autopilot" card.
+
 ## Backlog
 - **P0**: Real domain migration — update `SITE_URL` in prod .env and register at Google Search Console (DNS TXT verification recommended over HTML-file for the preview environment).
 - **P1**: SSR migration (Next.js) — needed for crawler-friendly server-rendered blog posts. Current CRA setup relies on client-side rendering; JSON-LD + meta tags still work but H1s are only visible to bots that execute JS.

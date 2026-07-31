@@ -70,7 +70,16 @@ export default function AdminBlogStudio() {
         site_url: siteUrl,
         google_site_verification: gsv,
       });
-      setSettings((s) => ({ ...s, effective: data.effective, db_overrides: { site_url: siteUrl || null, google_site_verification: gsv || null } }));
+      // Re-sync input state to whatever the server now considers authoritative.
+      const dbSite = siteUrl.trim() || null;
+      const dbGsv = gsv.trim() || null;
+      setSettings((s) => ({
+        ...s,
+        effective: data.effective,
+        db_overrides: { site_url: dbSite, google_site_verification: dbGsv },
+      }));
+      setSiteUrl(dbSite || "");
+      setGsv(dbGsv || "");
       toast.success("Site settings saved");
     } catch (e) {
       toast.error("Save failed");
