@@ -87,6 +87,8 @@ admins_collection = db['admins']
 share_events_collection = db['share_events']
 blog_posts_collection = db['blog_posts']
 comments_collection = db['comments']
+settings_collection = db['settings']
+autopilot_queue_collection = db['autopilot_queue']
 
 # ---------------- Logging ----------------
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -251,6 +253,21 @@ class BlogPostUpsert(BaseModel):
     author: str = "AussieBack Team"
     reading_time_minutes: int = 4
     content: str = Field(..., min_length=50)
+
+class SiteSettingsUpdate(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    site_url: Optional[str] = Field(default=None, max_length=200)
+    google_site_verification: Optional[str] = Field(default=None, max_length=200)
+
+class AutopilotItemCreate(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    topic: str = Field(..., min_length=3, max_length=200)
+    keywords: List[str] = Field(default_factory=list)
+    category: Optional[str] = None
+    hero_image: Optional[str] = None
+
+class AutopilotConfigUpdate(BaseModel):
+    enabled: bool
 
 # ---------------- Calculator ----------------
 SUPER_RATE = 0.12  # 12% Super Guarantee
@@ -999,6 +1016,127 @@ async def admin_delete_post(slug: str, current: dict = Depends(get_current_admin
         raise HTTPException(status_code=404, detail="Not found")
     return {"ok": True}
 
+# --- Effective site settings (DB overrides env) ---
+async def _effective_site_settings() -> dict:
+    doc = await settings_collection.find_one({"_id": "site_config"}) or {}
+    return {
+        "site_url": (doc.get("site_url") or SITE_URL).rstrip("/"),
+        "google_site_verification": doc.get("google_site_verification") or (GOOGLE_SITE_VERIFICATION or None),
+    }
+
+# --- Admin: site settings ---
+@api_router.get("/admin/site-settings")
+async def admin_get_site_settings(current: dict = Depends(get_current_admin)):
+    doc = await settings_collection.find_one({"_id": "site_config"}) or {}
+    effective = await _effective_site_settings()
+    return {
+        "effective": effective,
+        "db_overrides": {
+            "site_url": doc.get("site_url"),
+            "google_site_verification": doc.get("google_site_verification"),
+        },
+        "env_defaults": {
+            "site_url": SITE_URL,
+            "google_site_verification": GOOGLE_SITE_VERIFICATION or None,
+        },
+    }
+
+@api_router.put("/admin/site-settings")
+async def admin_update_site_settings(payload: SiteSettingsUpdate, current: dict = Depends(get_current_admin)):
+    updates: dict = {}
+    if payload.site_url is not None:
+        updates["site_url"] = payload.site_url.strip().rstrip("/") or None
+    if payload.google_site_verification is not None:
+        updates["google_site_verification"] = payload.google_site_verification.strip() or None
+    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await settings_collection.update_one(
+        {"_id": "site_config"}, {"$set": updates}, upsert=True
+    )
+    return {"ok": True, "effective": await _effective_site_settings()}
+
+# --- Autopilot queue (weekly cron) ---
+async def _autopilot_config() -> dict:
+    doc = await settings_collection.find_one({"_id": "autopilot"}) or {}
+    return {"enabled": bool(doc.get("enabled", False))}
+
+@api_router.get("/admin/autopilot")
+async def admin_autopilot_get(current: dict = Depends(get_current_admin)):
+    cfg = await _autopilot_config()
+    queue = await autopilot_queue_collection.find({}, {"_id": 0}).sort("created_at", 1).to_list(200)
+    return {"config": cfg, "queue": queue, "queue_length": len(queue)}
+
+@api_router.patch("/admin/autopilot")
+async def admin_autopilot_config(payload: AutopilotConfigUpdate, current: dict = Depends(get_current_admin)):
+    await settings_collection.update_one(
+        {"_id": "autopilot"},
+        {"$set": {"enabled": payload.enabled, "updated_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True,
+    )
+    return {"ok": True, "config": await _autopilot_config()}
+
+@api_router.post("/admin/autopilot/queue")
+async def admin_autopilot_add(payload: AutopilotItemCreate, current: dict = Depends(get_current_admin)):
+    doc = {
+        "id": str(uuid.uuid4()),
+        "topic": payload.topic.strip(),
+        "keywords": payload.keywords,
+        "category": payload.category,
+        "hero_image": payload.hero_image,
+        "status": "queued",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await autopilot_queue_collection.insert_one({**doc})
+    return {"ok": True, "item": doc}
+
+@api_router.delete("/admin/autopilot/queue/{item_id}")
+async def admin_autopilot_remove(item_id: str, current: dict = Depends(get_current_admin)):
+    res = await autopilot_queue_collection.delete_one({"id": item_id})
+    if res.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"ok": True}
+
+async def run_autopilot_once() -> dict:
+    """Pop the next queued item and publish it as a blog post via Claude Sonnet."""
+    cfg = await _autopilot_config()
+    if not cfg["enabled"]:
+        logger.info("[AUTOPILOT] disabled — skipping run")
+        return {"skipped": True, "reason": "disabled"}
+    item = await autopilot_queue_collection.find_one_and_update(
+        {"status": "queued"},
+        {"$set": {"status": "processing", "started_at": datetime.now(timezone.utc).isoformat()}},
+        sort=[("created_at", 1)],
+    )
+    if not item:
+        logger.info("[AUTOPILOT] queue empty — nothing to publish")
+        return {"skipped": True, "reason": "empty_queue"}
+    try:
+        draft = await _generate_article_draft(item["topic"], item.get("keywords", []), item.get("category"))
+        if item.get("hero_image"):
+            draft["hero_image"] = item["hero_image"]
+        now = datetime.now(timezone.utc).isoformat()
+        post_doc = {**draft, "published_at": now, "updated_at": now}
+        await blog_posts_collection.update_one(
+            {"slug": draft["slug"]}, {"$set": post_doc}, upsert=True
+        )
+        await autopilot_queue_collection.update_one(
+            {"id": item["id"]},
+            {"$set": {"status": "published", "published_slug": draft["slug"], "finished_at": now}},
+        )
+        logger.info("[AUTOPILOT] published /blog/%s from topic %r", draft["slug"], item["topic"])
+        return {"ok": True, "slug": draft["slug"], "topic": item["topic"]}
+    except Exception as e:
+        logger.exception("[AUTOPILOT] failed to publish %r: %s", item.get("topic"), e)
+        await autopilot_queue_collection.update_one(
+            {"id": item["id"]},
+            {"$set": {"status": "failed", "error": str(e)[:400], "finished_at": datetime.now(timezone.utc).isoformat()}},
+        )
+        return {"ok": False, "error": str(e)}
+
+@api_router.post("/admin/autopilot/run")
+async def admin_autopilot_run(current: dict = Depends(get_current_admin)):
+    result = await run_autopilot_once()
+    return result
+
 # --- Admin: manually trigger digest ---
 @api_router.post("/admin/weekly-digest/run")
 async def run_weekly_digest_now(current: dict = Depends(get_current_admin)):
@@ -1010,16 +1148,18 @@ app.include_router(api_router)
 # --- Root-level SEO endpoints (must NOT sit behind /api because search engines expect these paths) ---
 @app.get("/sitemap.xml", include_in_schema=False)
 async def sitemap_xml():
+    settings = await _effective_site_settings()
+    base = settings["site_url"]
     posts = await blog_posts_collection.find({}, {"_id": 0, "slug": 1, "updated_at": 1}).to_list(500)
     urls = [
-        f"  <url><loc>{SITE_URL}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>",
-        f"  <url><loc>{SITE_URL}/blog</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>",
+        f"  <url><loc>{base}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>",
+        f"  <url><loc>{base}/blog</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>",
     ]
     for p in posts:
         updated = (p.get("updated_at") or "")[:10]
         lastmod = f"<lastmod>{updated}</lastmod>" if updated else ""
         urls.append(
-            f'  <url><loc>{SITE_URL}/blog/{p["slug"]}</loc>'
+            f'  <url><loc>{base}/blog/{p["slug"]}</loc>'
             f'{lastmod}<changefreq>monthly</changefreq><priority>0.7</priority></url>'
         )
     body = (
@@ -1032,32 +1172,30 @@ async def sitemap_xml():
 
 @app.get("/robots.txt", include_in_schema=False)
 async def robots_txt():
+    settings = await _effective_site_settings()
     body = (
         "User-agent: *\n"
         "Allow: /\n"
         "Disallow: /admin\n"
         "Disallow: /admin/*\n"
         "Disallow: /api/\n\n"
-        f"Sitemap: {SITE_URL}/sitemap.xml\n"
+        f"Sitemap: {settings['site_url']}/sitemap.xml\n"
     )
     return PlainTextResponse(content=body)
 
 # Serve Google Search Console HTML verification file when configured.
-# Set GOOGLE_SITE_VERIFICATION to the token Google gives you (e.g. abc123...) and
-# the file `google<token>.html` will be available at the site root as required.
 @app.get("/google{token}.html", include_in_schema=False)
 async def google_verification_file(token: str):
-    if GOOGLE_SITE_VERIFICATION and token == GOOGLE_SITE_VERIFICATION:
+    settings = await _effective_site_settings()
+    expected = settings.get("google_site_verification") or ""
+    if expected and token == expected:
         return PlainTextResponse(f"google-site-verification: google{token}.html")
     raise HTTPException(status_code=404, detail="Not found")
 
 @app.get("/api/site-config")
 async def site_config():
     """Frontend polls this on boot to inject the current google-site-verification meta tag."""
-    return {
-        "site_url": SITE_URL,
-        "google_site_verification": GOOGLE_SITE_VERIFICATION or None,
-    }
+    return await _effective_site_settings()
 
 app.add_middleware(
     CORSMiddleware,
@@ -1118,10 +1256,17 @@ async def seed_admin_and_indexes():
                 id="weekly_digest",
                 replace_existing=True,
             )
+            # Autopilot: Monday 10:00, drains one queue item per week (gated by db flag).
+            scheduler.add_job(
+                run_autopilot_once,
+                CronTrigger(day_of_week="mon", hour=10, minute=0),
+                id="blog_autopilot",
+                replace_existing=True,
+            )
             scheduler.start()
-            logger.info("Weekly digest scheduler started (tz=%s, Mon 09:00)", WEEKLY_DIGEST_TZ)
+            logger.info("Schedulers started (tz=%s): weekly_digest Mon 09:00, blog_autopilot Mon 10:00", WEEKLY_DIGEST_TZ)
         except Exception as e:
-            logger.exception("Failed to start weekly digest scheduler: %s", e)
+            logger.exception("Failed to start scheduler: %s", e)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

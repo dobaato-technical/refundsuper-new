@@ -6,6 +6,7 @@ import Landing from "@/pages/Landing";
 import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AdminBlogStudio from "@/pages/AdminBlogStudio";
+import AdminComments from "@/pages/AdminComments";
 import BlogList from "@/pages/BlogList";
 import BlogPost from "@/pages/BlogPost";
 import { Toaster } from "@/components/ui/sonner";
@@ -40,6 +41,14 @@ function AppRoutes() {
             element={
               <ProtectedRoute>
                 <AdminBlogStudio />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/comments"
+            element={
+              <ProtectedRoute>
+                <AdminComments />
               </ProtectedRoute>
             }
           />

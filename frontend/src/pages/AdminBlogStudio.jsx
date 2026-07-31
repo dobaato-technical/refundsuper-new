@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Sparkles, ArrowLeft, Send, Copy, ExternalLink, Loader2, Save,
+  Sparkles, ArrowLeft, Send, Copy, ExternalLink, Loader2, Save, Globe, Plus, Trash2, PlayCircle, Power,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 
@@ -22,6 +23,123 @@ export default function AdminBlogStudio() {
   const [drafting, setDrafting] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [draft, setDraft] = useState(null);
+
+  // Site settings
+  const [settings, setSettings] = useState(null);
+  const [siteUrl, setSiteUrl] = useState("");
+  const [gsv, setGsv] = useState("");
+  const [savingSettings, setSavingSettings] = useState(false);
+
+  // Autopilot
+  const [autopilot, setAutopilot] = useState({ config: { enabled: false }, queue: [] });
+  const [apTopic, setApTopic] = useState("");
+  const [apKeywords, setApKeywords] = useState("");
+  const [apCategory, setApCategory] = useState("");
+  const [apAdding, setApAdding] = useState(false);
+  const [apRunning, setApRunning] = useState(false);
+
+  const loadSettings = async () => {
+    try {
+      const { data } = await api.get("/admin/site-settings");
+      setSettings(data);
+      setSiteUrl(data.db_overrides.site_url || "");
+      setGsv(data.db_overrides.google_site_verification || "");
+    } catch (e) {
+      /* silent */
+    }
+  };
+
+  const loadAutopilot = async () => {
+    try {
+      const { data } = await api.get("/admin/autopilot");
+      setAutopilot(data);
+    } catch (e) {
+      /* silent */
+    }
+  };
+
+  useEffect(() => {
+    loadSettings();
+    loadAutopilot();
+  }, []);
+
+  const saveSettings = async () => {
+    setSavingSettings(true);
+    try {
+      const { data } = await api.put("/admin/site-settings", {
+        site_url: siteUrl,
+        google_site_verification: gsv,
+      });
+      setSettings((s) => ({ ...s, effective: data.effective, db_overrides: { site_url: siteUrl || null, google_site_verification: gsv || null } }));
+      toast.success("Site settings saved");
+    } catch (e) {
+      toast.error("Save failed");
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
+  const toggleAutopilot = async (enabled) => {
+    try {
+      await api.patch("/admin/autopilot", { enabled });
+      setAutopilot((a) => ({ ...a, config: { enabled } }));
+      toast.success(enabled ? "Autopilot enabled" : "Autopilot paused");
+    } catch (e) {
+      toast.error("Failed to toggle");
+    }
+  };
+
+  const addAutopilotItem = async () => {
+    if (!apTopic.trim()) {
+      toast.error("Topic required");
+      return;
+    }
+    setApAdding(true);
+    try {
+      await api.post("/admin/autopilot/queue", {
+        topic: apTopic.trim(),
+        keywords: apKeywords.split(",").map((k) => k.trim()).filter(Boolean),
+        category: apCategory.trim() || null,
+      });
+      setApTopic("");
+      setApKeywords("");
+      setApCategory("");
+      loadAutopilot();
+      toast.success("Queued");
+    } catch (e) {
+      toast.error("Add failed");
+    } finally {
+      setApAdding(false);
+    }
+  };
+
+  const removeAutopilotItem = async (id) => {
+    try {
+      await api.delete(`/admin/autopilot/queue/${id}`);
+      loadAutopilot();
+    } catch (e) {
+      toast.error("Remove failed");
+    }
+  };
+
+  const runAutopilotNow = async () => {
+    setApRunning(true);
+    try {
+      const { data } = await api.post("/admin/autopilot/run");
+      if (data.skipped) {
+        toast.info(`Skipped: ${data.reason}`);
+      } else if (data.ok) {
+        toast.success(`Published /blog/${data.slug}`);
+      } else {
+        toast.error(data.error || "Autopilot failed");
+      }
+      loadAutopilot();
+    } catch (e) {
+      toast.error("Run failed");
+    } finally {
+      setApRunning(false);
+    }
+  };
 
   const generate = async () => {
     if (!topic.trim()) {
@@ -147,6 +265,156 @@ export default function AdminBlogStudio() {
               <li>TFN recovery guide</li>
               <li>Claiming after visa 485 → PR path</li>
             </ul>
+          </div>
+
+          {/* Site Settings */}
+          <div className="bg-white border border-[#E8E6E1] rounded-2xl p-6" data-testid="site-settings-card">
+            <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-[#4A5D68] font-medium mb-3">
+              <Globe className="h-3.5 w-3.5" /> Site settings
+            </div>
+            <p className="text-sm text-[#4A5D68] mb-4 leading-relaxed">
+              Override the domain and Google verification without a redeploy. DB values take precedence over .env.
+            </p>
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs">Site URL (canonical)</Label>
+                <Input
+                  data-testid="settings-site-url"
+                  value={siteUrl}
+                  onChange={(e) => setSiteUrl(e.target.value)}
+                  className="bg-[#FAFAF9] border-[#E8E6E1] h-10 mt-1"
+                  placeholder="https://get.aussieback.co"
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Google Search Console verification token</Label>
+                <Input
+                  data-testid="settings-gsv"
+                  value={gsv}
+                  onChange={(e) => setGsv(e.target.value)}
+                  className="bg-[#FAFAF9] border-[#E8E6E1] h-10 mt-1 font-mono text-sm"
+                  placeholder="abcd1234..."
+                />
+              </div>
+              {settings?.effective && (
+                <div className="text-[11px] text-[#4A5D68]">
+                  Effective:{" "}
+                  <code className="bg-[#FAFAF9] px-1 rounded">{settings.effective.site_url}</code>
+                  {settings.effective.google_site_verification && (
+                    <> · GSV set</>
+                  )}
+                </div>
+              )}
+              <Button
+                data-testid="settings-save"
+                onClick={saveSettings}
+                disabled={savingSettings}
+                className="w-full bg-[#0B2B40] hover:bg-[#082030] text-white h-10"
+              >
+                {savingSettings ? "Saving..." : "Save site settings"}
+              </Button>
+            </div>
+          </div>
+
+          {/* Autopilot */}
+          <div className="bg-white border border-[#E8E6E1] rounded-2xl p-6" data-testid="autopilot-card">
+            <div className="flex items-center justify-between mb-3">
+              <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-[#E05D43] font-medium">
+                <Power className="h-3.5 w-3.5" /> Content Autopilot
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[#4A5D68]">{autopilot.config?.enabled ? "On" : "Paused"}</span>
+                <Switch
+                  data-testid="autopilot-toggle"
+                  checked={Boolean(autopilot.config?.enabled)}
+                  onCheckedChange={toggleAutopilot}
+                />
+              </div>
+            </div>
+            <p className="text-sm text-[#4A5D68] mb-4 leading-relaxed">
+              Cron runs every Monday 10:00 (Australia/Sydney) — pops one queued topic, drafts it with Claude Sonnet, and publishes it.
+            </p>
+
+            <div className="space-y-2 mb-3">
+              <Input
+                data-testid="ap-topic"
+                value={apTopic}
+                onChange={(e) => setApTopic(e.target.value)}
+                placeholder="Topic (e.g. Korean backpackers claiming DASP)"
+                className="bg-[#FAFAF9] border-[#E8E6E1] h-10"
+              />
+              <Input
+                data-testid="ap-keywords"
+                value={apKeywords}
+                onChange={(e) => setApKeywords(e.target.value)}
+                placeholder="Target keywords (comma-separated)"
+                className="bg-[#FAFAF9] border-[#E8E6E1] h-10"
+              />
+              <Input
+                data-testid="ap-category"
+                value={apCategory}
+                onChange={(e) => setApCategory(e.target.value)}
+                placeholder="Category (optional)"
+                className="bg-[#FAFAF9] border-[#E8E6E1] h-10"
+              />
+              <div className="flex gap-2">
+                <Button
+                  data-testid="ap-add"
+                  onClick={addAutopilotItem}
+                  disabled={apAdding}
+                  variant="outline"
+                  className="flex-1 border-2 border-[#E8E6E1] text-[#0B2B40] hover:border-[#0B2B40] h-10"
+                >
+                  <Plus className="h-4 w-4 mr-1" /> Add to queue
+                </Button>
+                <Button
+                  data-testid="ap-run-now"
+                  onClick={runAutopilotNow}
+                  disabled={apRunning}
+                  className="bg-[#E05D43] hover:bg-[#C8533B] text-white h-10"
+                >
+                  {apRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4 mr-1" />}
+                  Run now
+                </Button>
+              </div>
+            </div>
+
+            <div className="mt-3" data-testid="ap-queue">
+              <div className="text-xs uppercase tracking-[0.15em] text-[#4A5D68] mb-2">
+                Queue · {autopilot.queue.length}
+              </div>
+              {autopilot.queue.length === 0 ? (
+                <p className="text-sm text-[#4A5D68]">No topics queued. Add some to keep the blog growing weekly.</p>
+              ) : (
+                <ul className="space-y-2 max-h-64 overflow-y-auto">
+                  {autopilot.queue.map((q) => (
+                    <li
+                      key={q.id}
+                      data-testid={`ap-item-${q.id}`}
+                      className="bg-[#FAFAF9] border border-[#E8E6E1] rounded-lg px-3 py-2 flex items-start justify-between gap-2 text-sm"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[#0B2B40] font-medium truncate">{q.topic}</div>
+                        <div className="text-[11px] text-[#4A5D68] flex flex-wrap gap-x-2">
+                          <span>{q.status}</span>
+                          {q.category && <span>· {q.category}</span>}
+                          {q.published_slug && <span>· /blog/{q.published_slug}</span>}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeAutopilotItem(q.id)}
+                        data-testid={`ap-remove-${q.id}`}
+                        className="text-[#9B3A26] hover:bg-[#FFF6F2] rounded p-1 shrink-0"
+                        aria-label="Remove"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         </aside>
 

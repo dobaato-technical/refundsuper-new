@@ -1,0 +1,42 @@
+{
+  "summary": "Iteration 8 verified end-to-end. Backend pytest: 17/17 PASS (site-settings GET/PUT with DB-over-env precedence, sitemap reflects override, autopilot config PATCH, queue CRUD with created_at ordering, run skipped(disabled), run skipped(empty_queue), run publishes via Claude Sonnet then item flips to 'published' with published_slug and post is publicly fetchable; regression on /api/estimate, /api/leads with UTM, /api/admin/analytics, /api/admin/weekly-digest/run, /api/blog/posts, /api/referrals/{code}/progress, /api/admin/blog/generate-draft, comments POST + admin list/approve/delete all green). Frontend Playwright: admin login → [data-testid='comments-btn'] → /admin/comments renders [data-testid='comment-list'] with 8 rows, filter chips (all/pending/approved) work, delete removes row and count drops (8→7); /admin/blog shows both [data-testid='site-settings-card'] and [data-testid='autopilot-card']; settings save toast fires; autopilot ap-topic/ap-keywords/ap-category/ap-add appends a queue row [data-testid^='ap-item-']; ap-remove clears it; ap-run-now with disabled state toasts 'Skipped: disabled' (visible in screenshot).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/sitemap.xml (public URL)", "issue": "The Kubernetes/Cloudflare ingress serves /sitemap.xml from the SPA (returns text/html with index.html) — backend endpoint is unreachable via https://<preview>/sitemap.xml. Same is true for /robots.txt (returns Cloudflare content-signals default instead of backend robots). Both endpoints work correctly when called directly against http://localhost:8001 (backend returns application/xml with 18+ URLs reflecting the effective site_url). This is the same ingress gap flagged in iter7 for /google*.html. Requires an ingress rule to route these three paths to the backend, or move the file into /app/frontend/public/ built from env at deploy time."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Site Settings card", "issue": "After clicking Save with empty inputs (to clear the DB override), the input fields still visibly hold the previously-typed values. 'Effective:' hint updates correctly (back to env default) and backend clears the override, but the two <input> elements aren't re-synced to the fresh db_overrides. Consider refetching /api/admin/site-settings and calling setState after successful save.", "selector": "[data-testid='settings-site-url'], [data-testid='settings-gsv']", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration8.py",
+    "/app/test_reports/pytest/iter8.xml"
+  ],
+  "action_items": [
+    "OPTIONAL/LOW: Refetch site-settings (or clear input state) after PUT so the input fields show the effective db_overrides value.",
+    "ENV/OPS (repeat from iter7): expose /sitemap.xml, /robots.txt, /google*.html routes through the preview ingress so SEO endpoints are reachable via the public URL."
+  ],
+  "critical_code_review_comments": [
+    "server.py is now ~1280 lines — repeat of iter7 suggestion; split into routers (auth, leads, blog, comments, admin_site, autopilot, seo, digest). The autopilot + site-settings additions are cohesive enough to be their own router modules.",
+    "run_autopilot_once processes only one queued item on demand (correct per spec), but there is no retry/backoff for transient Claude errors — failed items get status='failed' with error message and won't be reprocessed by next Monday's cron. Consider a small retry counter or a manual 'requeue' admin action.",
+    "PUT /api/admin/site-settings always writes updated_at even if payload is entirely empty — minor, but a fully-empty PUT still bumps the doc. Not a bug.",
+    "AutopilotItemCreate.keywords has no length cap in this file's visible slice — verify Pydantic model enforces a reasonable max_items to prevent oversized queue docs.",
+    "GET /api/admin/autopilot returns queue via find({}, {'_id':0}) which correctly strips ObjectId — good.",
+    "AdminComments uses window-native confirm-free direct delete (no confirmation prompt in the JSX I inspected); consider a small confirm dialog before delete since it's destructive."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration8.py"
+  ],
+  "success_rate": {"backend": "100% (17/17)", "frontend": "100% (all iter8 flows verified: comments filter/delete, site-settings save toast, autopilot toggle/add/remove/run-skip)"},
+  "test_credentials": "admin@aussieback.com / Admin@123",
+  "seed_data_creation": "Test PUT /api/admin/site-settings temporarily set site_url=https://get.aussieback.co and gsv=gsv-token-test, then cleared them back to null; site is back on env defaults after the run. Autopilot RUN test transiently created blog post 'aussie-super-back' via Claude and then deleted it. Playwright delete step removed one existing comment row (was 8, now 7) on the seeded post — earlier iter7 TEST_ comments still remain on the seeded slug (prefixed for cleanup).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend test file: /app/backend/tests/test_iteration8.py (loads REACT_APP_BACKEND_URL from /app/frontend/.env; sitemap assertion uses http://localhost:8001 because the preview ingress does NOT route root /sitemap.xml to backend). Public URL: https://aussie-super-back.preview.emergentagent.com. Autopilot Claude publish takes ~20-40s — 60s timeout in tests is safe. Admin comments approve is PATCH (not POST). Comments POST body field is 'body' (not 'content'). Leads schema requires: visa_type in {working_holiday,other_temp}, input_mode in {balance,earnings}, estimated_refund, first_name, whatsapp_number in E.164 (validated by phonenumbers). Rate limits: /api/leads 5/hr, comments 10/hr.",
+  "rca of the issue": "N/A — no code bugs found. Only ingress gap for /sitemap.xml + /robots.txt (env/ops) and one minor UI-state polish item on site-settings inputs after clear-save."
+}

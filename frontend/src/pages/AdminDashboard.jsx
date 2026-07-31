@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   Users, TrendingUp, DollarSign, Trophy, LogOut, Search,
-  Download, RefreshCw, ChevronDown, Mail, Sparkles,
+  Download, RefreshCw, ChevronDown, Mail, Sparkles, MessageCircle,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -173,6 +173,16 @@ export default function AdminDashboard() {
             >
               <Link to="/admin/blog">
                 <Sparkles className="h-4 w-4 mr-2" /> Blog studio
+              </Link>
+            </Button>
+            <Button
+              data-testid="comments-btn"
+              asChild
+              variant="outline"
+              className="border-2 border-[#E8E6E1] text-[#0B2B40] hover:border-[#0B2B40]"
+            >
+              <Link to="/admin/comments">
+                <MessageCircle className="h-4 w-4 mr-2" /> Comments
               </Link>
             </Button>
             <Button
