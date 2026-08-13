@@ -57,22 +57,22 @@ export default function WhatsAppChatButton({ estimateAmount, watchInactivity = f
       {showBubble && (
         <div
           data-testid="whatsapp-nudge"
-          className="max-w-[280px] bg-white border border-[#E8E6E1] rounded-2xl shadow-[0_18px_40px_-14px_rgba(11,43,64,0.25)] p-4 animate-in fade-in slide-in-from-bottom-4 duration-300"
+          className="max-w-[280px] bg-white border border-[#E5E7EB] rounded-2xl shadow-[0_18px_40px_-14px_rgba(11,43,64,0.25)] p-4 animate-in fade-in slide-in-from-bottom-4 duration-300"
         >
           <div className="flex items-start justify-between gap-3 mb-2">
-            <div className="font-display font-medium text-[#0B2B40]">
+            <div className="font-display font-medium text-[#014E87]">
               {t("chat.bubble_title")}
             </div>
             <button
               data-testid="whatsapp-nudge-dismiss"
               onClick={dismiss}
-              className="text-[#4A5D68] hover:text-[#0B2B40]"
+              className="text-[#475569] hover:text-[#014E87]"
               aria-label={t("chat.dismiss")}
             >
               <X className="h-4 w-4" />
             </button>
           </div>
-          <p className="text-sm text-[#4A5D68] leading-relaxed mb-3">
+          <p className="text-sm text-[#475569] leading-relaxed mb-3">
             {t("chat.bubble_body")}
           </p>
           <a
@@ -97,7 +97,7 @@ export default function WhatsAppChatButton({ estimateAmount, watchInactivity = f
         className="group relative bg-[#25D366] hover:bg-[#1FBA57] text-white h-14 w-14 rounded-full shadow-[0_10px_28px_-6px_rgba(37,211,102,0.6)] flex items-center justify-center transition-all hover:-translate-y-0.5"
       >
         <MessageCircle className="h-6 w-6" fill="currentColor" strokeWidth={0} />
-        <span className="absolute right-full mr-3 whitespace-nowrap bg-[#0B2B40] text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+        <span className="absolute right-full mr-3 whitespace-nowrap bg-[#014E87] text-white text-xs px-3 py-1.5 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
           {t("chat.float_label")}
         </span>
       </a>

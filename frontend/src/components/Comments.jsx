@@ -92,19 +92,19 @@ export default function Comments({ slug }) {
   return (
     <section
       data-testid="comments-section"
-      className="mt-14 pt-10 border-t border-[#E8E6E1]"
+      className="mt-14 pt-10 border-t border-[#E5E7EB]"
     >
       <div className="flex items-center gap-2 mb-6">
-        <MessageCircle className="h-5 w-5 text-[#E05D43]" />
-        <h3 className="font-display text-2xl font-medium text-[#0B2B40]">
-          {t("comments.title")} <span className="text-[#4A5D68] font-normal text-lg">· {comments.length}</span>
+        <MessageCircle className="h-5 w-5 text-[#014E87]" />
+        <h3 className="font-display text-2xl font-medium text-[#014E87]">
+          {t("comments.title")} <span className="text-[#475569] font-normal text-lg">· {comments.length}</span>
         </h3>
       </div>
 
       {loading ? (
-        <p className="text-sm text-[#4A5D68]">Loading...</p>
+        <p className="text-sm text-[#475569]">Loading...</p>
       ) : roots.length === 0 ? (
-        <p className="text-sm text-[#4A5D68] mb-6" data-testid="comments-empty">
+        <p className="text-sm text-[#475569] mb-6" data-testid="comments-empty">
           {t("comments.empty")}
         </p>
       ) : (
@@ -126,7 +126,7 @@ export default function Comments({ slug }) {
       {parentId && (
         <div
           data-testid="reply-banner"
-          className="rounded-lg border border-[#F3C8BB] bg-[#FFF6F2] px-4 py-2 mb-3 flex items-center justify-between text-sm"
+          className="rounded-lg border border-[#F3C8BB] bg-[#EBF3FA] px-4 py-2 mb-3 flex items-center justify-between text-sm"
         >
           <span className="text-[#9B3A26]">
             {t("comments.replying_to")}
@@ -134,7 +134,7 @@ export default function Comments({ slug }) {
           <button
             type="button"
             onClick={() => setParentId(null)}
-            className="text-[#0B2B40] font-medium hover:underline"
+            className="text-[#014E87] font-medium hover:underline"
             data-testid="reply-cancel"
           >
             {t("comments.cancel")}
@@ -142,53 +142,53 @@ export default function Comments({ slug }) {
         </div>
       )}
 
-      <form onSubmit={submit} className="bg-white border border-[#E8E6E1] rounded-2xl p-5" data-testid="comment-form">
-        <h4 className="font-display text-lg font-medium mb-4 text-[#0B2B40]">
+      <form onSubmit={submit} className="bg-white border border-[#E5E7EB] rounded-2xl p-5" data-testid="comment-form">
+        <h4 className="font-display text-lg font-medium mb-4 text-[#014E87]">
           {parentId ? t("comments.reply_heading") : t("comments.form_heading")}
         </h4>
         <div className="grid sm:grid-cols-2 gap-3 mb-3">
           <div>
-            <Label className="text-sm text-[#0B2B40]">{t("comments.name")}</Label>
+            <Label className="text-sm text-[#014E87]">{t("comments.name")}</Label>
             <Input
               data-testid="comment-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="bg-[#FAFAF9] border-[#E8E6E1] h-11 mt-1"
+              className="bg-[#F8FAFC] border-[#E5E7EB] h-11 mt-1"
               placeholder="Alex"
               required
             />
           </div>
           <div>
-            <Label className="text-sm text-[#0B2B40]">{t("comments.email")}</Label>
+            <Label className="text-sm text-[#014E87]">{t("comments.email")}</Label>
             <Input
               data-testid="comment-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="bg-[#FAFAF9] border-[#E8E6E1] h-11 mt-1"
+              className="bg-[#F8FAFC] border-[#E5E7EB] h-11 mt-1"
               placeholder="alex@example.com"
               required
             />
           </div>
         </div>
         <div className="mb-4">
-          <Label className="text-sm text-[#0B2B40]">{t("comments.body")}</Label>
+          <Label className="text-sm text-[#014E87]">{t("comments.body")}</Label>
           <Textarea
             data-testid="comment-body"
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            className="bg-[#FAFAF9] border-[#E8E6E1] min-h-[110px] mt-1"
+            className="bg-[#F8FAFC] border-[#E5E7EB] min-h-[110px] mt-1"
             placeholder={t("comments.body_placeholder")}
             required
           />
         </div>
         <div className="flex justify-between items-center">
-          <p className="text-xs text-[#4A5D68]">{t("comments.privacy_note")}</p>
+          <p className="text-xs text-[#475569]">{t("comments.privacy_note")}</p>
           <Button
             type="submit"
             disabled={submitting}
             data-testid="comment-submit"
-            className="bg-[#E05D43] hover:bg-[#C8533B] text-white h-11 rounded-lg shadow-[0_4px_14px_0_rgba(224,93,67,0.39)]"
+            className="bg-[#014E87] hover:bg-[#013A66] text-white h-11 rounded-lg shadow-[0_4px_14px_0_rgba(1, 78, 135, 0.28)]"
           >
             {submitting ? t("comments.posting") : t("comments.post_button")}
           </Button>
@@ -203,28 +203,28 @@ function CommentCard({ c, onReply, t, nested = false }) {
   const dateStr = isNaN(date) ? "" : date.toLocaleDateString("en-AU", { day: "2-digit", month: "short", year: "numeric" });
   return (
     <div
-      className={`rounded-xl p-4 ${nested ? "bg-[#FAFAF9] border border-[#E8E6E1]" : "bg-white border border-[#E8E6E1]"}`}
+      className={`rounded-xl p-4 ${nested ? "bg-[#F8FAFC] border border-[#E5E7EB]" : "bg-white border border-[#E5E7EB]"}`}
     >
       <div className="flex items-center gap-3 mb-2">
-        <div className="h-8 w-8 rounded-full bg-[#FFF6F2] text-[#E05D43] flex items-center justify-center">
+        <div className="h-8 w-8 rounded-full bg-[#EBF3FA] text-[#014E87] flex items-center justify-center">
           <User className="h-4 w-4" />
         </div>
         <div className="flex-1">
-          <div className="font-medium text-[#0B2B40] text-sm">{c.author_name}</div>
-          <div className="text-[11px] text-[#4A5D68]">{dateStr}</div>
+          <div className="font-medium text-[#014E87] text-sm">{c.author_name}</div>
+          <div className="text-[11px] text-[#475569]">{dateStr}</div>
         </div>
         {!nested && (
           <button
             type="button"
             onClick={() => onReply(c.id)}
             data-testid={`reply-${c.id}`}
-            className="inline-flex items-center gap-1 text-xs text-[#4A5D68] hover:text-[#E05D43] transition-colors"
+            className="inline-flex items-center gap-1 text-xs text-[#475569] hover:text-[#014E87] transition-colors"
           >
             <Reply className="h-3.5 w-3.5" /> {t("comments.reply")}
           </button>
         )}
       </div>
-      <p className="text-[#0B2B40] leading-relaxed whitespace-pre-wrap">{c.body}</p>
+      <p className="text-[#014E87] leading-relaxed whitespace-pre-wrap">{c.body}</p>
     </div>
   );
 }

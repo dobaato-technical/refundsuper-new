@@ -36,10 +36,10 @@ export default function RefBanner() {
   return (
     <div
       data-testid="ref-banner"
-      className="relative bg-[#FFF6F2] border-b border-[#F3C8BB] text-[#0B2B40]"
+      className="relative bg-[#EBF3FA] border-b border-[#F3C8BB] text-[#014E87]"
     >
       <div className="px-6 md:px-12 lg:px-24 py-3 flex items-center gap-3">
-        <Sparkles className="h-4 w-4 text-[#E05D43] shrink-0" />
+        <Sparkles className="h-4 w-4 text-[#014E87] shrink-0" />
         <p className="text-sm md:text-[15px] leading-snug">
           <strong data-testid="ref-banner-name">{referrer.first_name}</strong>{" "}
           {t("banner.body")}
@@ -47,7 +47,7 @@ export default function RefBanner() {
         <button
           data-testid="ref-banner-dismiss"
           onClick={() => setDismissed(true)}
-          className="ml-auto text-[#4A5D68] hover:text-[#0B2B40]"
+          className="ml-auto text-[#475569] hover:text-[#014E87]"
           aria-label="Dismiss"
         >
           <X className="h-4 w-4" />

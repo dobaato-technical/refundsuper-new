@@ -146,24 +146,24 @@ export default function ShareCardModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md bg-white" data-testid="share-card-modal">
         <DialogHeader>
-          <DialogTitle className="font-display text-2xl text-[#0B2B40]">
+          <DialogTitle className="font-display text-2xl text-[#014E87]">
             {t("share.title")}
           </DialogTitle>
-          <DialogDescription className="text-[#4A5D68]">
+          <DialogDescription className="text-[#475569]">
             {t("share.subtitle")}
           </DialogDescription>
         </DialogHeader>
 
         {/* Aspect ratio toggle */}
-        <div className="inline-flex rounded-lg bg-[#FAFAF9] border border-[#E8E6E1] p-1 w-full">
+        <div className="inline-flex rounded-lg bg-[#F8FAFC] border border-[#E5E7EB] p-1 w-full">
           <button
             type="button"
             data-testid="aspect-feed"
             onClick={() => setAspect("feed")}
             className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm rounded-md transition-colors ${
               aspect === "feed"
-                ? "bg-white text-[#0B2B40] shadow-sm border border-[#E8E6E1] font-medium"
-                : "text-[#4A5D68] hover:text-[#0B2B40]"
+                ? "bg-white text-[#014E87] shadow-sm border border-[#E5E7EB] font-medium"
+                : "text-[#475569] hover:text-[#014E87]"
             }`}
           >
             <LayoutGrid className="h-3.5 w-3.5" /> {t("share.format_feed")}
@@ -174,8 +174,8 @@ export default function ShareCardModal({
             onClick={() => setAspect("story")}
             className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm rounded-md transition-colors ${
               aspect === "story"
-                ? "bg-white text-[#0B2B40] shadow-sm border border-[#E8E6E1] font-medium"
-                : "text-[#4A5D68] hover:text-[#0B2B40]"
+                ? "bg-white text-[#014E87] shadow-sm border border-[#E5E7EB] font-medium"
+                : "text-[#475569] hover:text-[#014E87]"
             }`}
           >
             <Smartphone className="h-3.5 w-3.5" /> {t("share.format_story")}
@@ -183,7 +183,7 @@ export default function ShareCardModal({
         </div>
 
         {/* Preview */}
-        <div className="rounded-xl overflow-hidden border border-[#E8E6E1] bg-[#FAFAF9] flex items-center justify-center max-h-[420px]">
+        <div className="rounded-xl overflow-hidden border border-[#E5E7EB] bg-[#F8FAFC] flex items-center justify-center max-h-[420px]">
           {dataUrl ? (
             <img
               src={dataUrl}
@@ -193,7 +193,7 @@ export default function ShareCardModal({
               data-testid="share-card-preview"
             />
           ) : (
-            <div className="p-10 text-sm text-[#4A5D68]">Rendering...</div>
+            <div className="p-10 text-sm text-[#475569]">Rendering...</div>
           )}
         </div>
         <canvas ref={canvasRef} className="hidden" />
@@ -201,17 +201,17 @@ export default function ShareCardModal({
         {referralCode && (
           <div
             data-testid="referral-block"
-            className="rounded-lg border border-[#E8E6E1] bg-[#FFF6F2] px-3 py-2.5 flex items-center justify-between gap-2"
+            className="rounded-lg border border-[#E5E7EB] bg-[#EBF3FA] px-3 py-2.5 flex items-center justify-between gap-2"
           >
             <div className="text-xs">
               <div className="uppercase tracking-[0.15em] text-[#9B3A26] font-medium mb-0.5">
                 {t("share.referral_label")}
               </div>
-              <div className="font-mono text-[#0B2B40] text-base font-semibold" data-testid="referral-code">
+              <div className="font-mono text-[#014E87] text-base font-semibold" data-testid="referral-code">
                 {referralCode}
               </div>
             </div>
-            <div className="text-[10px] text-[#4A5D68] max-w-[190px] leading-snug text-right">
+            <div className="text-[10px] text-[#475569] max-w-[190px] leading-snug text-right">
               {t("share.referral_hint")}
             </div>
           </div>
@@ -220,27 +220,27 @@ export default function ShareCardModal({
         {progress && (
           <div
             data-testid="reward-tier-block"
-            className="rounded-lg border border-[#E8E6E1] bg-white p-3 space-y-2"
+            className="rounded-lg border border-[#E5E7EB] bg-white p-3 space-y-2"
           >
             <div className="flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-[#E05D43]" />
-              <div className="text-xs uppercase tracking-[0.15em] text-[#4A5D68] font-medium">
+              <Trophy className="h-4 w-4 text-[#014E87]" />
+              <div className="text-xs uppercase tracking-[0.15em] text-[#475569] font-medium">
                 {t("reward.title")}
               </div>
             </div>
-            <p className="text-sm text-[#0B2B40]" data-testid="reward-count">
+            <p className="text-sm text-[#014E87]" data-testid="reward-count">
               {t("reward.referred_count", { count: progress.referred_count })}
             </p>
 
             {progress.next_tier ? (
-              <p className="text-sm text-[#4A5D68]" data-testid="reward-next">
+              <p className="text-sm text-[#475569]" data-testid="reward-next">
                 <Trans
                   i18nKey="reward.next_reward"
                   values={{
                     remaining: progress.remaining_to_next,
                     reward: progress.next_tier.reward,
                   }}
-                  components={{ strong: <strong className="text-[#0B2B40]" /> }}
+                  components={{ strong: <strong className="text-[#014E87]" /> }}
                 />
               </p>
             ) : (
@@ -265,7 +265,7 @@ export default function ShareCardModal({
                     >
                       {isUnlocked ? <Check className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
                     </span>
-                    <span className={isUnlocked ? "text-[#0B2B40]" : "text-[#4A5D68]"}>
+                    <span className={isUnlocked ? "text-[#014E87]" : "text-[#475569]"}>
                       <strong>{tier.threshold}</strong> · {tier.reward}
                     </span>
                   </li>
@@ -280,7 +280,7 @@ export default function ShareCardModal({
             data-testid="share-download"
             onClick={downloadPng}
             variant="outline"
-            className="border-2 border-[#E8E6E1] text-[#0B2B40] hover:border-[#0B2B40]"
+            className="border-2 border-[#E5E7EB] text-[#014E87] hover:border-[#014E87]"
           >
             <Download className="h-4 w-4 mr-2" />
             {aspect === "story" ? t("share.download_story") : t("share.download")}
@@ -288,7 +288,7 @@ export default function ShareCardModal({
           <Button
             data-testid="share-native"
             onClick={nativeShare}
-            className="bg-[#E05D43] hover:bg-[#C8533B] text-white"
+            className="bg-[#014E87] hover:bg-[#013A66] text-white"
           >
             <Share2 className="h-4 w-4 mr-2" /> {t("share.share_native")}
           </Button>
@@ -296,7 +296,7 @@ export default function ShareCardModal({
             data-testid="share-copy"
             onClick={copyLink}
             variant="outline"
-            className="border-2 border-[#E8E6E1] text-[#0B2B40] hover:border-[#0B2B40]"
+            className="border-2 border-[#E5E7EB] text-[#014E87] hover:border-[#014E87]"
           >
             {copied ? <Check className="h-4 w-4 mr-2 text-[#2E7D32]" /> : <LinkIcon className="h-4 w-4 mr-2" />}
             {copied ? t("share.copied") : t("share.copy_link")}
@@ -316,13 +316,13 @@ function drawCard(ctx, cvs, { aspect, amount, visaLabel, firstName, referralCode
   cvs.height = H;
 
   // Background
-  ctx.fillStyle = "#F7F5F0";
+  ctx.fillStyle = "#F2F2F2";
   ctx.fillRect(0, 0, W, H);
 
   // Coral top swash — height scales with format
   const swashH = aspect === "story" ? 520 : 380;
   const swashDip = aspect === "story" ? 120 : 120;
-  ctx.fillStyle = "#E05D43";
+  ctx.fillStyle = "#014E87";
   ctx.beginPath();
   ctx.moveTo(0, 0);
   ctx.lineTo(W, 0);
@@ -343,10 +343,10 @@ function drawCard(ctx, cvs, { aspect, amount, visaLabel, firstName, referralCode
   }
 
   // Logo mark
-  ctx.fillStyle = "#F7F5F0";
+  ctx.fillStyle = "#F2F2F2";
   roundRect(ctx, 80, 90, 96, 96, 22);
   ctx.fill();
-  ctx.fillStyle = "#E05D43";
+  ctx.fillStyle = "#014E87";
   ctx.font = "700 62px 'Clash Display', system-ui, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -368,17 +368,17 @@ function drawCard(ctx, cvs, { aspect, amount, visaLabel, firstName, referralCode
   // Compose content block Y-positions (relative)
   const contentTop = aspect === "story" ? 780 : 560;
 
-  ctx.fillStyle = "#0B2B40";
+  ctx.fillStyle = "#014E87";
   ctx.font = "600 82px 'Clash Display', system-ui, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   ctx.fillText(t("share.card_headline"), W / 2, contentTop);
 
-  ctx.fillStyle = "#E05D43";
+  ctx.fillStyle = "#014E87";
   ctx.font = "700 200px 'Clash Display', system-ui, sans-serif";
   ctx.fillText(formatAUD(amount || 0), W / 2, contentTop + 100);
 
-  ctx.fillStyle = "#0B2B40";
+  ctx.fillStyle = "#014E87";
   ctx.font = "500 60px 'Clash Display', system-ui, sans-serif";
   ctx.fillText(t("share.card_from"), W / 2, contentTop + 340);
 
@@ -389,7 +389,7 @@ function drawCard(ctx, cvs, { aspect, amount, visaLabel, firstName, referralCode
   const chipH = 68;
   const chipX = (W - chipW) / 2;
   const chipY = contentTop + 450;
-  ctx.fillStyle = "#0B2B40";
+  ctx.fillStyle = "#014E87";
   roundRect(ctx, chipX, chipY, chipW, chipH, 34);
   ctx.fill();
   ctx.fillStyle = "#FFFFFF";
@@ -397,7 +397,7 @@ function drawCard(ctx, cvs, { aspect, amount, visaLabel, firstName, referralCode
   ctx.fillText(visaLabel, W / 2, chipY + chipH / 2 + 2);
 
   // Divider
-  ctx.strokeStyle = "rgba(11,43,64,0.15)";
+  ctx.strokeStyle = "rgba(1, 78, 135, 0.15)";
   ctx.lineWidth = 2;
   const divY = aspect === "story" ? H - 500 : H - 180;
   ctx.beginPath();
@@ -406,13 +406,13 @@ function drawCard(ctx, cvs, { aspect, amount, visaLabel, firstName, referralCode
   ctx.stroke();
 
   // Footer / URL block
-  ctx.fillStyle = "#4A5D68";
+  ctx.fillStyle = "#475569";
   ctx.font = "500 30px 'Outfit', system-ui, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   ctx.fillText("Estimate yours in 3 minutes →", W / 2, divY + 30);
 
-  ctx.fillStyle = "#0B2B40";
+  ctx.fillStyle = "#014E87";
   ctx.font = "600 34px 'Outfit', system-ui, sans-serif";
   ctx.fillText(t("share.card_via"), W / 2, divY + 80);
 
@@ -425,8 +425,8 @@ function drawCard(ctx, cvs, { aspect, amount, visaLabel, firstName, referralCode
     const refChipH = 52;
     const refChipX = (W - refChipW) / 2;
     const refChipY = divY + 140;
-    ctx.fillStyle = "#FFF6F2";
-    ctx.strokeStyle = "#E05D43";
+    ctx.fillStyle = "#EBF3FA";
+    ctx.strokeStyle = "#014E87";
     ctx.lineWidth = 2;
     roundRect(ctx, refChipX, refChipY, refChipW, refChipH, 26);
     ctx.fill();

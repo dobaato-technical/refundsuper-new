@@ -8,10 +8,10 @@
     "cta": "Calculate my refund"
   },
   "hero": {
-    "eyebrow": "DASP refund — backpackers, students, temp visas",
-    "title_1": "Left Australia?",
-    "title_2": "Don't leave your cash behind.",
-    "subtitle": "Estimate and claim your Australian Super refund in under 3 minutes. Free estimate. Expert review. Paid straight to your bank — anywhere in the world.",
+    "eyebrow": "DASP superannuation refunds — India, China & every temporary visa",
+    "title_1": "Your Australian super,",
+    "title_2": "back where it belongs.",
+    "subtitle": "The trusted portal for former Australian residents claiming their superannuation refund. Reassuring, clear, and paid straight to your bank — in Mumbai, Shanghai, Delhi, Beijing or anywhere else.",
     "cta_primary": "Calculate my refund",
     "cta_secondary": "How it works",
     "badge_paperwork": "No paperwork up front",
@@ -38,9 +38,9 @@
     "step3_body": "Our TPB-partnered agents file your DASP claim. Your refund lands in your bank — even overseas."
   },
   "stories": {
-    "eyebrow": "Stories",
-    "title": "Travellers, students, and working holidaymakers — paid.",
-    "subtitle": "Real people who didn't realise they had thousands waiting in Australia.",
+    "eyebrow": "Client stories",
+    "title": "Trusted by returnees from India, China and beyond.",
+    "subtitle": "Real professionals who thought their Australian super was gone — and got every dollar back.",
     "recovered": "Recovered"
   },
   "faq": {
@@ -134,25 +134,25 @@
     "bubble_body": "Any questions about your refund? Our team replies on WhatsApp in under an hour.",
     "bubble_cta": "Message us",
     "dismiss": "Dismiss",
-    "prefill_generic": "Hi AussieBack! I have a question about my Australian Super refund.",
-    "prefill_with_estimate": "Hi AussieBack! I just got an estimate of {{amount}} — can you help me claim it?"
+    "prefill_generic": "Hi Super Refund Australia! I have a question about my Australian superannuation refund.",
+    "prefill_with_estimate": "Hi Super Refund Australia! I just got an estimate of {{amount}} — can you help me claim it?"
   },
   "footer": {
-    "tagline": "Helping returning temporary residents recover their Australian Super refund — fast, simple, secure.",
+    "tagline": "The most trusted portal for former Australian residents from India, China and beyond to claim their superannuation refund — fast, simple, secure.",
     "product": "Product",
     "contact": "Contact",
     "compliance": "Compliance",
-    "compliance_body": "AussieBack operates as a facilitation platform. Formal DASP claims are managed in partnership with TPB-registered tax agents. Estimates shown are indicative and not financial advice. Always consult your super fund and the ATO.",
+    "compliance_body": "Super Refund Australia operates as a facilitation platform. Formal DASP claims are managed in partnership with TPB-registered tax agents. Estimates shown are indicative and not financial advice. Always consult your super fund and the ATO.",
     "rights": "All rights reserved.",
     "privacy": "Privacy",
     "terms": "Terms"
   },
   "blog_list": {
     "seo_title": "Super Refund Guides & DASP Resources",
-    "seo_description": "In-depth guides on claiming your Australian Super refund (DASP) — for backpackers, working holiday makers, students and every temporary visa in between.",
-    "eyebrow": "AussieBack Blog",
-    "title": "Everything you need to claim your Australian Super.",
-    "subtitle": "Straightforward guides on DASP refunds, tax rates, visa rules and real stories from travellers who got their money back.",
+    "seo_description": "In-depth guides on claiming your Australian superannuation refund (DASP) — for returnees to India, China and every temporary-visa holder in between.",
+    "eyebrow": "Super Refund Australia · Blog",
+    "title": "Everything you need to claim your Australian super.",
+    "subtitle": "Clear, professional guides on DASP refunds, tax rates, visa rules and real stories from clients who got their money back.",
     "filter_label": "Filter",
     "filter_all": "All",
     "read_more": "Read guide",
@@ -178,7 +178,7 @@
   "blog_snippet": {
     "eyebrow": "From the blog",
     "title": "Guides that get you paid.",
-    "subtitle": "Dip into the AussieBack knowledge base — real, hands-on advice for reclaiming your super.",
+    "subtitle": "Real, hands-on advice for reclaiming your Australian super, straight from the Super Refund Australia knowledge base.",
     "cta": "See all articles"
   },
   "comments": {

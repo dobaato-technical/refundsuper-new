@@ -18,9 +18,9 @@ import { api } from "@/lib/api";
 const HERO_BG =
   "https://images.pexels.com/photos/542811/pexels-photo-542811.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940";
 const TESTI_1 =
-  "https://images.pexels.com/photos/23225205/pexels-photo-23225205.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=400&w=400";
+  "https://images.pexels.com/photos/3182812/pexels-photo-3182812.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=400&w=400";
 const TESTI_2 =
-  "https://images.unsplash.com/photo-1548213238-0da7521bd6e0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwyfHxoYXBweSUyMGJhY2twYWNrZXIlMjB0cmF2ZWxlcnxlbnwwfHx8fDE3ODIxMzE5MjV8MA&ixlib=rb-4.1.0&q=85&w=400&h=400";
+  "https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=400&w=400";
 
 const TRUST_ITEMS = [
   { icon: ShieldCheck, key: "trust.ssl" },
@@ -116,7 +116,7 @@ export default function LandingClient() {
   }, []);
 
   return (
-    <div className="bg-[#F7F5F0] min-h-screen text-[#0B2B40]">
+    <div className="bg-[#F2F2F2] min-h-screen text-[#014E87]">
       <SEO jsonLd={HERO_JSONLD} />
       <Header onCtaClick={scrollToEstimator} />
       <RefBanner />
@@ -137,37 +137,37 @@ export default function LandingClient() {
             transition={{ duration: 0.6 }}
             className="lg:col-span-7"
           >
-            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur border border-[#E8E6E1] rounded-full px-4 py-1.5 text-xs uppercase tracking-[0.18em] text-[#0B2B40] mb-6">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#E05D43] animate-pulse" />
+            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur border border-[#E5E7EB] rounded-full px-4 py-1.5 text-xs uppercase tracking-[0.18em] text-[#014E87] mb-6">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#014E87] animate-pulse" />
               {t("hero.eyebrow")}
             </div>
-            <h1 className="font-display text-5xl sm:text-6xl md:text-7xl font-semibold leading-[1.02] tracking-tight text-[#0B2B40] mb-6">
+            <h1 className="font-display text-5xl sm:text-6xl md:text-7xl font-semibold leading-[1.02] tracking-tight text-[#014E87] mb-6">
               {t("hero.title_1")} <br />
-              <span className="text-[#E05D43]">{t("hero.title_2")}</span>
+              <span className="text-[#014E87]">{t("hero.title_2")}</span>
             </h1>
-            <p className="text-lg md:text-xl text-[#4A5D68] max-w-xl mb-8 leading-relaxed">
+            <p className="text-lg md:text-xl text-[#475569] max-w-xl mb-8 leading-relaxed">
               {t("hero.subtitle")}
             </p>
             <div className="flex flex-wrap gap-3 mb-8">
               <Button
                 data-testid="hero-cta"
                 onClick={scrollToEstimator}
-                className="bg-[#E05D43] hover:bg-[#C8533B] text-white h-14 px-7 rounded-lg shadow-[0_4px_14px_0_rgba(224,93,67,0.39)] hover:-translate-y-0.5 transition-all text-base"
+                className="bg-[#014E87] hover:bg-[#013A66] text-white h-14 px-7 rounded-lg shadow-[0_4px_14px_0_rgba(1, 78, 135, 0.28)] hover:-translate-y-0.5 transition-all text-base"
               >
                 {t("hero.cta_primary")} <ChevronRight className="ml-1 h-5 w-5" />
               </Button>
               <a
                 href="#how"
-                className="inline-flex items-center justify-center border-2 border-[#0B2B40]/15 hover:border-[#0B2B40]/40 text-[#0B2B40] h-14 px-7 rounded-lg transition-colors text-base"
+                className="inline-flex items-center justify-center border-2 border-[#014E87]/15 hover:border-[#014E87]/40 text-[#014E87] h-14 px-7 rounded-lg transition-colors text-base"
                 data-testid="hero-secondary"
               >
                 {t("hero.cta_secondary")}
               </a>
             </div>
-            <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-[#4A5D68]">
+            <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-[#475569]">
               <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-[#2E7D32]" /> {t("hero.badge_paperwork")}</span>
-              <span className="flex items-center gap-1.5"><Zap className="h-4 w-4 text-[#E05D43]" /> {t("hero.badge_free")}</span>
-              <span className="flex items-center gap-1.5"><Lock className="h-4 w-4 text-[#0B2B40]" /> {t("hero.badge_security")}</span>
+              <span className="flex items-center gap-1.5"><Zap className="h-4 w-4 text-[#014E87]" /> {t("hero.badge_free")}</span>
+              <span className="flex items-center gap-1.5"><Lock className="h-4 w-4 text-[#014E87]" /> {t("hero.badge_security")}</span>
             </div>
           </motion.div>
 
@@ -184,14 +184,14 @@ export default function LandingClient() {
       </section>
 
       {/* TRUST MARQUEE */}
-      <section className="bg-white border-y border-[#E8E6E1] overflow-hidden">
+      <section className="bg-white border-y border-[#E5E7EB] overflow-hidden">
         <div className="py-6 overflow-hidden">
           <div className="marquee">
             {[...TRUST_ITEMS, ...TRUST_ITEMS].map((item, i) => {
               const Icon = item.icon;
               return (
-                <div key={i} className="flex items-center gap-2 text-[#0B2B40] whitespace-nowrap">
-                  <Icon className="h-4 w-4 text-[#E05D43]" />
+                <div key={i} className="flex items-center gap-2 text-[#014E87] whitespace-nowrap">
+                  <Icon className="h-4 w-4 text-[#014E87]" />
                   <span className="text-sm font-medium">{t(item.key)}</span>
                 </div>
               );
@@ -203,13 +203,13 @@ export default function LandingClient() {
       {/* HOW IT WORKS */}
       <section id="how" className="px-6 md:px-12 lg:px-24 py-20 md:py-28">
         <div className="max-w-2xl mb-12">
-          <div className="text-xs uppercase tracking-[0.18em] text-[#E05D43] mb-3 font-medium">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#014E87] mb-3 font-medium">
             How it works
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-medium tracking-tight mb-4">
             From "is this real?" to refund-in-bank in three steps.
           </h2>
-          <p className="text-lg text-[#4A5D68]">
+          <p className="text-lg text-[#475569]">
             We've stripped out the admin nightmare. Here's all you do.
           </p>
         </div>
@@ -238,30 +238,30 @@ export default function LandingClient() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="bg-white border border-[#E8E6E1] rounded-2xl p-8 hover:-translate-y-1 hover:shadow-[0_18px_40px_-20px_rgba(11,43,64,0.15)] transition-all"
+              className="bg-white border border-[#E5E7EB] rounded-2xl p-8 hover:-translate-y-1 hover:shadow-[0_18px_40px_-20px_rgba(1, 78, 135, 0.15)] transition-all"
               data-testid={`how-step-${i + 1}`}
             >
-              <div className="font-display text-5xl text-[#E05D43] mb-4">{s.n}</div>
-              <h3 className="font-display text-xl font-medium mb-2 text-[#0B2B40]">
+              <div className="font-display text-5xl text-[#014E87] mb-4">{s.n}</div>
+              <h3 className="font-display text-xl font-medium mb-2 text-[#014E87]">
                 {s.title}
               </h3>
-              <p className="text-[#4A5D68] leading-relaxed">{s.body}</p>
+              <p className="text-[#475569] leading-relaxed">{s.body}</p>
             </motion.div>
           ))}
         </div>
       </section>
 
       {/* TESTIMONIALS */}
-      <section id="testimonials" className="px-6 md:px-12 lg:px-24 py-20 md:py-28 bg-white border-y border-[#E8E6E1]">
+      <section id="testimonials" className="px-6 md:px-12 lg:px-24 py-20 md:py-28 bg-white border-y border-[#E5E7EB]">
         <div className="grid lg:grid-cols-12 gap-10">
           <div className="lg:col-span-5">
-            <div className="text-xs uppercase tracking-[0.18em] text-[#E05D43] mb-3 font-medium">
+            <div className="text-xs uppercase tracking-[0.18em] text-[#014E87] mb-3 font-medium">
               {t("stories.eyebrow")}
             </div>
             <h2 className="font-display text-4xl md:text-5xl font-medium tracking-tight mb-4">
               {t("stories.title")}
             </h2>
-            <p className="text-lg text-[#4A5D68]">
+            <p className="text-lg text-[#475569]">
               {t("stories.subtitle")}
             </p>
           </div>
@@ -269,39 +269,39 @@ export default function LandingClient() {
           <div className="lg:col-span-7 grid sm:grid-cols-2 gap-6">
             {[
               {
-                name: "Lena, 27 — Germany 🇩🇪",
-                visa: "Working Holiday 417",
-                amount: "$3,240",
+                name: "Priya, 32 — Mumbai 🇮🇳",
+                visa: "Skilled Work 482",
+                amount: "$14,860",
                 quote:
-                  "I thought my super was gone forever. AussieBack made it embarrassingly easy. Money hit my German account three weeks later.",
+                  "After three years in Sydney I moved back to India and had no idea my super was still there. Super Refund Australia handled every form — the amount landed in my HDFC account in 26 days.",
                 img: TESTI_1,
               },
               {
-                name: "Daichi, 24 — Japan 🇯🇵",
+                name: "Wei, 28 — Shanghai 🇨🇳",
                 visa: "Student Visa 500",
-                amount: "$6,180",
+                amount: "$8,410",
                 quote:
-                  "Total no-brainer. I sent two screenshots over WhatsApp. They handled the rest.",
+                  "Clear, professional, and completely stress-free. Two WhatsApp messages and one signed form. Money in my Bank of China account before I even finished unpacking.",
                 img: TESTI_2,
               },
             ].map((testi, i) => (
               <div
                 key={i}
                 data-testid={`testimonial-${i + 1}`}
-                className="bg-[#FAFAF9] border border-[#E8E6E1] rounded-2xl p-6 flex flex-col"
+                className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-2xl p-6 flex flex-col"
               >
                 <div className="flex items-center gap-3 mb-4">
                   <img src={testi.img} alt={testi.name} className="h-12 w-12 rounded-full object-cover" />
                   <div>
-                    <div className="font-display font-medium text-[#0B2B40]">{testi.name}</div>
-                    <div className="text-xs text-[#4A5D68]">{testi.visa}</div>
+                    <div className="font-display font-medium text-[#014E87]">{testi.name}</div>
+                    <div className="text-xs text-[#475569]">{testi.visa}</div>
                   </div>
                 </div>
-                <p className="text-[#0B2B40] leading-relaxed flex-1 mb-4">"{testi.quote}"</p>
-                <div className="text-xs uppercase tracking-[0.15em] text-[#4A5D68]">
+                <p className="text-[#014E87] leading-relaxed flex-1 mb-4">"{testi.quote}"</p>
+                <div className="text-xs uppercase tracking-[0.15em] text-[#475569]">
                   {t("stories.recovered")}
                 </div>
-                <div className="font-display text-2xl text-[#E05D43] font-medium">{testi.amount}</div>
+                <div className="font-display text-2xl text-[#014E87] font-medium">{testi.amount}</div>
               </div>
             ))}
           </div>
@@ -312,27 +312,27 @@ export default function LandingClient() {
       <section id="faq" className="px-6 md:px-12 lg:px-24 py-20 md:py-28">
         <div className="grid lg:grid-cols-12 gap-10">
           <div className="lg:col-span-4">
-            <div className="text-xs uppercase tracking-[0.18em] text-[#E05D43] mb-3 font-medium">
+            <div className="text-xs uppercase tracking-[0.18em] text-[#014E87] mb-3 font-medium">
               {t("faq.eyebrow")}
             </div>
             <h2 className="font-display text-4xl md:text-5xl font-medium tracking-tight mb-4">
               {t("faq.title")}
             </h2>
-            <p className="text-[#4A5D68]">
+            <p className="text-[#475569]">
               {t("faq.subtitle")}
             </p>
           </div>
           <div className="lg:col-span-8">
             <Accordion type="single" collapsible className="w-full" data-testid="faq-accordion">
               {FAQ.map((item, i) => (
-                <AccordionItem key={i} value={`item-${i}`} className="border-[#E8E6E1]">
+                <AccordionItem key={i} value={`item-${i}`} className="border-[#E5E7EB]">
                   <AccordionTrigger
                     data-testid={`faq-trigger-${i}`}
-                    className="text-left font-display text-lg text-[#0B2B40] hover:no-underline py-5"
+                    className="text-left font-display text-lg text-[#014E87] hover:no-underline py-5"
                   >
                     {item.q}
                   </AccordionTrigger>
-                  <AccordionContent className="text-[#4A5D68] leading-relaxed text-base">
+                  <AccordionContent className="text-[#475569] leading-relaxed text-base">
                     {item.a}
                   </AccordionContent>
                 </AccordionItem>
@@ -344,21 +344,21 @@ export default function LandingClient() {
 
       {/* FROM THE BLOG */}
       {blogPosts.length > 0 && (
-        <section id="blog" className="px-6 md:px-12 lg:px-24 py-20 md:py-24 bg-white border-y border-[#E8E6E1]">
+        <section id="blog" className="px-6 md:px-12 lg:px-24 py-20 md:py-24 bg-white border-y border-[#E5E7EB]">
           <div className="flex items-end justify-between mb-10 flex-wrap gap-4">
             <div className="max-w-2xl">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#E05D43] mb-3 font-medium">
+              <div className="text-xs uppercase tracking-[0.18em] text-[#014E87] mb-3 font-medium">
                 {t("blog_snippet.eyebrow")}
               </div>
               <h2 className="font-display text-4xl md:text-5xl font-medium tracking-tight mb-3">
                 {t("blog_snippet.title")}
               </h2>
-              <p className="text-lg text-[#4A5D68]">{t("blog_snippet.subtitle")}</p>
+              <p className="text-lg text-[#475569]">{t("blog_snippet.subtitle")}</p>
             </div>
             <Link
               href="/blog"
               data-testid="landing-blog-all"
-              className="inline-flex items-center gap-1 text-sm font-medium text-[#0B2B40] hover:text-[#E05D43] transition-colors"
+              className="inline-flex items-center gap-1 text-sm font-medium text-[#014E87] hover:text-[#014E87] transition-colors"
             >
               {t("blog_snippet.cta")} <ArrowRight className="h-4 w-4" />
             </Link>
@@ -370,7 +370,7 @@ export default function LandingClient() {
                 key={p.slug}
                 href={`/blog/${p.slug}`}
                 data-testid={`landing-blog-card-${p.slug}`}
-                className="group bg-[#FAFAF9] border border-[#E8E6E1] rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-[0_18px_40px_-20px_rgba(11,43,64,0.15)] transition-all flex flex-col"
+                className="group bg-[#F8FAFC] border border-[#E5E7EB] rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-[0_18px_40px_-20px_rgba(1, 78, 135, 0.15)] transition-all flex flex-col"
               >
                 {p.hero_image && (
                   <div className="aspect-[16/10] overflow-hidden">
@@ -383,11 +383,11 @@ export default function LandingClient() {
                   </div>
                 )}
                 <div className="p-5 flex flex-col flex-1">
-                  <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.15em] text-[#4A5D68] mb-2">
-                    <span className="text-[#E05D43] font-medium">{p.category}</span>
+                  <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.15em] text-[#475569] mb-2">
+                    <span className="text-[#014E87] font-medium">{p.category}</span>
                     <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" /> {p.reading_time_minutes} min</span>
                   </div>
-                  <h3 className="font-display text-lg font-medium text-[#0B2B40] leading-snug group-hover:text-[#E05D43] transition-colors">
+                  <h3 className="font-display text-lg font-medium text-[#014E87] leading-snug group-hover:text-[#014E87] transition-colors">
                     {p.title}
                   </h3>
                 </div>
@@ -399,19 +399,19 @@ export default function LandingClient() {
 
       {/* FINAL CTA */}
       <section className="px-6 md:px-12 lg:px-24 pb-20">
-        <div className="rounded-3xl bg-gradient-to-br from-[#0B2B40] to-[#143C56] text-white p-10 md:p-16 text-center relative overflow-hidden">
+        <div className="rounded-3xl bg-gradient-to-br from-[#014E87] to-[#0076C2] text-white p-10 md:p-16 text-center relative overflow-hidden">
           <div className="absolute inset-0 ab-grain opacity-30" />
           <div className="relative">
             <h2 className="font-display text-4xl md:text-5xl font-medium tracking-tight mb-4">
               {t("final_cta.title")}
             </h2>
-            <p className="text-[#A9BDCB] text-lg mb-8 max-w-2xl mx-auto">
+            <p className="text-[#94A3B8] text-lg mb-8 max-w-2xl mx-auto">
               {t("final_cta.subtitle")}
             </p>
             <Button
               data-testid="final-cta"
               onClick={scrollToEstimator}
-              className="bg-[#E05D43] hover:bg-[#C8533B] text-white h-14 px-8 rounded-lg shadow-[0_4px_14px_0_rgba(224,93,67,0.39)] hover:-translate-y-0.5 transition-all text-base"
+              className="bg-[#014E87] hover:bg-[#013A66] text-white h-14 px-8 rounded-lg shadow-[0_4px_14px_0_rgba(1, 78, 135, 0.28)] hover:-translate-y-0.5 transition-all text-base"
             >
               {t("final_cta.button")} <ChevronRight className="ml-1 h-5 w-5" />
             </Button>

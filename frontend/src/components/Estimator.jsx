@@ -140,11 +140,11 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
     <div
       id={id}
       data-testid="estimator-card"
-      className="relative bg-white border border-[#0B2B40]/10 rounded-2xl shadow-[0_18px_60px_-20px_rgba(11,43,64,0.25)] p-6 md:p-8 w-full max-w-lg"
+      className="relative bg-white border border-[#014E87]/10 rounded-2xl shadow-[0_18px_60px_-20px_rgba(11,43,64,0.25)] p-6 md:p-8 w-full max-w-lg"
     >
       {/* Step indicator */}
       <div className="flex items-center justify-between mb-6">
-        <div className="text-xs uppercase tracking-[0.18em] text-[#4A5D68]">
+        <div className="text-xs uppercase tracking-[0.18em] text-[#475569]">
           Step {step} of 3
         </div>
         <div className="flex gap-1.5">
@@ -152,7 +152,7 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
             <div
               key={n}
               className={`h-1.5 w-8 rounded-full transition-colors ${
-                step >= n ? "bg-[#E05D43]" : "bg-[#E8E6E1]"
+                step >= n ? "bg-[#014E87]" : "bg-[#E5E7EB]"
               }`}
               data-testid={`step-indicator-${n}`}
             />
@@ -169,14 +169,14 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.25 }}
           >
-            <h3 className="font-display text-2xl md:text-3xl font-medium text-[#0B2B40] mb-1">
+            <h3 className="font-display text-2xl md:text-3xl font-medium text-[#014E87] mb-1">
               {t("estimator.step1_title")}
             </h3>
-            <p className="text-sm text-[#4A5D68] mb-6">
+            <p className="text-sm text-[#475569] mb-6">
               {t("estimator.step1_sub")}
             </p>
 
-            <Label className="text-sm font-medium text-[#0B2B40] mb-2 block">
+            <Label className="text-sm font-medium text-[#014E87] mb-2 block">
               {t("estimator.visa_label")}
             </Label>
             <div className="grid grid-cols-2 gap-3 mb-6">
@@ -186,13 +186,13 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
                 onClick={() => setVisaType("working_holiday")}
                 className={`text-left rounded-xl border-2 p-4 transition-all ${
                   visaType === "working_holiday"
-                    ? "border-[#E05D43] bg-[#FFF6F2]"
-                    : "border-[#E8E6E1] bg-[#FAFAF9] hover:border-[#0B2B40]/30"
+                    ? "border-[#014E87] bg-[#EBF3FA]"
+                    : "border-[#E5E7EB] bg-[#F8FAFC] hover:border-[#014E87]/30"
                 }`}
               >
-                <Plane className="h-5 w-5 text-[#E05D43] mb-2" />
-                <div className="font-display font-medium text-[#0B2B40]">{t("estimator.visa_wh_title")}</div>
-                <div className="text-xs text-[#4A5D68] mt-1">{t("estimator.visa_wh_sub")}</div>
+                <Plane className="h-5 w-5 text-[#014E87] mb-2" />
+                <div className="font-display font-medium text-[#014E87]">{t("estimator.visa_wh_title")}</div>
+                <div className="text-xs text-[#475569] mt-1">{t("estimator.visa_wh_sub")}</div>
               </button>
               <button
                 type="button"
@@ -200,18 +200,18 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
                 onClick={() => setVisaType("other_temp")}
                 className={`text-left rounded-xl border-2 p-4 transition-all ${
                   visaType === "other_temp"
-                    ? "border-[#E05D43] bg-[#FFF6F2]"
-                    : "border-[#E8E6E1] bg-[#FAFAF9] hover:border-[#0B2B40]/30"
+                    ? "border-[#014E87] bg-[#EBF3FA]"
+                    : "border-[#E5E7EB] bg-[#F8FAFC] hover:border-[#014E87]/30"
                 }`}
               >
-                <GraduationCap className="h-5 w-5 text-[#E05D43] mb-2" />
-                <div className="font-display font-medium text-[#0B2B40]">{t("estimator.visa_other_title")}</div>
-                <div className="text-xs text-[#4A5D68] mt-1">{t("estimator.visa_other_sub")}</div>
+                <GraduationCap className="h-5 w-5 text-[#014E87] mb-2" />
+                <div className="font-display font-medium text-[#014E87]">{t("estimator.visa_other_title")}</div>
+                <div className="text-xs text-[#475569] mt-1">{t("estimator.visa_other_sub")}</div>
               </button>
             </div>
 
             <Tabs value={mode} onValueChange={setMode} className="w-full">
-              <TabsList className="w-full grid grid-cols-2 bg-[#FAFAF9] border border-[#E8E6E1]">
+              <TabsList className="w-full grid grid-cols-2 bg-[#F8FAFC] border border-[#E5E7EB]">
                 <TabsTrigger value="balance" data-testid="mode-balance">
                   {t("estimator.mode_balance")}
                 </TabsTrigger>
@@ -220,11 +220,11 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="balance" className="pt-5">
-                <Label className="text-sm text-[#0B2B40] mb-2 block">
+                <Label className="text-sm text-[#014E87] mb-2 block">
                   {t("estimator.balance_label")}
                 </Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4A5D68]">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#475569]">
                     $
                   </span>
                   <Input
@@ -234,13 +234,13 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
                     min="0"
                     value={balance}
                     onChange={(e) => setBalance(e.target.value)}
-                    className="pl-7 bg-[#FAFAF9] border-[#E8E6E1] h-12 text-lg"
+                    className="pl-7 bg-[#F8FAFC] border-[#E5E7EB] h-12 text-lg"
                     placeholder="5000"
                   />
                 </div>
               </TabsContent>
               <TabsContent value="earnings" className="pt-5">
-                <Label className="text-sm text-[#0B2B40] mb-2 block">
+                <Label className="text-sm text-[#014E87] mb-2 block">
                   {t("estimator.earnings_label", { amount: formatAUD(earnings[0]) })}
                 </Label>
                 <Slider
@@ -252,20 +252,20 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
                   step={1000}
                   className="my-4"
                 />
-                <p className="text-xs text-[#4A5D68]">
+                <p className="text-xs text-[#475569]">
                   {t("estimator.earnings_note")}
                 </p>
               </TabsContent>
             </Tabs>
 
-            <div className="mt-7 p-4 rounded-xl bg-[#FFF6F2] border border-[#F3C8BB]">
+            <div className="mt-7 p-4 rounded-xl bg-[#EBF3FA] border border-[#F3C8BB]">
               <div className="text-xs uppercase tracking-[0.15em] text-[#9B3A26] mb-1">
                 {t("estimator.preview_label")}
               </div>
-              <div className="font-display text-2xl text-[#0B2B40]">
+              <div className="font-display text-2xl text-[#014E87]">
                 ≈ {formatAUD(estimate)}
               </div>
-              <div className="text-xs text-[#4A5D68] mt-1">
+              <div className="text-xs text-[#475569] mt-1">
                 {t("estimator.preview_retention", { keep: TAX_INFO[visaType].keepLabel })}
               </div>
             </div>
@@ -273,7 +273,7 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
             <Button
               data-testid="step1-next"
               onClick={goNext}
-              className="w-full mt-6 bg-[#E05D43] hover:bg-[#C8533B] text-white h-12 rounded-lg shadow-[0_4px_14px_0_rgba(224,93,67,0.39)] hover:-translate-y-0.5 transition-all"
+              className="w-full mt-6 bg-[#014E87] hover:bg-[#013A66] text-white h-12 rounded-lg shadow-[0_4px_14px_0_rgba(1, 78, 135, 0.28)] hover:-translate-y-0.5 transition-all"
             >
               {t("estimator.step1_next")} <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
@@ -288,25 +288,25 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.25 }}
           >
-            <h3 className="font-display text-2xl md:text-3xl font-medium text-[#0B2B40] mb-1">
+            <h3 className="font-display text-2xl md:text-3xl font-medium text-[#014E87] mb-1">
               {t("estimator.step2_title")}
             </h3>
-            <p className="text-sm text-[#4A5D68] mb-6">
+            <p className="text-sm text-[#475569] mb-6">
               {t("estimator.step2_sub")}
             </p>
 
             {/* Blurred result preview */}
-            <div className="relative mb-6 rounded-xl overflow-hidden border border-[#E8E6E1] bg-[#FAFAF9]">
+            <div className="relative mb-6 rounded-xl overflow-hidden border border-[#E5E7EB] bg-[#F8FAFC]">
               <div className="p-6 text-center">
-                <div className="text-xs uppercase tracking-[0.18em] text-[#4A5D68] mb-2">
+                <div className="text-xs uppercase tracking-[0.18em] text-[#475569] mb-2">
                   {t("estimator.estimated_label")}
                 </div>
-                <div className="font-display text-4xl text-[#0B2B40] blur-md select-none">
+                <div className="font-display text-4xl text-[#014E87] blur-md select-none">
                   $X,XXX
                 </div>
               </div>
               <div className="absolute inset-0 backdrop-blur-md bg-white/40 flex items-center justify-center">
-                <div className="flex items-center gap-2 text-[#0B2B40] font-medium">
+                <div className="flex items-center gap-2 text-[#014E87] font-medium">
                   <Lock className="h-4 w-4" /> {t("estimator.unlock_below")}
                 </div>
               </div>
@@ -314,28 +314,28 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
 
             <div className="space-y-4">
               <div>
-                <Label className="text-sm text-[#0B2B40]">{t("estimator.first_name")}</Label>
+                <Label className="text-sm text-[#014E87]">{t("estimator.first_name")}</Label>
                 <Input
                   data-testid="first-name-input"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder="Sam"
-                  className="bg-[#FAFAF9] border-[#E8E6E1] h-11 mt-1"
+                  className="bg-[#F8FAFC] border-[#E5E7EB] h-11 mt-1"
                 />
               </div>
               <div>
-                <Label className="text-sm text-[#0B2B40]">{t("estimator.email")}</Label>
+                <Label className="text-sm text-[#014E87]">{t("estimator.email")}</Label>
                 <Input
                   data-testid="email-input"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="sam@example.com"
-                  className="bg-[#FAFAF9] border-[#E8E6E1] h-11 mt-1"
+                  className="bg-[#F8FAFC] border-[#E5E7EB] h-11 mt-1"
                 />
               </div>
               <div>
-                <Label className="text-sm text-[#0B2B40]">{t("estimator.whatsapp")}</Label>
+                <Label className="text-sm text-[#014E87]">{t("estimator.whatsapp")}</Label>
                 <Input
                   data-testid="whatsapp-input"
                   value={whatsapp}
@@ -345,10 +345,10 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
                   }}
                   placeholder={t("estimator.whatsapp_placeholder")}
                   aria-invalid={Boolean(whatsappError)}
-                  className={`bg-[#FAFAF9] h-11 mt-1 ${
+                  className={`bg-[#F8FAFC] h-11 mt-1 ${
                     whatsappError
                       ? "border-[#D32F2F] focus-visible:ring-[#D32F2F]/25"
-                      : "border-[#E8E6E1]"
+                      : "border-[#E5E7EB]"
                   }`}
                 />
                 {whatsappError && (
@@ -364,19 +364,19 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
                 data-testid="step2-back"
                 variant="outline"
                 onClick={goBack}
-                className="border-2 border-[#E8E6E1] text-[#0B2B40] hover:border-[#0B2B40] h-12 rounded-lg"
+                className="border-2 border-[#E5E7EB] text-[#014E87] hover:border-[#014E87] h-12 rounded-lg"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" /> {t("estimator.step2_back")}
               </Button>
               <Button
                 data-testid="step2-reveal"
                 onClick={handleReveal}
-                className="flex-1 bg-[#E05D43] hover:bg-[#C8533B] text-white h-12 rounded-lg shadow-[0_4px_14px_0_rgba(224,93,67,0.39)] hover:-translate-y-0.5 transition-all"
+                className="flex-1 bg-[#014E87] hover:bg-[#013A66] text-white h-12 rounded-lg shadow-[0_4px_14px_0_rgba(1, 78, 135, 0.28)] hover:-translate-y-0.5 transition-all"
               >
                 {t("estimator.step2_reveal")} <Sparkles className="ml-2 h-4 w-4" />
               </Button>
             </div>
-            <p className="text-xs text-[#4A5D68] mt-3 text-center">
+            <p className="text-xs text-[#475569] mt-3 text-center">
               {t("estimator.privacy")}
             </p>
           </motion.div>
@@ -392,41 +392,41 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
           >
             {!submitted ? (
               <>
-                <div className="rounded-2xl bg-gradient-to-br from-[#0B2B40] to-[#143C56] text-white p-6 mb-6 text-center">
-                  <div className="text-xs uppercase tracking-[0.18em] text-[#A9BDCB] mb-2">
+                <div className="rounded-2xl bg-gradient-to-br from-[#014E87] to-[#0076C2] text-white p-6 mb-6 text-center">
+                  <div className="text-xs uppercase tracking-[0.18em] text-[#94A3B8] mb-2">
                     {t("estimator.estimated_label")}
                   </div>
                   <div className="font-display text-5xl font-semibold" data-testid="refund-amount">
                     <CountUp value={revealed ? estimate : 0} />
                   </div>
-                  <div className="text-xs text-[#A9BDCB] mt-2">
+                  <div className="text-xs text-[#94A3B8] mt-2">
                     {t("estimator.step3_retention", { keep: TAX_INFO[visaType].keepLabel })}
                   </div>
                 </div>
 
-                <p className="text-sm text-[#4A5D68] mb-4">
+                <p className="text-sm text-[#475569] mb-4">
                   {t("estimator.step3_intro")}
                 </p>
 
                 <div className="space-y-4">
                   <div>
-                    <Label className="text-sm text-[#0B2B40]">{t("estimator.super_fund")}</Label>
+                    <Label className="text-sm text-[#014E87]">{t("estimator.super_fund")}</Label>
                     <Input
                       data-testid="super-fund-input"
                       value={superFund}
                       onChange={(e) => setSuperFund(e.target.value)}
                       placeholder={t("estimator.super_fund_placeholder")}
-                      className="bg-[#FAFAF9] border-[#E8E6E1] h-11 mt-1"
+                      className="bg-[#F8FAFC] border-[#E5E7EB] h-11 mt-1"
                     />
                   </div>
                   <div>
-                    <Label className="text-sm text-[#0B2B40]">{t("estimator.date_left")}</Label>
+                    <Label className="text-sm text-[#014E87]">{t("estimator.date_left")}</Label>
                     <Input
                       data-testid="date-left-input"
                       type="date"
                       value={dateLeft}
                       onChange={(e) => setDateLeft(e.target.value)}
-                      className="bg-[#FAFAF9] border-[#E8E6E1] h-11 mt-1"
+                      className="bg-[#F8FAFC] border-[#E5E7EB] h-11 mt-1"
                     />
                   </div>
                 </div>
@@ -435,7 +435,7 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
                   data-testid="step3-submit"
                   onClick={handleFinalSubmit}
                   disabled={submitting}
-                  className="w-full mt-6 bg-[#E05D43] hover:bg-[#C8533B] text-white h-12 rounded-lg shadow-[0_4px_14px_0_rgba(224,93,67,0.39)] hover:-translate-y-0.5 transition-all disabled:opacity-60"
+                  className="w-full mt-6 bg-[#014E87] hover:bg-[#013A66] text-white h-12 rounded-lg shadow-[0_4px_14px_0_rgba(1, 78, 135, 0.28)] hover:-translate-y-0.5 transition-all disabled:opacity-60"
                 >
                   {submitting ? t("estimator.step3_submitting") : t("estimator.step3_submit")}
                 </Button>
@@ -445,24 +445,24 @@ export default function Estimator({ embedded = true, id = "estimator" }) {
                 <div className="h-16 w-16 rounded-full bg-[#E6EFD8] text-[#2E7D32] mx-auto flex items-center justify-center mb-4">
                   <Check className="h-8 w-8" />
                 </div>
-                <h3 className="font-display text-2xl font-medium text-[#0B2B40] mb-2">
+                <h3 className="font-display text-2xl font-medium text-[#014E87] mb-2">
                   {t("estimator.submitted_title", { name: firstName })}
                 </h3>
-                <p className="text-sm text-[#4A5D68] mb-4">
+                <p className="text-sm text-[#475569] mb-4">
                   {t("estimator.submitted_body", { amount: formatAUD(estimate) })}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2 justify-center">
                   <Button
                     data-testid="share-estimate-btn"
                     onClick={() => setShareOpen(true)}
-                    className="bg-[#E05D43] hover:bg-[#C8533B] text-white h-11 rounded-lg shadow-[0_4px_14px_0_rgba(224,93,67,0.39)] hover:-translate-y-0.5 transition-all"
+                    className="bg-[#014E87] hover:bg-[#013A66] text-white h-11 rounded-lg shadow-[0_4px_14px_0_rgba(1, 78, 135, 0.28)] hover:-translate-y-0.5 transition-all"
                   >
                     <Share2 className="h-4 w-4 mr-2" /> {t("estimator.share_button")}
                   </Button>
                   <Button
                     data-testid="restart-estimator"
                     variant="outline"
-                    className="border-2 border-[#E8E6E1] text-[#0B2B40] hover:border-[#0B2B40] h-11"
+                    className="border-2 border-[#E5E7EB] text-[#014E87] hover:border-[#014E87] h-11"
                     onClick={() => {
                       setStep(1);
                       setSubmitted(false);

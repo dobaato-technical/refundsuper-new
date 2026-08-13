@@ -13,8 +13,8 @@ export default function BlogCTA({ variant = "coral" }) {
 
   const isCoral = variant === "coral";
   const bg = isCoral
-    ? "bg-gradient-to-br from-[#E05D43] to-[#C8533B] text-white"
-    : "bg-white border border-[#E8E6E1] text-[#0B2B40]";
+    ? "bg-gradient-to-br from-[#014E87] to-[#013A66] text-white"
+    : "bg-white border border-[#E5E7EB] text-[#014E87]";
 
   return (
     <aside
@@ -29,12 +29,12 @@ export default function BlogCTA({ variant = "coral" }) {
         </div>
         <h3
           className={`font-display text-2xl md:text-3xl font-medium mb-2 tracking-tight ${
-            isCoral ? "text-white" : "text-[#0B2B40]"
+            isCoral ? "text-white" : "text-[#014E87]"
           }`}
         >
           {t("blog_cta.title")}
         </h3>
-        <p className={`text-sm md:text-base leading-relaxed mb-5 ${isCoral ? "text-white/85" : "text-[#4A5D68]"}`}>
+        <p className={`text-sm md:text-base leading-relaxed mb-5 ${isCoral ? "text-white/85" : "text-[#475569]"}`}>
           {t("blog_cta.body")}
         </p>
         <div className="flex flex-wrap items-center gap-3">
@@ -43,8 +43,8 @@ export default function BlogCTA({ variant = "coral" }) {
             data-testid="blog-cta-primary"
             className={
               isCoral
-                ? "bg-white text-[#0B2B40] hover:bg-[#F7F5F0] h-12 px-6 rounded-lg hover:-translate-y-0.5 transition-all font-medium"
-                : "bg-[#E05D43] hover:bg-[#C8533B] text-white h-12 px-6 rounded-lg shadow-[0_4px_14px_0_rgba(224,93,67,0.39)] hover:-translate-y-0.5 transition-all"
+                ? "bg-white text-[#014E87] hover:bg-[#F2F2F2] h-12 px-6 rounded-lg hover:-translate-y-0.5 transition-all font-medium"
+                : "bg-[#014E87] hover:bg-[#013A66] text-white h-12 px-6 rounded-lg shadow-[0_4px_14px_0_rgba(1, 78, 135, 0.28)] hover:-translate-y-0.5 transition-all"
             }
           >
             <Link href="/#estimator">
@@ -53,7 +53,7 @@ export default function BlogCTA({ variant = "coral" }) {
           </Button>
           <div
             className={`flex flex-wrap gap-x-4 gap-y-1 text-xs ${
-              isCoral ? "text-white/80" : "text-[#4A5D68]"
+              isCoral ? "text-white/80" : "text-[#475569]"
             }`}
           >
             <span className="inline-flex items-center gap-1"><Zap className="h-3 w-3" /> {t("blog_cta.badge_fast")}</span>

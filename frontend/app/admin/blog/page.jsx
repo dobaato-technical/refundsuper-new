@@ -196,14 +196,14 @@ function AdminBlogStudioInner() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5F0] text-[#0B2B40]">
-      <header className="bg-white border-b border-[#E8E6E1] sticky top-0 z-30">
+    <div className="min-h-screen bg-[#F2F2F2] text-[#014E87]">
+      <header className="bg-white border-b border-[#E5E7EB] sticky top-0 z-30">
         <div className="px-6 md:px-10 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/admin" className="inline-flex items-center gap-1 text-sm text-[#4A5D68] hover:text-[#0B2B40]" data-testid="back-to-admin">
+            <Link href="/admin" className="inline-flex items-center gap-1 text-sm text-[#475569] hover:text-[#014E87]" data-testid="back-to-admin">
               <ArrowLeft className="h-4 w-4" /> Dashboard
             </Link>
-            <span className="text-[#E8E6E1]">·</span>
+            <span className="text-[#E5E7EB]">·</span>
             <div className="font-display font-medium">Blog Studio</div>
           </div>
         </div>
@@ -211,8 +211,8 @@ function AdminBlogStudioInner() {
 
       <div className="px-6 md:px-10 py-8 grid lg:grid-cols-5 gap-8">
         <aside className="lg:col-span-2 space-y-4" data-testid="studio-prompt">
-          <div className="bg-white border border-[#E8E6E1] rounded-2xl p-6">
-            <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-[#E05D43] font-medium mb-3">
+          <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6">
+            <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-[#014E87] font-medium mb-3">
               <Sparkles className="h-3.5 w-3.5" /> Claude Sonnet 4.6
             </div>
             <h1 className="font-display text-2xl font-medium mb-4">Draft a new article</h1>
@@ -223,7 +223,7 @@ function AdminBlogStudioInner() {
                   data-testid="studio-topic"
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
-                  className="bg-[#FAFAF9] border-[#E8E6E1] h-11 mt-1"
+                  className="bg-[#F8FAFC] border-[#E5E7EB] h-11 mt-1"
                   placeholder="Irish backpackers claiming DASP from Dublin"
                 />
               </div>
@@ -233,7 +233,7 @@ function AdminBlogStudioInner() {
                   data-testid="studio-keywords"
                   value={keywords}
                   onChange={(e) => setKeywords(e.target.value)}
-                  className="bg-[#FAFAF9] border-[#E8E6E1] h-11 mt-1"
+                  className="bg-[#F8FAFC] border-[#E5E7EB] h-11 mt-1"
                   placeholder="irish super refund, DASP ireland"
                 />
               </div>
@@ -243,7 +243,7 @@ function AdminBlogStudioInner() {
                   data-testid="studio-category"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="bg-[#FAFAF9] border-[#E8E6E1] h-11 mt-1"
+                  className="bg-[#F8FAFC] border-[#E5E7EB] h-11 mt-1"
                   placeholder="By Country"
                 />
               </div>
@@ -252,7 +252,7 @@ function AdminBlogStudioInner() {
               data-testid="studio-generate"
               onClick={generate}
               disabled={drafting}
-              className="w-full mt-5 bg-[#E05D43] hover:bg-[#C8533B] text-white h-11 rounded-lg shadow-[0_4px_14px_0_rgba(224,93,67,0.39)]"
+              className="w-full mt-5 bg-[#014E87] hover:bg-[#013A66] text-white h-11 rounded-lg shadow-[0_4px_14px_0_rgba(1, 78, 135, 0.28)]"
             >
               {drafting ? (
                 <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Drafting...</>
@@ -262,8 +262,8 @@ function AdminBlogStudioInner() {
             </Button>
           </div>
 
-          <div className="bg-white border border-[#E8E6E1] rounded-2xl p-6 text-sm text-[#4A5D68] leading-relaxed">
-            <strong className="text-[#0B2B40]">Suggested topics</strong>
+          <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 text-sm text-[#475569] leading-relaxed">
+            <strong className="text-[#014E87]">Suggested topics</strong>
             <ul className="mt-2 space-y-1 list-disc pl-5">
               <li>Irish, Italian, Korean backpackers claiming DASP</li>
               <li>Consolidating multiple super funds</li>
@@ -273,11 +273,11 @@ function AdminBlogStudioInner() {
             </ul>
           </div>
 
-          <div className="bg-white border border-[#E8E6E1] rounded-2xl p-6" data-testid="site-settings-card">
-            <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-[#4A5D68] font-medium mb-3">
+          <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6" data-testid="site-settings-card">
+            <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-[#475569] font-medium mb-3">
               <Globe className="h-3.5 w-3.5" /> Site settings
             </div>
-            <p className="text-sm text-[#4A5D68] mb-4 leading-relaxed">
+            <p className="text-sm text-[#475569] mb-4 leading-relaxed">
               Override the domain and Google verification without a redeploy. DB values take precedence over .env.
             </p>
             <div className="space-y-3">
@@ -287,7 +287,7 @@ function AdminBlogStudioInner() {
                   data-testid="settings-site-url"
                   value={siteUrl}
                   onChange={(e) => setSiteUrl(e.target.value)}
-                  className="bg-[#FAFAF9] border-[#E8E6E1] h-10 mt-1"
+                  className="bg-[#F8FAFC] border-[#E5E7EB] h-10 mt-1"
                   placeholder="https://get.aussieback.co"
                 />
               </div>
@@ -297,14 +297,14 @@ function AdminBlogStudioInner() {
                   data-testid="settings-gsv"
                   value={gsv}
                   onChange={(e) => setGsv(e.target.value)}
-                  className="bg-[#FAFAF9] border-[#E8E6E1] h-10 mt-1 font-mono text-sm"
+                  className="bg-[#F8FAFC] border-[#E5E7EB] h-10 mt-1 font-mono text-sm"
                   placeholder="abcd1234..."
                 />
               </div>
               {settings?.effective && (
-                <div className="text-[11px] text-[#4A5D68]">
+                <div className="text-[11px] text-[#475569]">
                   Effective:{" "}
-                  <code className="bg-[#FAFAF9] px-1 rounded">{settings.effective.site_url}</code>
+                  <code className="bg-[#F8FAFC] px-1 rounded">{settings.effective.site_url}</code>
                   {settings.effective.google_site_verification && <> · GSV set</>}
                 </div>
               )}
@@ -312,20 +312,20 @@ function AdminBlogStudioInner() {
                 data-testid="settings-save"
                 onClick={saveSettings}
                 disabled={savingSettings}
-                className="w-full bg-[#0B2B40] hover:bg-[#082030] text-white h-10"
+                className="w-full bg-[#014E87] hover:bg-[#013A66] text-white h-10"
               >
                 {savingSettings ? "Saving..." : "Save site settings"}
               </Button>
             </div>
           </div>
 
-          <div className="bg-white border border-[#E8E6E1] rounded-2xl p-6" data-testid="autopilot-card">
+          <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6" data-testid="autopilot-card">
             <div className="flex items-center justify-between mb-3">
-              <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-[#E05D43] font-medium">
+              <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-[#014E87] font-medium">
                 <Power className="h-3.5 w-3.5" /> Content Autopilot
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-[#4A5D68]">{autopilot.config?.enabled ? "On" : "Paused"}</span>
+                <span className="text-xs text-[#475569]">{autopilot.config?.enabled ? "On" : "Paused"}</span>
                 <Switch
                   data-testid="autopilot-toggle"
                   checked={Boolean(autopilot.config?.enabled)}
@@ -333,7 +333,7 @@ function AdminBlogStudioInner() {
                 />
               </div>
             </div>
-            <p className="text-sm text-[#4A5D68] mb-4 leading-relaxed">
+            <p className="text-sm text-[#475569] mb-4 leading-relaxed">
               Cron runs every Monday 10:00 (Australia/Sydney) — pops one queued topic, drafts it with Claude Sonnet, and publishes it.
             </p>
 
@@ -343,21 +343,21 @@ function AdminBlogStudioInner() {
                 value={apTopic}
                 onChange={(e) => setApTopic(e.target.value)}
                 placeholder="Topic (e.g. Korean backpackers claiming DASP)"
-                className="bg-[#FAFAF9] border-[#E8E6E1] h-10"
+                className="bg-[#F8FAFC] border-[#E5E7EB] h-10"
               />
               <Input
                 data-testid="ap-keywords"
                 value={apKeywords}
                 onChange={(e) => setApKeywords(e.target.value)}
                 placeholder="Target keywords (comma-separated)"
-                className="bg-[#FAFAF9] border-[#E8E6E1] h-10"
+                className="bg-[#F8FAFC] border-[#E5E7EB] h-10"
               />
               <Input
                 data-testid="ap-category"
                 value={apCategory}
                 onChange={(e) => setApCategory(e.target.value)}
                 placeholder="Category (optional)"
-                className="bg-[#FAFAF9] border-[#E8E6E1] h-10"
+                className="bg-[#F8FAFC] border-[#E5E7EB] h-10"
               />
               <div className="flex gap-2">
                 <Button
@@ -365,7 +365,7 @@ function AdminBlogStudioInner() {
                   onClick={addAutopilotItem}
                   disabled={apAdding}
                   variant="outline"
-                  className="flex-1 border-2 border-[#E8E6E1] text-[#0B2B40] hover:border-[#0B2B40] h-10"
+                  className="flex-1 border-2 border-[#E5E7EB] text-[#014E87] hover:border-[#014E87] h-10"
                 >
                   <Plus className="h-4 w-4 mr-1" /> Add to queue
                 </Button>
@@ -373,7 +373,7 @@ function AdminBlogStudioInner() {
                   data-testid="ap-run-now"
                   onClick={runAutopilotNow}
                   disabled={apRunning}
-                  className="bg-[#E05D43] hover:bg-[#C8533B] text-white h-10"
+                  className="bg-[#014E87] hover:bg-[#013A66] text-white h-10"
                 >
                   {apRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4 mr-1" />}
                   Run now
@@ -382,11 +382,11 @@ function AdminBlogStudioInner() {
             </div>
 
             <div className="mt-3" data-testid="ap-queue">
-              <div className="text-xs uppercase tracking-[0.15em] text-[#4A5D68] mb-2">
+              <div className="text-xs uppercase tracking-[0.15em] text-[#475569] mb-2">
                 Queue · {autopilot.queue.length}
               </div>
               {autopilot.queue.length === 0 ? (
-                <p className="text-sm text-[#4A5D68]">No topics queued. Add some to keep the blog growing weekly.</p>
+                <p className="text-sm text-[#475569]">No topics queued. Add some to keep the blog growing weekly.</p>
               ) : (
                 <ul className="space-y-2 max-h-64 overflow-y-auto">
                   {autopilot.queue.map((q) => {
@@ -396,12 +396,12 @@ function AdminBlogStudioInner() {
                         key={q.id}
                         data-testid={`ap-item-${q.id}`}
                         className={`border rounded-lg px-3 py-2 flex items-start justify-between gap-2 text-sm ${
-                          isFailed ? "bg-[#FFF6F2] border-[#F3C8BB]" : "bg-[#FAFAF9] border-[#E8E6E1]"
+                          isFailed ? "bg-[#EBF3FA] border-[#F3C8BB]" : "bg-[#F8FAFC] border-[#E5E7EB]"
                         }`}
                       >
                         <div className="min-w-0 flex-1">
-                          <div className="text-[#0B2B40] font-medium truncate">{q.topic}</div>
-                          <div className="text-[11px] text-[#4A5D68] flex flex-wrap gap-x-2">
+                          <div className="text-[#014E87] font-medium truncate">{q.topic}</div>
+                          <div className="text-[11px] text-[#475569] flex flex-wrap gap-x-2">
                             <span className={isFailed ? "text-[#9B3A26] font-medium" : ""}>{q.status}</span>
                             {q.category && <span>· {q.category}</span>}
                             {q.published_slug && <span>· /blog/{q.published_slug}</span>}
@@ -419,7 +419,7 @@ function AdminBlogStudioInner() {
                               onClick={() => requeueAutopilotItem(q.id)}
                               disabled={requeueingId === q.id}
                               data-testid={`ap-requeue-${q.id}`}
-                              className="inline-flex items-center gap-1 text-[11px] text-[#0B2B40] hover:bg-white border border-[#E8E6E1] rounded px-2 py-1 transition-colors disabled:opacity-50"
+                              className="inline-flex items-center gap-1 text-[11px] text-[#014E87] hover:bg-white border border-[#E5E7EB] rounded px-2 py-1 transition-colors disabled:opacity-50"
                               aria-label="Requeue"
                             >
                               {requeueingId === q.id ? (
@@ -434,7 +434,7 @@ function AdminBlogStudioInner() {
                             type="button"
                             onClick={() => removeAutopilotItem(q.id)}
                             data-testid={`ap-remove-${q.id}`}
-                            className="text-[#9B3A26] hover:bg-[#FFF6F2] rounded p-1"
+                            className="text-[#9B3A26] hover:bg-[#EBF3FA] rounded p-1"
                             aria-label="Remove"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -451,20 +451,20 @@ function AdminBlogStudioInner() {
 
         <section className="lg:col-span-3" data-testid="studio-draft">
           {!draft ? (
-            <div className="bg-white border border-dashed border-[#E8E6E1] rounded-2xl p-10 text-center text-[#4A5D68]">
+            <div className="bg-white border border-dashed border-[#E5E7EB] rounded-2xl p-10 text-center text-[#475569]">
               Draft preview appears here. Fill in a topic and generate.
             </div>
           ) : (
-            <div className="bg-white border border-[#E8E6E1] rounded-2xl p-6 space-y-4">
+            <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 space-y-4">
               <div className="flex items-start justify-between gap-3">
-                <div className="text-xs uppercase tracking-[0.15em] text-[#4A5D68]">Draft preview</div>
+                <div className="text-xs uppercase tracking-[0.15em] text-[#475569]">Draft preview</div>
                 <div className="flex gap-2">
                   <Button
                     onClick={copyMarkdown}
                     variant="outline"
                     size="sm"
                     data-testid="studio-copy"
-                    className="border-[#E8E6E1] text-[#0B2B40] hover:border-[#0B2B40]"
+                    className="border-[#E5E7EB] text-[#014E87] hover:border-[#014E87]"
                   >
                     <Copy className="h-3.5 w-3.5 mr-1" /> Copy MD
                   </Button>
@@ -474,45 +474,45 @@ function AdminBlogStudioInner() {
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs uppercase tracking-[0.15em]">Title</Label>
-                  <Input data-testid="studio-title" value={draft.title} onChange={(e) => updateDraft({ title: e.target.value })} className="bg-[#FAFAF9] border-[#E8E6E1] mt-1" />
+                  <Input data-testid="studio-title" value={draft.title} onChange={(e) => updateDraft({ title: e.target.value })} className="bg-[#F8FAFC] border-[#E5E7EB] mt-1" />
                 </div>
                 <div>
                   <Label className="text-xs uppercase tracking-[0.15em]">Slug</Label>
-                  <Input data-testid="studio-slug" value={draft.slug} onChange={(e) => updateDraft({ slug: e.target.value })} className="bg-[#FAFAF9] border-[#E8E6E1] mt-1 font-mono text-sm" />
+                  <Input data-testid="studio-slug" value={draft.slug} onChange={(e) => updateDraft({ slug: e.target.value })} className="bg-[#F8FAFC] border-[#E5E7EB] mt-1 font-mono text-sm" />
                 </div>
                 <div className="sm:col-span-2">
                   <Label className="text-xs uppercase tracking-[0.15em]">Meta description</Label>
-                  <Textarea data-testid="studio-meta" value={draft.meta_description} onChange={(e) => updateDraft({ meta_description: e.target.value })} className="bg-[#FAFAF9] border-[#E8E6E1] min-h-[70px] mt-1" />
+                  <Textarea data-testid="studio-meta" value={draft.meta_description} onChange={(e) => updateDraft({ meta_description: e.target.value })} className="bg-[#F8FAFC] border-[#E5E7EB] min-h-[70px] mt-1" />
                 </div>
                 <div className="sm:col-span-2">
                   <Label className="text-xs uppercase tracking-[0.15em]">Excerpt</Label>
-                  <Textarea data-testid="studio-excerpt" value={draft.excerpt} onChange={(e) => updateDraft({ excerpt: e.target.value })} className="bg-[#FAFAF9] border-[#E8E6E1] min-h-[70px] mt-1" />
+                  <Textarea data-testid="studio-excerpt" value={draft.excerpt} onChange={(e) => updateDraft({ excerpt: e.target.value })} className="bg-[#F8FAFC] border-[#E5E7EB] min-h-[70px] mt-1" />
                 </div>
                 <div>
                   <Label className="text-xs uppercase tracking-[0.15em]">Category</Label>
-                  <Input data-testid="studio-cat" value={draft.category} onChange={(e) => updateDraft({ category: e.target.value })} className="bg-[#FAFAF9] border-[#E8E6E1] mt-1" />
+                  <Input data-testid="studio-cat" value={draft.category} onChange={(e) => updateDraft({ category: e.target.value })} className="bg-[#F8FAFC] border-[#E5E7EB] mt-1" />
                 </div>
                 <div>
                   <Label className="text-xs uppercase tracking-[0.15em]">Hero image URL</Label>
-                  <Input data-testid="studio-hero" value={heroImage} onChange={(e) => setHeroImage(e.target.value)} className="bg-[#FAFAF9] border-[#E8E6E1] mt-1" placeholder="https://..." />
+                  <Input data-testid="studio-hero" value={heroImage} onChange={(e) => setHeroImage(e.target.value)} className="bg-[#F8FAFC] border-[#E5E7EB] mt-1" placeholder="https://..." />
                 </div>
                 <div className="sm:col-span-2">
                   <Label className="text-xs uppercase tracking-[0.15em]">Content (markdown)</Label>
-                  <Textarea data-testid="studio-content" value={draft.content} onChange={(e) => updateDraft({ content: e.target.value })} className="bg-[#FAFAF9] border-[#E8E6E1] min-h-[300px] mt-1 font-mono text-sm" />
+                  <Textarea data-testid="studio-content" value={draft.content} onChange={(e) => updateDraft({ content: e.target.value })} className="bg-[#F8FAFC] border-[#E5E7EB] min-h-[300px] mt-1 font-mono text-sm" />
                 </div>
               </div>
 
-              <div className="flex flex-wrap justify-between items-center gap-3 pt-2 border-t border-[#E8E6E1]">
-                <div className="text-xs text-[#4A5D68]">
+              <div className="flex flex-wrap justify-between items-center gap-3 pt-2 border-t border-[#E5E7EB]">
+                <div className="text-xs text-[#475569]">
                   Tags: {draft.tags?.join(", ") || "—"} · Reading time: {draft.reading_time_minutes} min
                 </div>
                 <div className="flex gap-2">
-                  <Button asChild variant="outline" size="sm" className="border-[#E8E6E1] text-[#0B2B40] hover:border-[#0B2B40]">
+                  <Button asChild variant="outline" size="sm" className="border-[#E5E7EB] text-[#014E87] hover:border-[#014E87]">
                     <a href={`/blog/${draft.slug}`} target="_blank" rel="noreferrer" data-testid="studio-preview">
                       <ExternalLink className="h-3.5 w-3.5 mr-1" /> Preview
                     </a>
                   </Button>
-                  <Button onClick={publish} disabled={publishing} data-testid="studio-publish" className="bg-[#0B2B40] hover:bg-[#082030] text-white">
+                  <Button onClick={publish} disabled={publishing} data-testid="studio-publish" className="bg-[#014E87] hover:bg-[#013A66] text-white">
                     {publishing ? (
                       <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Publishing...</>
                     ) : (

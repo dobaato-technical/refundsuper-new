@@ -24,7 +24,7 @@ export default function BlogShareButton({ title }) {
       onClick={shareArticle}
       variant="outline"
       size="sm"
-      className="border-2 border-[#E8E6E1] text-[#0B2B40] hover:border-[#0B2B40]"
+      className="border-2 border-[#E5E7EB] text-[#014E87] hover:border-[#014E87]"
     >
       <Share2 className="h-4 w-4 mr-2" /> Share
     </Button>

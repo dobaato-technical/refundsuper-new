@@ -67,14 +67,14 @@ function AdminCommentsInner() {
   const pendingCount = items.filter((c) => !c.approved).length;
 
   return (
-    <div className="min-h-screen bg-[#F7F5F0] text-[#0B2B40]">
-      <header className="bg-white border-b border-[#E8E6E1] sticky top-0 z-30">
+    <div className="min-h-screen bg-[#F2F2F2] text-[#014E87]">
+      <header className="bg-white border-b border-[#E5E7EB] sticky top-0 z-30">
         <div className="px-6 md:px-10 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/admin" className="inline-flex items-center gap-1 text-sm text-[#4A5D68] hover:text-[#0B2B40]" data-testid="back-to-admin">
+            <Link href="/admin" className="inline-flex items-center gap-1 text-sm text-[#475569] hover:text-[#014E87]" data-testid="back-to-admin">
               <ArrowLeft className="h-4 w-4" /> Dashboard
             </Link>
-            <span className="text-[#E8E6E1]">·</span>
+            <span className="text-[#E5E7EB]">·</span>
             <div className="font-display font-medium">Comment moderation</div>
           </div>
         </div>
@@ -84,13 +84,13 @@ function AdminCommentsInner() {
         <div className="flex items-end justify-between mb-6 flex-wrap gap-4">
           <div>
             <h1 className="font-display text-3xl font-medium tracking-tight flex items-center gap-3">
-              <MessageCircle className="h-6 w-6 text-[#E05D43]" />
-              {items.length} comments{pendingCount > 0 && <span className="text-sm text-[#E05D43] font-normal">· {pendingCount} pending</span>}
+              <MessageCircle className="h-6 w-6 text-[#014E87]" />
+              {items.length} comments{pendingCount > 0 && <span className="text-sm text-[#014E87] font-normal">· {pendingCount} pending</span>}
             </h1>
-            <p className="text-[#4A5D68] mt-1">Approve, delete, or triage community stories.</p>
+            <p className="text-[#475569] mt-1">Approve, delete, or triage community stories.</p>
           </div>
           <div className="flex items-center gap-2" data-testid="comment-filter">
-            <span className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.15em] text-[#4A5D68] mr-1">
+            <span className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.15em] text-[#475569] mr-1">
               <Filter className="h-3 w-3" /> Show
             </span>
             {["all", "pending", "approved"].map((f) => (
@@ -100,8 +100,8 @@ function AdminCommentsInner() {
                 onClick={() => setFilter(f)}
                 className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                   filter === f
-                    ? "bg-[#0B2B40] border-[#0B2B40] text-white"
-                    : "bg-white border-[#E8E6E1] text-[#4A5D68] hover:border-[#0B2B40]"
+                    ? "bg-[#014E87] border-[#014E87] text-white"
+                    : "bg-white border-[#E5E7EB] text-[#475569] hover:border-[#014E87]"
                 }`}
               >
                 {f}
@@ -111,9 +111,9 @@ function AdminCommentsInner() {
         </div>
 
         {loading ? (
-          <p className="text-[#4A5D68]">Loading...</p>
+          <p className="text-[#475569]">Loading...</p>
         ) : items.length === 0 ? (
-          <div className="bg-white border border-dashed border-[#E8E6E1] rounded-2xl p-12 text-center text-[#4A5D68]" data-testid="no-comments">
+          <div className="bg-white border border-dashed border-[#E5E7EB] rounded-2xl p-12 text-center text-[#475569]" data-testid="no-comments">
             No comments in this view.
           </div>
         ) : (
@@ -122,29 +122,29 @@ function AdminCommentsInner() {
               <li
                 key={c.id}
                 data-testid={`comment-row-${c.id}`}
-                className="bg-white border border-[#E8E6E1] rounded-xl p-5 flex flex-col sm:flex-row gap-4"
+                className="bg-white border border-[#E5E7EB] rounded-xl p-5 flex flex-col sm:flex-row gap-4"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <span className="font-medium text-[#0B2B40]">{c.author_name}</span>
-                    <span className="text-xs text-[#4A5D68]">{c.author_email}</span>
+                    <span className="font-medium text-[#014E87]">{c.author_name}</span>
+                    <span className="text-xs text-[#475569]">{c.author_email}</span>
                     <span
                       className={`text-[10px] uppercase tracking-[0.15em] px-2 py-0.5 rounded-full ${
-                        c.approved ? "bg-[#E6EFD8] text-[#2E7D32]" : "bg-[#FFF6F2] text-[#9B3A26]"
+                        c.approved ? "bg-[#E6EFD8] text-[#2E7D32]" : "bg-[#EBF3FA] text-[#9B3A26]"
                       }`}
                     >
                       {c.approved ? "approved" : "pending"}
                     </span>
                     {c.parent_id && (
-                      <span className="text-[10px] uppercase tracking-[0.15em] text-[#4A5D68] bg-[#FAFAF9] border border-[#E8E6E1] px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] uppercase tracking-[0.15em] text-[#475569] bg-[#F8FAFC] border border-[#E5E7EB] px-2 py-0.5 rounded-full">
                         reply
                       </span>
                     )}
                   </div>
-                  <p className="text-[#0B2B40] leading-relaxed whitespace-pre-wrap">{c.body}</p>
-                  <div className="text-xs text-[#4A5D68] mt-3">
+                  <p className="text-[#014E87] leading-relaxed whitespace-pre-wrap">{c.body}</p>
+                  <div className="text-xs text-[#475569] mt-3">
                     on{" "}
-                    <Link href={`/blog/${c.post_slug}`} target="_blank" rel="noreferrer" className="text-[#E05D43] hover:underline">
+                    <Link href={`/blog/${c.post_slug}`} target="_blank" rel="noreferrer" className="text-[#014E87] hover:underline">
                       /blog/{c.post_slug}
                     </Link>{" "}
                     · {new Date(c.created_at).toLocaleString("en-AU")}
@@ -166,7 +166,7 @@ function AdminCommentsInner() {
                     onClick={() => setPendingDelete(c)}
                     data-testid={`delete-${c.id}`}
                     variant="outline"
-                    className="border-2 border-[#F3C8BB] text-[#9B3A26] hover:bg-[#FFF6F2]"
+                    className="border-2 border-[#F3C8BB] text-[#9B3A26] hover:bg-[#EBF3FA]"
                   >
                     <Trash2 className="h-4 w-4 mr-1" /> Delete
                   </Button>
@@ -184,8 +184,8 @@ function AdminCommentsInner() {
             <AlertDialogDescription>
               {pendingDelete && (
                 <>
-                  <span className="block mt-2 text-[#0B2B40] font-medium">{pendingDelete.author_name}</span>
-                  <span className="block text-sm text-[#4A5D68] line-clamp-3 whitespace-pre-wrap">
+                  <span className="block mt-2 text-[#014E87] font-medium">{pendingDelete.author_name}</span>
+                  <span className="block text-sm text-[#475569] line-clamp-3 whitespace-pre-wrap">
                     &quot;{pendingDelete.body}&quot;
                   </span>
                   <span className="block mt-3 text-xs">

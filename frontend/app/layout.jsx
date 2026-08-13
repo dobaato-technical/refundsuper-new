@@ -4,66 +4,68 @@ import { Toaster } from "@/components/ui/sonner";
 import SiteVerification from "@/components/SiteVerification";
 import PostHog from "@/components/PostHog";
 
-const SITE_URL = process.env.REACT_APP_SITE_URL || "https://aussieback.com";
+const SITE_URL = process.env.REACT_APP_SITE_URL || "https://refundsuper.com.au";
 const OG_IMAGE =
   "https://images.pexels.com/photos/542811/pexels-photo-542811.jpeg?auto=compress&cs=tinysrgb&h=630&w=1200";
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "AussieBack — Claim Your Australian Super Refund (DASP) in 3 Minutes",
-    template: "%s · AussieBack",
+    default: "Super Refund Australia — Claim Your Australian Superannuation Refund (DASP)",
+    template: "%s · Super Refund Australia",
   },
   description:
-    "Claim your Australian Super refund (DASP) in under 3 minutes. Free estimate for backpackers, working holiday makers and international students who've left Australia. Get up to 65% of your super back.",
+    "The trusted portal for former Australian residents from India, China and beyond to claim their superannuation refund (DASP). Free estimate, expert review, paid straight to your bank in under 4 weeks.",
   keywords: [
     "australian super refund",
-    "super back australia",
+    "super refund australia",
+    "refundsuper",
     "DASP",
     "departing australia superannuation payment",
-    "working holiday super refund",
-    "student visa super",
-    "backpacker tax refund",
+    "super refund india",
+    "super refund china",
+    "482 visa super refund",
+    "student visa super refund",
   ],
-  authors: [{ name: "AussieBack" }],
+  authors: [{ name: "Super Refund Australia" }],
   robots: { index: true, follow: true, "max-image-preview": "large" },
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
-    siteName: "AussieBack",
-    title: "AussieBack — Claim Your Australian Super Refund",
+    siteName: "Super Refund Australia",
+    title: "Super Refund Australia — Claim Your Australian Super Refund",
     description:
-      "Left Australia? Don't leave your cash behind. Estimate and claim your Australian Super refund in under 3 minutes.",
+      "The trusted portal for former Australian residents from India, China and beyond to claim their superannuation refund.",
     url: SITE_URL,
     images: [OG_IMAGE],
     locale: "en_AU",
   },
   twitter: {
     card: "summary_large_image",
-    title: "AussieBack — Claim Your Australian Super Refund",
-    description: "Estimate and claim your Australian Super refund (DASP) in under 3 minutes.",
+    title: "Super Refund Australia — Claim Your Australian Super Refund",
+    description: "Free estimate, expert review, refund paid straight to your bank in under 4 weeks.",
     images: [OG_IMAGE],
   },
   other: {
-    "theme-color": "#E05D43",
+    "theme-color": "#014E87",
   },
 };
 
 const ORG_JSONLD = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "AussieBack",
+  name: "Super Refund Australia",
   url: SITE_URL,
   logo: `${SITE_URL}/logo.png`,
   description:
-    "AussieBack helps returning temporary residents claim their Australian Super refund (DASP) — for backpackers, working holiday makers and international students.",
+    "Super Refund Australia is the trusted portal for former Australian residents from India, China and beyond to claim their superannuation refund (DASP).",
   sameAs: [],
 };
 
 const SITE_JSONLD = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "AussieBack",
+  name: "Super Refund Australia",
   url: SITE_URL,
   potentialAction: {
     "@type": "SearchAction",

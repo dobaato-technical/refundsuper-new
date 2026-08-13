@@ -14,7 +14,7 @@ export default function LanguageSwitcher() {
     <DropdownMenu>
       <DropdownMenuTrigger
         data-testid="lang-switcher"
-        className="inline-flex items-center gap-1.5 text-sm text-[#4A5D68] hover:text-[#0B2B40] transition-colors px-2 py-1 rounded"
+        className="inline-flex items-center gap-1.5 text-sm text-[#475569] hover:text-[#014E87] transition-colors px-2 py-1 rounded"
       >
         <Globe className="h-4 w-4" />
         <span className="font-medium">{current.label}</span>
@@ -28,7 +28,7 @@ export default function LanguageSwitcher() {
             className="flex items-center justify-between"
           >
             <span>{l.name}</span>
-            {l.code === current.code && <Check className="h-3.5 w-3.5 text-[#E05D43]" />}
+            {l.code === current.code && <Check className="h-3.5 w-3.5 text-[#014E87]" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

@@ -63,7 +63,7 @@ WEEKLY_DIGEST_TZ = os.environ.get("WEEKLY_DIGEST_TZ", "Australia/Sydney")
 WEEKLY_DIGEST_ENABLED = os.environ.get("WEEKLY_DIGEST_ENABLED", "true").lower() == "true"
 
 EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
-SITE_URL = os.environ.get("SITE_URL", "https://aussieback.com").rstrip("/")
+SITE_URL = os.environ.get("SITE_URL", "https://refundsuper.com.au").rstrip("/")
 GOOGLE_SITE_VERIFICATION = os.environ.get("GOOGLE_SITE_VERIFICATION", "").strip()
 COMMENTS_AUTO_APPROVE = os.environ.get("COMMENTS_AUTO_APPROVE", "true").lower() == "true"
 

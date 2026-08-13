@@ -15,7 +15,7 @@ import AdminGuard from "@/components/AdminGuard";
 const STATUS_COLORS = {
   pending: "bg-[#FFF4DC] text-[#7A5A12] border-[#F1D77A]",
   success: "bg-[#E6EFD8] text-[#2E7D32] border-[#B8D19A]",
-  dead: "bg-[#FFF6F2] text-[#9B3A26] border-[#F3C8BB]",
+  dead: "bg-[#EBF3FA] text-[#9B3A26] border-[#F3C8BB]",
 };
 
 function relTime(iso) {
@@ -103,16 +103,16 @@ function OutboxInner() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5F0] text-[#0B2B40]">
-      <header className="bg-white border-b border-[#E8E6E1] sticky top-0 z-30">
+    <div className="min-h-screen bg-[#F2F2F2] text-[#014E87]">
+      <header className="bg-white border-b border-[#E5E7EB] sticky top-0 z-30">
         <div className="px-6 md:px-10 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/admin" className="inline-flex items-center gap-1 text-sm text-[#4A5D68] hover:text-[#0B2B40]" data-testid="back-to-admin">
+            <Link href="/admin" className="inline-flex items-center gap-1 text-sm text-[#475569] hover:text-[#014E87]" data-testid="back-to-admin">
               <ArrowLeft className="h-4 w-4" /> Dashboard
             </Link>
-            <span className="text-[#E8E6E1]">·</span>
+            <span className="text-[#E5E7EB]">·</span>
             <div className="font-display font-medium flex items-center gap-2">
-              <Radio className="h-4 w-4 text-[#E05D43]" />
+              <Radio className="h-4 w-4 text-[#014E87]" />
               Webhook outbox
             </div>
           </div>
@@ -120,7 +120,7 @@ function OutboxInner() {
             data-testid="outbox-flush"
             onClick={flushNow}
             disabled={flushing}
-            className="bg-[#0B2B40] hover:bg-[#082030] text-white"
+            className="bg-[#014E87] hover:bg-[#013A66] text-white"
           >
             <Zap className="h-4 w-4 mr-2" /> {flushing ? "Flushing..." : "Flush now"}
           </Button>
@@ -132,7 +132,7 @@ function OutboxInner() {
           {[
             { key: "pending", label: "Pending", color: "text-[#7A5A12]", bg: "bg-[#FFF4DC]" },
             { key: "success", label: "Delivered", color: "text-[#2E7D32]", bg: "bg-[#E6EFD8]" },
-            { key: "dead", label: "Dead", color: "text-[#9B3A26]", bg: "bg-[#FFF6F2]" },
+            { key: "dead", label: "Dead", color: "text-[#9B3A26]", bg: "bg-[#EBF3FA]" },
           ].map((c) => (
             <button
               key={c.key}
@@ -140,20 +140,20 @@ function OutboxInner() {
               onClick={() => setFilter(filter === c.key ? "" : c.key)}
               data-testid={`outbox-count-${c.key}`}
               className={`text-left bg-white border rounded-xl p-5 transition-all hover:-translate-y-0.5 ${
-                filter === c.key ? "border-[#0B2B40]" : "border-[#E8E6E1]"
+                filter === c.key ? "border-[#014E87]" : "border-[#E5E7EB]"
               }`}
             >
               <div className={`inline-flex h-10 w-10 rounded-lg items-center justify-center ${c.bg} ${c.color} mb-3`}>
                 <Radio className="h-5 w-5" />
               </div>
-              <div className="text-xs uppercase tracking-[0.15em] text-[#4A5D68]">{c.label}</div>
+              <div className="text-xs uppercase tracking-[0.15em] text-[#475569]">{c.label}</div>
               <div className={`font-display text-3xl font-medium ${c.color}`}>{counts[c.key] ?? 0}</div>
             </button>
           ))}
         </div>
 
         <div className="flex items-center gap-2 mb-3" data-testid="outbox-filter-bar">
-          <span className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.15em] text-[#4A5D68] mr-1">
+          <span className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.15em] text-[#475569] mr-1">
             <Filter className="h-3 w-3" /> Show
           </span>
           {["", "pending", "success", "dead"].map((f) => (
@@ -163,30 +163,30 @@ function OutboxInner() {
               data-testid={`outbox-filter-${f || "all"}`}
               className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                 filter === f
-                  ? "bg-[#0B2B40] border-[#0B2B40] text-white"
-                  : "bg-white border-[#E8E6E1] text-[#4A5D68] hover:border-[#0B2B40]"
+                  ? "bg-[#014E87] border-[#014E87] text-white"
+                  : "bg-white border-[#E5E7EB] text-[#475569] hover:border-[#014E87]"
               }`}
             >
               {f || "all"}
             </button>
           ))}
-          <span className="ml-auto text-xs text-[#4A5D68]">
+          <span className="ml-auto text-xs text-[#475569]">
             Auto-refreshes every 15s · max attempts {maxAttempts}
           </span>
         </div>
 
         {loading ? (
-          <p className="text-[#4A5D68]">Loading...</p>
+          <p className="text-[#475569]">Loading...</p>
         ) : rows.length === 0 ? (
-          <div className="bg-white border border-dashed border-[#E8E6E1] rounded-2xl p-12 text-center text-[#4A5D68]" data-testid="outbox-empty">
+          <div className="bg-white border border-dashed border-[#E5E7EB] rounded-2xl p-12 text-center text-[#475569]" data-testid="outbox-empty">
             No {filter || "outbox"} events yet. Once a lead is captured or a status changes, you'll see the CRM handoff here.
           </div>
         ) : (
-          <div className="bg-white border border-[#E8E6E1] rounded-xl overflow-hidden">
+          <div className="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm" data-testid="outbox-table">
                 <thead>
-                  <tr className="border-b border-[#E8E6E1] bg-[#FAFAF9] text-left text-[11px] uppercase tracking-[0.15em] text-[#4A5D68]">
+                  <tr className="border-b border-[#E5E7EB] bg-[#F8FAFC] text-left text-[11px] uppercase tracking-[0.15em] text-[#475569]">
                     <th className="px-4 py-3">Event</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3 text-right">Attempts</th>
@@ -200,12 +200,12 @@ function OutboxInner() {
                     <tr
                       key={r.id}
                       data-testid={`outbox-row-${r.id}`}
-                      className="border-b border-[#E8E6E1] last:border-0 hover:bg-[#FAFAF9] cursor-pointer"
+                      className="border-b border-[#E5E7EB] last:border-0 hover:bg-[#F8FAFC] cursor-pointer"
                       onClick={() => setSelected(r)}
                     >
                       <td className="px-4 py-3">
-                        <div className="font-medium text-[#0B2B40]">{r.event}</div>
-                        <div className="text-[11px] text-[#4A5D68]">
+                        <div className="font-medium text-[#014E87]">{r.event}</div>
+                        <div className="text-[11px] text-[#475569]">
                           {relTime(r.created_at)}
                         </div>
                       </td>
@@ -217,7 +217,7 @@ function OutboxInner() {
                       <td className="px-4 py-3 text-right tabular-nums">
                         {r.attempts} <span className="opacity-40">/ {maxAttempts}</span>
                       </td>
-                      <td className="px-4 py-3 text-[#4A5D68] text-xs">
+                      <td className="px-4 py-3 text-[#475569] text-xs">
                         {r.status === "success"
                           ? `delivered ${relTime(r.delivered_at)}`
                           : r.status === "dead"
@@ -233,7 +233,7 @@ function OutboxInner() {
                             type="button"
                             onClick={() => copyBody(r)}
                             data-testid={`outbox-copy-${r.id}`}
-                            className="p-1.5 rounded text-[#4A5D68] hover:text-[#0B2B40] hover:bg-white"
+                            className="p-1.5 rounded text-[#475569] hover:text-[#014E87] hover:bg-white"
                             aria-label="Copy payload"
                           >
                             <Copy className="h-4 w-4" />
@@ -243,7 +243,7 @@ function OutboxInner() {
                               type="button"
                               onClick={() => retry(r)}
                               data-testid={`outbox-retry-${r.id}`}
-                              className="inline-flex items-center gap-1 text-[11px] text-[#0B2B40] hover:bg-white border border-[#E8E6E1] rounded px-2 py-1 transition-colors"
+                              className="inline-flex items-center gap-1 text-[11px] text-[#014E87] hover:bg-white border border-[#E5E7EB] rounded px-2 py-1 transition-colors"
                             >
                               <RotateCcw className="h-3 w-3" />
                               Retry
@@ -253,7 +253,7 @@ function OutboxInner() {
                             type="button"
                             onClick={() => remove(r)}
                             data-testid={`outbox-delete-${r.id}`}
-                            className="p-1.5 rounded text-[#9B3A26] hover:bg-[#FFF6F2]"
+                            className="p-1.5 rounded text-[#9B3A26] hover:bg-[#EBF3FA]"
                             aria-label="Delete row"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -273,11 +273,11 @@ function OutboxInner() {
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
         <DialogContent className="max-w-2xl bg-white" data-testid="outbox-detail-modal">
           <DialogHeader>
-            <DialogTitle className="font-display text-xl text-[#0B2B40] flex items-center gap-2">
-              <Radio className="h-4 w-4 text-[#E05D43]" />
+            <DialogTitle className="font-display text-xl text-[#014E87] flex items-center gap-2">
+              <Radio className="h-4 w-4 text-[#014E87]" />
               {selected?.event}
             </DialogTitle>
-            <DialogDescription className="text-xs text-[#4A5D68]">
+            <DialogDescription className="text-xs text-[#475569]">
               Delivery details and signed JSON payload sent to your CRM webhook.
             </DialogDescription>
           </DialogHeader>
@@ -285,39 +285,39 @@ function OutboxInner() {
             <div className="space-y-4 text-sm">
               <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs">
                 <div>
-                  <span className="text-[#4A5D68] uppercase tracking-[0.12em]">Status</span>
-                  <div className="text-[#0B2B40] font-medium">{selected.status}</div>
+                  <span className="text-[#475569] uppercase tracking-[0.12em]">Status</span>
+                  <div className="text-[#014E87] font-medium">{selected.status}</div>
                 </div>
                 <div>
-                  <span className="text-[#4A5D68] uppercase tracking-[0.12em]">Attempts</span>
-                  <div className="text-[#0B2B40] font-medium">{selected.attempts} / {maxAttempts}</div>
+                  <span className="text-[#475569] uppercase tracking-[0.12em]">Attempts</span>
+                  <div className="text-[#014E87] font-medium">{selected.attempts} / {maxAttempts}</div>
                 </div>
                 <div>
-                  <span className="text-[#4A5D68] uppercase tracking-[0.12em]">Created</span>
-                  <div className="text-[#0B2B40]">{new Date(selected.created_at).toLocaleString("en-AU")}</div>
+                  <span className="text-[#475569] uppercase tracking-[0.12em]">Created</span>
+                  <div className="text-[#014E87]">{new Date(selected.created_at).toLocaleString("en-AU")}</div>
                 </div>
                 {selected.delivered_at && (
                   <div>
-                    <span className="text-[#4A5D68] uppercase tracking-[0.12em]">Delivered</span>
-                    <div className="text-[#0B2B40]">{new Date(selected.delivered_at).toLocaleString("en-AU")}</div>
+                    <span className="text-[#475569] uppercase tracking-[0.12em]">Delivered</span>
+                    <div className="text-[#014E87]">{new Date(selected.delivered_at).toLocaleString("en-AU")}</div>
                   </div>
                 )}
                 <div className="col-span-2">
-                  <span className="text-[#4A5D68] uppercase tracking-[0.12em]">URL</span>
-                  <div className="text-[#0B2B40] break-all font-mono text-[11px]">{selected.url}</div>
+                  <span className="text-[#475569] uppercase tracking-[0.12em]">URL</span>
+                  <div className="text-[#014E87] break-all font-mono text-[11px]">{selected.url}</div>
                 </div>
                 {selected.last_error && (
                   <div className="col-span-2">
-                    <span className="text-[#4A5D68] uppercase tracking-[0.12em]">Last error</span>
+                    <span className="text-[#475569] uppercase tracking-[0.12em]">Last error</span>
                     <div className="text-[#9B3A26] break-all">{selected.last_error}</div>
                   </div>
                 )}
               </div>
               <div>
-                <div className="text-xs uppercase tracking-[0.15em] text-[#4A5D68] mb-1">Payload</div>
+                <div className="text-xs uppercase tracking-[0.15em] text-[#475569] mb-1">Payload</div>
                 <pre
                   data-testid="outbox-payload"
-                  className="bg-[#FAFAF9] border border-[#E8E6E1] rounded-lg p-3 text-[11px] leading-relaxed overflow-x-auto max-h-72"
+                  className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-lg p-3 text-[11px] leading-relaxed overflow-x-auto max-h-72"
                 >
 {(() => {
   try { return JSON.stringify(JSON.parse(selected.body), null, 2); }

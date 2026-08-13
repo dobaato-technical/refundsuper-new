@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
-@import url('https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,44 +6,48 @@
 
 @layer base {
     :root {
-        --background: 40 33% 95%;
-        --foreground: 205 60% 15%;
-        --card: 0 0% 100%;
-        --card-foreground: 205 60% 15%;
+        /* Super Refund Australia brand palette */
+        --background: 210 20% 95%;         /* Light Grey #F2F2F2 */
+        --foreground: 210 40% 10%;         /* Slate 950 */
+        --card: 0 0% 100%;                 /* White */
+        --card-foreground: 210 40% 10%;
         --popover: 0 0% 100%;
-        --popover-foreground: 205 60% 15%;
-        --primary: 11 71% 57%;
+        --popover-foreground: 210 40% 10%;
+        --primary: 208 99% 26%;            /* Deep Blue #014E87 */
         --primary-foreground: 0 0% 100%;
-        --secondary: 205 70% 15%;
-        --secondary-foreground: 0 0% 98%;
-        --muted: 40 20% 94%;
-        --muted-foreground: 205 15% 35%;
-        --accent: 18 47% 57%;
-        --accent-foreground: 0 0% 100%;
+        --secondary: 205 99% 38%;          /* Accent Blue #0076C2 */
+        --secondary-foreground: 0 0% 100%;
+        --muted: 210 20% 94%;
+        --muted-foreground: 215 20% 40%;
+        --accent: 42 78% 47%;              /* Warm Gold #D5A31B */
+        --accent-foreground: 210 40% 10%;
         --destructive: 0 64% 51%;
         --destructive-foreground: 0 0% 98%;
-        --border: 40 14% 89%;
-        --input: 40 14% 89%;
-        --ring: 11 71% 57%;
-        --chart-1: 11 71% 57%;
-        --chart-2: 205 70% 15%;
-        --chart-3: 18 47% 57%;
+        --border: 220 13% 91%;             /* Grey 200 */
+        --input: 220 13% 91%;
+        --ring: 208 99% 26%;
+        --chart-1: 208 99% 26%;
+        --chart-2: 205 99% 38%;
+        --chart-3: 42 78% 47%;
         --chart-4: 122 44% 33%;
-        --chart-5: 40 33% 80%;
+        --chart-5: 220 13% 65%;
         --radius: 0.75rem;
 
-        /* AussieBack palette tokens (raw hex usage in components) */
-        --ab-bg: #F7F5F0;
-        --ab-surface: #FFFFFF;
-        --ab-surface-alt: #FAFAF9;
-        --ab-primary: #E05D43;
-        --ab-primary-hover: #C8533B;
-        --ab-secondary: #0B2B40;
-        --ab-secondary-hover: #082030;
-        --ab-accent: #C8795A;
-        --ab-text: #0B2B40;
-        --ab-text-muted: #4A5D68;
-        --ab-border: #E8E6E1;
+        /* Raw brand tokens (used by legacy hex references) */
+        --ab-bg: #F2F2F2;              /* Light Grey (page background) */
+        --ab-surface: #FFFFFF;          /* Card white */
+        --ab-surface-alt: #F8FAFC;      /* Very light blue-grey */
+        --ab-primary: #014E87;          /* Deep Blue — primary CTA */
+        --ab-primary-hover: #013A66;    /* Darker on hover */
+        --ab-primary-soft: #EBF3FA;     /* Light blue tint */
+        --ab-secondary: #0076C2;        /* Accent Blue — links, secondary */
+        --ab-secondary-hover: #005A96;
+        --ab-accent: #D5A31B;           /* Warm Gold — badges, highlights */
+        --ab-accent-hover: #B78A16;
+        --ab-accent-soft: #FEF7E0;      /* Light gold tint */
+        --ab-text: #0F172A;             /* Slate 950 — body */
+        --ab-text-muted: #475569;       /* Slate 600 — muted */
+        --ab-border: #E5E7EB;
         --ab-success: #2E7D32;
     }
 }
@@ -57,16 +60,17 @@
         margin: 0;
         background: var(--ab-bg);
         color: var(--ab-text);
-        font-family: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+        font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
     }
     h1, h2, h3, h4, h5, .font-display {
-        font-family: 'Clash Display', 'Outfit', sans-serif;
-        letter-spacing: -0.01em;
+        font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+        font-weight: 600;
+        letter-spacing: -0.015em;
     }
     ::selection {
-        background: #E05D43;
+        background: #014E87;
         color: #fff;
     }
 }
@@ -74,15 +78,15 @@
 @layer utilities {
     .ab-grain {
         background-image:
-            radial-gradient(rgba(11,43,64,0.04) 1px, transparent 1px),
-            radial-gradient(rgba(224,93,67,0.04) 1px, transparent 1px);
+            radial-gradient(rgba(1, 78, 135, 0.05) 1px, transparent 1px),
+            radial-gradient(rgba(213, 163, 27, 0.05) 1px, transparent 1px);
         background-size: 24px 24px, 38px 38px;
         background-position: 0 0, 12px 8px;
     }
     .ab-hero-gradient {
         background:
-            linear-gradient(120deg, rgba(247,245,240,1) 0%, rgba(247,245,240,0.85) 45%, rgba(247,245,240,0.25) 100%),
-            linear-gradient(180deg, rgba(247,245,240,0) 50%, rgba(247,245,240,1) 100%);
+            linear-gradient(120deg, rgba(242, 242, 242, 1) 0%, rgba(242, 242, 242, 0.85) 45%, rgba(242, 242, 242, 0.15) 100%),
+            linear-gradient(180deg, rgba(242, 242, 242, 0) 50%, rgba(242, 242, 242, 1) 100%);
     }
     .marquee {
         display: flex;
