@@ -34,7 +34,7 @@ export default async function BlogListPage({ searchParams }) {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Blog",
-    name: "AussieBack — Super Refund Guides",
+    name: "refundmysuper — Super Refund Guides",
     description:
       "Guides, case studies and country deep-dives to help temporary residents claim their Australian Super refund (DASP).",
     blogPost: posts.map((p) => ({
@@ -42,7 +42,7 @@ export default async function BlogListPage({ searchParams }) {
       headline: p.title,
       url: `${SITE_URL}/blog/${p.slug}`,
       datePublished: p.published_at,
-      author: { "@type": "Organization", name: p.author || "AussieBack" },
+      author: { "@type": "Organization", name: p.author || "refundmysuper" },
       image: p.hero_image,
     })),
   };
@@ -55,7 +55,7 @@ export default async function BlogListPage({ searchParams }) {
       <section className="px-6 md:px-12 lg:px-24 pt-14 pb-8 border-b border-[#E5E7EB]">
         <div className="max-w-3xl">
           <div className="text-xs uppercase tracking-[0.18em] text-[#014E87] mb-3 font-medium">
-            AussieBack blog
+            refundmysuper blog
           </div>
           <h1 className="font-display text-5xl md:text-6xl font-medium tracking-tight mb-4">
             The Super Refund Playbook

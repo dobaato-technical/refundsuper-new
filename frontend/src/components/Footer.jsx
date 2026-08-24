@@ -14,15 +14,7 @@ export default function Footer() {
       <div className="px-6 md:px-12 lg:px-24 py-16 grid md:grid-cols-4 gap-10">
         <div>
           <div className="flex items-center gap-2.5 mb-4">
-            <BrandLogo size={40} />
-            <div className="flex flex-col leading-tight">
-              <span className="font-display text-[15px] font-bold text-white tracking-tight">
-                SUPER REFUND
-              </span>
-              <span className="font-display text-[11px] font-semibold text-[#D5A31B] tracking-[0.28em]">
-                AUSTRALIA
-              </span>
-            </div>
+            <BrandLogo variant="light" size="md" />
           </div>
           <p className="text-sm leading-relaxed text-[#94A3B8]">
             {t("footer.tagline")}
@@ -56,7 +48,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="border-t border-white/10 px-6 md:px-12 lg:px-24 py-6 text-xs text-[#94A3B8] flex flex-col md:flex-row gap-2 justify-between">
-        <div>© {new Date().getFullYear()} Super Refund Australia. {t("footer.rights")}</div>
+        <div>© {new Date().getFullYear()} refundmysuper. {t("footer.rights")}</div>
         <div className="flex gap-4">
           <a href="#" className="hover:text-white">{t("footer.privacy")}</a>
           <a href="#" className="hover:text-white">{t("footer.terms")}</a>

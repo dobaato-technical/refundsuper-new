@@ -98,10 +98,10 @@ export default async function BlogPostPage({ params }) {
     datePublished: post.published_at,
     dateModified: post.published_at,
     image: post.hero_image,
-    author: { "@type": "Organization", name: post.author || "AussieBack" },
+    author: { "@type": "Organization", name: post.author || "refundmysuper" },
     publisher: {
       "@type": "Organization",
-      name: "AussieBack",
+      name: "refundmysuper",
       logo: { "@type": "ImageObject", url: `${SITE_URL}/logo.png` },
     },
     mainEntityOfPage: {

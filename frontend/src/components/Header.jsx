@@ -30,15 +30,7 @@ export default function Header({ onCtaClick }) {
     >
       <div className="px-6 md:px-12 lg:px-24 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5" data-testid="logo-link">
-          <BrandLogo size={38} />
-          <span className="hidden sm:flex flex-col leading-tight">
-            <span className="font-display text-[15px] font-bold text-[#014E87] tracking-tight">
-              SUPER REFUND
-            </span>
-            <span className="font-display text-[11px] font-semibold text-[#0076C2] tracking-[0.28em]">
-              AUSTRALIA
-            </span>
-          </span>
+          <BrandLogo size="md" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 text-sm text-[#475569] font-medium">

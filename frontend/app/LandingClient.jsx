@@ -15,8 +15,7 @@ import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 
-const HERO_BG =
-  "https://images.pexels.com/photos/542811/pexels-photo-542811.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940";
+const HERO_BG = "/brand/mascot-cutout.jpg";
 const TESTI_1 =
   "https://images.pexels.com/photos/3182812/pexels-photo-3182812.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=400&w=400";
 const TESTI_2 =
@@ -45,8 +44,8 @@ const FAQ = [
     a: "Once your application is lodged with your super fund and the ATO, payments usually take 28 days. We handle the paperwork and chase up delays on your behalf.",
   },
   {
-    q: "Is AussieBack a tax agent?",
-    a: "AussieBack is a facilitation platform. We work alongside Tax Practitioners Board (TPB)-registered tax agents who manage the formal claim on your behalf so it's done correctly and compliantly.",
+    q: "Is refundmysuper a tax agent?",
+    a: "refundmysuper is a facilitation platform. We work alongside Tax Practitioners Board (TPB)-registered tax agents who manage the formal claim on your behalf so it's done correctly and compliantly.",
   },
   {
     q: "How much do you charge?",
@@ -122,13 +121,23 @@ export default function LandingClient() {
       <RefBanner />
 
       {/* HERO */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden bg-[#014E87] text-white">
+        <div className="absolute inset-0 ab-grain opacity-20" />
+        {/* Mascot silhouette — positioned as a right-edge visual on lg+ only */}
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-40"
+          aria-hidden="true"
+          className="hidden lg:block absolute right-0 bottom-0 top-0 w-[38%] bg-cover bg-right-bottom opacity-90 pointer-events-none"
+          style={{
+            backgroundImage: `url(${HERO_BG})`,
+            maskImage: "linear-gradient(to left, black 55%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to left, black 55%, transparent 100%)",
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="lg:hidden absolute inset-0 bg-cover bg-center opacity-15 pointer-events-none"
           style={{ backgroundImage: `url(${HERO_BG})` }}
         />
-        <div className="absolute inset-0 ab-hero-gradient" />
-        <div className="absolute inset-0 ab-grain opacity-50" />
 
         <div className="relative px-6 md:px-12 lg:px-24 pt-16 pb-24 md:pt-24 md:pb-32 grid lg:grid-cols-12 gap-10 items-center">
           <motion.div
@@ -137,54 +146,59 @@ export default function LandingClient() {
             transition={{ duration: 0.6 }}
             className="lg:col-span-7"
           >
-            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur border border-[#E5E7EB] rounded-full px-4 py-1.5 text-xs uppercase tracking-[0.18em] text-[#014E87] mb-6">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#014E87] animate-pulse" />
+            <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur border border-white/25 rounded-full px-4 py-1.5 text-xs uppercase tracking-[0.18em] text-white mb-6">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#D5A31B] animate-pulse" />
               {t("hero.eyebrow")}
             </div>
-            <h1 className="font-display text-5xl sm:text-6xl md:text-7xl font-semibold leading-[1.02] tracking-tight text-[#014E87] mb-6">
+            <h1 className="font-display text-5xl sm:text-6xl md:text-7xl font-bold leading-[1.02] tracking-tight text-white mb-6">
               {t("hero.title_1")} <br />
-              <span className="text-[#014E87]">{t("hero.title_2")}</span>
+              <span className="text-[#D5A31B]">{t("hero.title_2")}</span>
             </h1>
-            <p className="text-lg md:text-xl text-[#475569] max-w-xl mb-8 leading-relaxed">
+            <p className="text-lg md:text-xl text-white/85 max-w-xl mb-8 leading-relaxed">
               {t("hero.subtitle")}
             </p>
             <div className="flex flex-wrap gap-3 mb-8">
               <Button
                 data-testid="hero-cta"
                 onClick={scrollToEstimator}
-                className="bg-[#014E87] hover:bg-[#013A66] text-white h-14 px-7 rounded-lg shadow-[0_4px_14px_0_rgba(1, 78, 135, 0.28)] hover:-translate-y-0.5 transition-all text-base"
+                className="bg-[#D5A31B] hover:bg-[#B78A16] text-[#0F172A] h-14 px-7 rounded-lg shadow-[0_8px_24px_-6px_rgba(213,163,27,0.55)] hover:-translate-y-0.5 transition-all text-base font-semibold"
               >
                 {t("hero.cta_primary")} <ChevronRight className="ml-1 h-5 w-5" />
               </Button>
               <a
                 href="#how"
-                className="inline-flex items-center justify-center border-2 border-[#014E87]/15 hover:border-[#014E87]/40 text-[#014E87] h-14 px-7 rounded-lg transition-colors text-base"
+                className="inline-flex items-center justify-center border-2 border-white/25 hover:border-white/70 text-white h-14 px-7 rounded-lg transition-colors text-base font-medium"
                 data-testid="hero-secondary"
               >
                 {t("hero.cta_secondary")}
               </a>
             </div>
-            <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-[#475569]">
-              <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-[#2E7D32]" /> {t("hero.badge_paperwork")}</span>
-              <span className="flex items-center gap-1.5"><Zap className="h-4 w-4 text-[#014E87]" /> {t("hero.badge_free")}</span>
-              <span className="flex items-center gap-1.5"><Lock className="h-4 w-4 text-[#014E87]" /> {t("hero.badge_security")}</span>
+            <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/80">
+              <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-[#D5A31B]" /> {t("hero.badge_paperwork")}</span>
+              <span className="flex items-center gap-1.5"><Zap className="h-4 w-4 text-[#D5A31B]" /> {t("hero.badge_free")}</span>
+              <span className="flex items-center gap-1.5"><Lock className="h-4 w-4 text-[#D5A31B]" /> {t("hero.badge_security")}</span>
             </div>
           </motion.div>
 
-          <motion.div
-            ref={estimatorRef}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="lg:col-span-5 flex justify-center lg:justify-end"
-          >
-            <Estimator />
-          </motion.div>
         </div>
       </section>
 
+      {/* ESTIMATOR SECTION — pulls up over the hero for a "card overlaps two bands" effect */}
+      <section className="relative -mt-16 md:-mt-24 z-10 px-6 md:px-12 lg:px-24">
+        <motion.div
+          ref={estimatorRef}
+          id="estimator"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.15 }}
+          className="flex justify-center"
+        >
+          <Estimator />
+        </motion.div>
+      </section>
+
       {/* TRUST MARQUEE */}
-      <section className="bg-white border-y border-[#E5E7EB] overflow-hidden">
+      <section className="bg-white border-y border-[#E5E7EB] overflow-hidden mt-16 md:mt-20">
         <div className="py-6 overflow-hidden">
           <div className="marquee">
             {[...TRUST_ITEMS, ...TRUST_ITEMS].map((item, i) => {
@@ -273,7 +287,7 @@ export default function LandingClient() {
                 visa: "Skilled Work 482",
                 amount: "$14,860",
                 quote:
-                  "After three years in Sydney I moved back to India and had no idea my super was still there. Super Refund Australia handled every form — the amount landed in my HDFC account in 26 days.",
+                  "After three years in Sydney I moved back to India and had no idea my super was still there. refundmysuper handled every form — the amount landed in my HDFC account in 26 days.",
                 img: TESTI_1,
               },
               {

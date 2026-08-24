@@ -81,7 +81,14 @@ All other paths continue to route to the Next.js frontend. In preview, `/robots.
 - [x] **Comment Moderation UI** — new `/admin/comments` page listing all comments with filter chips (all / pending / approved), Approve + Delete actions, links back to the source article. "Comments" button added to admin dashboard toolbar.
 - [x] **Bulk Article Autopilot** — new `settings.autopilot` config + `autopilot_queue` collection. Weekly APScheduler cron (Mon 10:00 Australia/Sydney) pops one queued topic and publishes it via Claude Sonnet. Admin can Add/Remove queue items, toggle enable/pause, and manually "Run now" from the Blog Studio "Content Autopilot" card.
 
-## Implemented (Feb 2026 — Iteration 12: Resend live + Outbox UI + ISR revalidation)
+## Implemented (Feb 2026 — Iteration 13: Full brand refresh → refundmysuper)
+- [x] **Rebrand from AussieBack → refundmysuper** — new deep-blue + warm-gold palette applied across every page. Palette in `app/globals.css`: `#014E87` (primary), `#0076C2` (accent), `#D5A31B` (gold CTAs), `#F2F2F2` (page bg), `#FFFFFF` (cards). Typography swapped from Outfit/Clash Display → **Manrope** (Google Fonts stand-in for the brand's "Aura" spec). All 300+ hex-code references migrated via a scripted sweep.
+- [x] **New wordmark** — text-only `refundmysuper` lockup in `components/BrandLogo.jsx` (dark + light variants), replaces the old "A" square across Header, Footer, admin toolbar, admin login card.
+- [x] **Hero redesign** — deep-blue hero band with the brand mascot as a right-edge illustration (`/public/brand/mascot-cutout.jpg`), warm-gold "back where it belongs" tagline highlight, warm-gold CTA (with soft glow shadow). Estimator card floats up out of the hero into the next section for a "card breaks the color boundary" effect.
+- [x] **Copy pivot to India + China** — testimonials swapped to Priya (Mumbai) + Wei (Shanghai) with realistic HDFC / Bank of China refund stories. Hero subtitle mentions Mumbai, Shanghai, Delhi, Beijing explicitly. Brand voice retuned to "Reassuring, Clear, Professional, Confident" per the brand guide.
+- [x] **Domain rename** — `SITE_URL` env default + all metadata now point to `https://refundsuper.com.au`. Footer contact `hello@refundsuper.com.au`. Backend `RESEND_FROM_EMAIL` updated (still needs domain verification in Resend).
+- [x] All existing features preserved — estimator, admin, outbox, ISR revalidation, IndexNow, webhook, blog SSR — no regressions.
+- [ ] **PENDING**: WeChat integration for the Chinese audience (asked, awaiting user's WeChat handle/QR + zh-CN copy choice).
 - [x] **Resend Email activated** — `RESEND_API_KEY` and `RESEND_FROM_EMAIL=hello@aussieback.com` in backend `.env`. Send path fires on every lead creation and is wrapped in try/except so a Resend outage never breaks lead capture. **⚠️ Domain `aussieback.com` is NOT yet verified in Resend** — sends currently fail with `not authorized to send emails from aussieback.com`. Verify the domain in the Resend dashboard to activate delivery. User opted out of `ADMIN_NOTIFICATION_EMAILS` (admin new-lead alerts skipped).
 - [x] **Outbox Admin UI** at `/admin/outbox` — three count cards (pending / delivered / dead), filter chips, "Flush now" toolbar button, table with per-row copy / retry / delete icons, row-click opens a Dialog showing the full JSON payload sent to the CRM. Auto-refreshes every 15s. New "Outbox" toolbar button on `/admin` dashboard links straight to it. Guard: `force_retry` refuses to reset `status=success` rows (prevents accidental double-send).
 - [x] **Next.js ISR revalidation** — new `POST /api/revalidate` route on the Next.js dev server (port 3000), guarded by shared `REVALIDATE_SECRET`. Backend hits it automatically from BOTH the manual publish endpoint (`POST /api/admin/blog/posts`) and the autopilot cron. Revalidates `/`, `/blog`, and `/blog/{slug}` so new articles appear on the live site in **~200ms** instead of waiting for the 60-second ISR window. Full pipeline verified: publish → `IndexNow ping status=202` + `[REVALIDATE] status=200` both logged, article visible on preview immediately.
@@ -119,12 +126,20 @@ All other paths continue to route to the Next.js frontend. In preview, `/robots.
 - **P2**: Admin Outbox UI — visual list of pending/dead webhook rows with one-click retry (endpoints exist, no UI panel yet).
 - **P2**: Rate-limit `GET /api/blog/posts/{slug}/comments` to prevent scraping.
 
-## Backlog
+## Implemented (Feb 2026 — Iteration 12: Resend live + Outbox UI + ISR revalidation)
 - **P0**: Verify `aussieback.com` in the Resend dashboard so `hello@aussieback.com` sender can actually deliver (currently returns "not authorized").
 - **P1**: Un-stub Twilio WhatsApp notification (still stubbed — user deferred).
 - **P1**: Configure `GSC_SERVICE_ACCOUNT_JSON` so Google Search Console gets pinged alongside IndexNow.
 - **P1**: Move `_revalidate_nextjs` HTTP call from sync `requests` inside a coroutine to `asyncio.to_thread` or `httpx.AsyncClient` — currently OK because it's only called from BackgroundTasks (threadpool) but should be cleaned up before scaling.
 - **P2**: Rate-limit `GET /api/blog/posts/{slug}/comments` to prevent scraping.
+
+## Backlog
+- **P0**: Verify `refundsuper.com.au` in the Resend dashboard so `hello@refundsuper.com.au` sender can actually deliver.
+- **P0**: WeChat integration — QR + WeChat ID card, optional zh-CN locale (in progress, awaiting user inputs).
+- **P1**: Un-stub Twilio WhatsApp notification (still stubbed — user deferred).
+- **P1**: Configure `GSC_SERVICE_ACCOUNT_JSON` so Google Search Console gets pinged alongside IndexNow.
+- **P2**: Rate-limit `GET /api/blog/posts/{slug}/comments` to prevent scraping.
+- **P2**: Deep-blue variant of Blog SSR pages (currently blog list/post inherit the old cream background — subtle contrast with the new blue hero on landing).
 
 ## Older Backlog (still valid)
 - **P1**: Multi-admin invitations + audit log.

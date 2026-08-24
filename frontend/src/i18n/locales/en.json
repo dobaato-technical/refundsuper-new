@@ -134,15 +134,15 @@
     "bubble_body": "Any questions about your refund? Our team replies on WhatsApp in under an hour.",
     "bubble_cta": "Message us",
     "dismiss": "Dismiss",
-    "prefill_generic": "Hi Super Refund Australia! I have a question about my Australian superannuation refund.",
-    "prefill_with_estimate": "Hi Super Refund Australia! I just got an estimate of {{amount}} — can you help me claim it?"
+    "prefill_generic": "Hi refundmysuper! I have a question about my Australian superannuation refund.",
+    "prefill_with_estimate": "Hi refundmysuper! I just got an estimate of {{amount}} — can you help me claim it?"
   },
   "footer": {
     "tagline": "The most trusted portal for former Australian residents from India, China and beyond to claim their superannuation refund — fast, simple, secure.",
     "product": "Product",
     "contact": "Contact",
     "compliance": "Compliance",
-    "compliance_body": "Super Refund Australia operates as a facilitation platform. Formal DASP claims are managed in partnership with TPB-registered tax agents. Estimates shown are indicative and not financial advice. Always consult your super fund and the ATO.",
+    "compliance_body": "refundmysuper operates as a facilitation platform. Formal DASP claims are managed in partnership with TPB-registered tax agents. Estimates shown are indicative and not financial advice. Always consult your super fund and the ATO.",
     "rights": "All rights reserved.",
     "privacy": "Privacy",
     "terms": "Terms"
@@ -150,7 +150,7 @@
   "blog_list": {
     "seo_title": "Super Refund Guides & DASP Resources",
     "seo_description": "In-depth guides on claiming your Australian superannuation refund (DASP) — for returnees to India, China and every temporary-visa holder in between.",
-    "eyebrow": "Super Refund Australia · Blog",
+    "eyebrow": "refundmysuper · Blog",
     "title": "Everything you need to claim your Australian super.",
     "subtitle": "Clear, professional guides on DASP refunds, tax rates, visa rules and real stories from clients who got their money back.",
     "filter_label": "Filter",
@@ -178,7 +178,7 @@
   "blog_snippet": {
     "eyebrow": "From the blog",
     "title": "Guides that get you paid.",
-    "subtitle": "Real, hands-on advice for reclaiming your Australian super, straight from the Super Refund Australia knowledge base.",
+    "subtitle": "Real, hands-on advice for reclaiming your Australian super, straight from the refundmysuper knowledge base.",
     "cta": "See all articles"
   },
   "comments": {

@@ -6,7 +6,7 @@
 
 @layer base {
     :root {
-        /* Super Refund Australia brand palette */
+        /* refundmysuper brand palette */
         --background: 210 20% 95%;         /* Light Grey #F2F2F2 */
         --foreground: 210 40% 10%;         /* Slate 950 */
         --card: 0 0% 100%;                 /* White */

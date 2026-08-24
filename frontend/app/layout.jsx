@@ -11,8 +11,8 @@ const OG_IMAGE =
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Super Refund Australia — Claim Your Australian Superannuation Refund (DASP)",
-    template: "%s · Super Refund Australia",
+    default: "refundmysuper — Claim Your Australian Superannuation Refund (DASP)",
+    template: "%s · refundmysuper",
   },
   description:
     "The trusted portal for former Australian residents from India, China and beyond to claim their superannuation refund (DASP). Free estimate, expert review, paid straight to your bank in under 4 weeks.",
@@ -27,13 +27,13 @@ export const metadata = {
     "482 visa super refund",
     "student visa super refund",
   ],
-  authors: [{ name: "Super Refund Australia" }],
+  authors: [{ name: "refundmysuper" }],
   robots: { index: true, follow: true, "max-image-preview": "large" },
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
-    siteName: "Super Refund Australia",
-    title: "Super Refund Australia — Claim Your Australian Super Refund",
+    siteName: "refundmysuper",
+    title: "refundmysuper — Claim Your Australian Super Refund",
     description:
       "The trusted portal for former Australian residents from India, China and beyond to claim their superannuation refund.",
     url: SITE_URL,
@@ -42,7 +42,7 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Super Refund Australia — Claim Your Australian Super Refund",
+    title: "refundmysuper — Claim Your Australian Super Refund",
     description: "Free estimate, expert review, refund paid straight to your bank in under 4 weeks.",
     images: [OG_IMAGE],
   },
@@ -54,18 +54,18 @@ export const metadata = {
 const ORG_JSONLD = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "Super Refund Australia",
+  name: "refundmysuper",
   url: SITE_URL,
   logo: `${SITE_URL}/logo.png`,
   description:
-    "Super Refund Australia is the trusted portal for former Australian residents from India, China and beyond to claim their superannuation refund (DASP).",
+    "refundmysuper is the trusted portal for former Australian residents from India, China and beyond to claim their superannuation refund (DASP).",
   sameAs: [],
 };
 
 const SITE_JSONLD = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "Super Refund Australia",
+  name: "refundmysuper",
   url: SITE_URL,
   potentialAction: {
     "@type": "SearchAction",

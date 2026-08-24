@@ -52,7 +52,7 @@ export default function AdminLoginPage() {
             Admin sign-in
           </h1>
           <p className="text-sm text-[#475569] mb-6">
-            Manage your Super Refund Australia lead pipeline.
+            Manage your refundmysuper lead pipeline.
           </p>
 
           <div className="space-y-4">

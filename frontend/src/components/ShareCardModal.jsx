@@ -110,8 +110,8 @@ export default function ShareCardModal({
       if (!blob) return;
       const file = new File([blob], filename(), { type: "image/png" });
       const shareData = {
-        title: "AussieBack",
-        text: `I'm claiming ${formatAUD(amount || 0)} back from Australia via AussieBack.`,
+        title: "refundmysuper",
+        text: `I'm claiming ${formatAUD(amount || 0)} back from Australia via refundmysuper.`,
         url: shareUrl,
         files: [file],
       };
@@ -357,7 +357,7 @@ function drawCard(ctx, cvs, { aspect, amount, visaLabel, firstName, referralCode
   ctx.font = "600 44px 'Clash Display', system-ui, sans-serif";
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
-  ctx.fillText("AussieBack", 200, 138);
+  ctx.fillText("refundmysuper", 200, 138);
 
   // Eyebrow
   ctx.fillStyle = "rgba(255,255,255,0.85)";

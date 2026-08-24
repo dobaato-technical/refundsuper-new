@@ -25,7 +25,7 @@ export default function NotFound() {
         </p>
         <Button asChild className="bg-[#014E87] hover:bg-[#013A66] text-white h-11" data-testid="notfound-home">
           <Link href="/">
-            <ArrowLeft className="h-4 w-4 mr-2" /> Back to AussieBack
+            <ArrowLeft className="h-4 w-4 mr-2" /> Back to refundmysuper
           </Link>
         </Button>
       </div>

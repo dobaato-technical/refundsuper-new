@@ -128,16 +128,11 @@ function AdminDashboardInner() {
     <div className="min-h-screen bg-[#F2F2F2] text-[#014E87]">
       <header className="bg-white border-b border-[#E5E7EB] sticky top-0 z-30">
         <div className="px-6 md:px-10 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5" data-testid="admin-logo">
-            <BrandLogo size={36} />
-            <div>
-              <div className="font-display font-bold text-[#014E87] leading-none text-[15px] tracking-tight">
-                SUPER REFUND
-              </div>
-              <div className="text-[10px] uppercase tracking-[0.28em] text-[#0076C2] font-semibold mt-0.5">
-                Australia · Admin
-              </div>
-            </div>
+          <Link href="/admin" className="flex items-center gap-2.5" data-testid="admin-logo">
+            <BrandLogo size="sm" />
+            <span className="text-[10px] uppercase tracking-[0.28em] text-[#0076C2] font-semibold border-l border-[#E5E7EB] pl-2.5 ml-0.5">
+              Admin
+            </span>
           </Link>
           <div className="flex items-center gap-3">
             <span className="text-sm text-[#475569] hidden md:inline">
