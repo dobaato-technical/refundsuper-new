@@ -1,0 +1,51 @@
+{
+  "summary": "Iteration 15 QA: verified the three targeted fixes + regression of top flows against the public preview URL. (1) Mobile header no-overflow CONFIRMED at 390px on /, /blog, /admin/login and /nope-404 (documentElement.scrollWidth == clientWidth == 390, header-cta right edge 374px, CTA copy 'Estimate' <640px and 'Calculate my refund' at 768px). (2) SEO rewrites CONFIRMED: public /sitemap.xml -> 200 with valid <urlset>, 9 <loc> entries all on https://refundsuper.com.au; /647f5986a2933034e28889e98ce979f3.txt -> 200 plaintext key; a 32-hex wrong key -> 404; /google<token>.html rewrite proxies to FastAPI correctly; backend-origin /robots.txt (localhost:8001) correct with canonical Sitemap line (public /robots.txt not flagged, per instruction). (3) Brand sweep PARTIALLY done - frontend files/UI are clean (grep over app/, src/, public/ returns only the documented admin-email comment; ShareCard filename refundmysuper-*.png, share_card footer renders refundsuper.com.au, CSV download verified as refundmysuper_leads.csv via real Playwright download, Blog Studio placeholder https://refundsuper.com.au) BUT backend-owned, user-visible copy still says AussieBack: seeded blog article bodies render 13-31 'AussieBack' occurrences in the public SSR HTML of /blog and every article, models.py still defaults new post author to 'AussieBack Team' (reproduced live: a post published through the admin API came back with author 'AussieBack Team'), and outbound WhatsApp/email/digest copy is still AussieBack-branded. Backend pytest: 21/21 passed (tests/test_iteration15.py). Regression: full 3-step lead capture with ?ref=BD6ARU8C&utm_source=qa15 (POST /api/estimate 200 -> POST /api/leads 200 -> success card -> Share Card modal with referral code + reward tiers + download/share/copy), admin login (Admin@123 -> 401 with visible 'Invalid email or password', doWhatYou@321 -> 200 + 3-part JWT + /admin), dashboard stats/analytics/referrers/UTM, blog studio, comments moderation list, outbox list, blog SSR H1 + ld+json, publish pipeline (IndexNow 202 for 3 URLs, [REVALIDATE] status=200 for 3 paths in backend logs). All test data cleaned (2 leads + 2 webhook_outbox rows + 1 temp blog post deleted).",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "POST /api/admin/blog/posts (models.py:136)", "issue": "Default author is still 'AussieBack Team'. Reproduced live: post published via Blog Studio API returned author 'AussieBack Team', so every future post/Claude draft saved through this route ships the old brand on the public article byline. services/blog.py was updated but the Pydantic default in models.py was not.", "priority": "HIGH"}
+    ],
+    "minor": [
+      {"endpoint": "GET /api/blog/posts + /blog SSR", "issue": "Seeded article content/excerpt/meta still contain 'AussieBack' (13 occurrences in /blog HTML, 15 in how-to-claim..., 31 in the case study). blog_seed.py body copy was not swept - only the author field was."},
+      {"endpoint": "GET /api/blog/posts/aussieback-case-study-japanese-student-6180", "issue": "Public slug (and therefore the canonical URL and sitemap entry) still contains 'aussieback'. Needs a slug rename + 301 if SEO matters."},
+      {"endpoint": "integrations.py / services/digest.py", "issue": "Outbound comms copy still AussieBack: WhatsApp body 'this is AussieBack', email subject 'Your AussieBack Super refund estimate', signature '- The AussieBack Team', admin lead alert subject, weekly digest H2."},
+      {"endpoint": "GET /api/ (routes/leads.py:21)", "issue": "Health payload still returns service: 'AussieBack API'; FastAPI app title also 'AussieBack API'. Cosmetic; note that tests/test_aussieback_api.py asserts on this string."},
+      {"endpoint": "Email delivery (Resend)", "issue": "resend.exceptions.ValidationError for example.com recipients in backend.err.log - expected per mocked_api note, no action."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Estimator step 3 (/)", "issues": ["'Approx. date you left Australia' still uses the browser-native date input rendering mm/dd/yyyy (US order) instead of the shadcn date picker / AU order - carried over unfixed from iteration_14 action items."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration15.py",
+    "/app/backend/tests/qa15_publish_pipeline.py",
+    "/app/test_reports/pytest/iteration15.xml"
+  ],
+  "action_items": [
+    "Change models.py:136 default author from 'AussieBack Team' to 'refundmysuper Team' (this is why newly published posts still carry the old byline).",
+    "Sweep 'AussieBack' out of blog_seed.py article bodies and run an update on the existing blog_posts documents - the string is currently rendered on the public /blog list and every article page.",
+    "Rename slug 'aussieback-case-study-japanese-student-6180' (with a redirect) so no public URL/sitemap entry carries the old brand.",
+    "Rebrand outbound copy in integrations.py (WhatsApp + lead/estimate emails + admin alerts) and services/digest.py.",
+    "Optional: next.config.mjs images.remotePatterns still whitelists hostname 'aussieback.com'; also the rewrite fallback hardcodes 'http://localhost:8001' - prefer requiring INTERNAL_BACKEND_URL from env.",
+    "Optional (carry-over): replace the native date input in Estimator step 3 with the shadcn date picker."
+  ],
+  "critical_code_review_comments": [
+    "The brand sweep was scoped to frontend paths only (grep over app/, src/, public/). The authoritative copy for blog articles and outbound messages lives in backend/blog_seed.py, backend/models.py, backend/integrations.py and MongoDB, so the rebrand is still visible to end users despite the frontend grep returning clean.",
+    "next.config.mjs rewrites use a hardcoded 'http://localhost:8001' fallback; if INTERNAL_BACKEND_URL is ever set to the public origin in another env the /sitemap.xml rewrite will loop through ingress. Consider failing fast instead of defaulting.",
+    "Header.jsx duplicates the CTA label in two spans (mobile 'Estimate' is hardcoded English while desktop uses t('nav.cta')) - the short label is not translated, so non-EN locales lose i18n on mobile."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration15.py",
+    "/app/backend/tests/qa15_publish_pipeline.py"
+  ],
+  "success_rate": {"backend": "100% (21/21 pytest)", "frontend": "100% of tested flows (mobile header, lead capture, share card, admin login/dashboard/blog studio/comments/outbox, CSV export)"},
+  "seed_data_creation": "Created and deleted: 1 API lead (TEST_qa15_*@example.com), 1 UI lead (TEST_qa15ui@example.com / TEST_QA15UI), 2 matching webhook_outbox rows, 1 temp blog post 'test-qa15-temp-post'. webhook_outbox back to its pre-run 8 rows; leads back to 31. Older TEST_* leads from previous iterations were left untouched.",
+  "should_call_test_agent_after_fix": true,
+  "should_main_agent_self_test": false,
+  "test_credentials": "admin@aussieback.com / doWhatYou@321 (verified working; old Admin@123 correctly 401s)",
+  "context_for_next_testing_agent": "Verified fixed this run: mobile 390px header (no overflow anywhere, CTA copy switch at 640px), public /sitemap.xml + /{INDEXNOW_KEY}.txt + /google*.html via next.config rewrites, frontend brand strings (ShareCard filename/footer, CSV filename, Blog Studio placeholder, blog SITE_URL). Still open: backend brand strings (models.py default author 'AussieBack Team' reproduced live, blog_seed.py body copy visible in SSR, aussieback-* slug, integrations/digest copy) and the native date input in estimator step 3. Payload gotchas for new tests: POST /api/admin/blog/posts requires BOTH content (>=50 chars) AND meta_description; /api/leads requires E.164 whatsapp_number (+61491570006 valid, 0491570006 -> 422). Real blog slugs: how-to-claim-australian-super-refund-2026-guide, working-holiday-visa-super-refund-guide, student-visa-500-super-refund, uk-backpackers-claim-super-from-london, 5-dasp-refund-mistakes-that-cost-you-thousands, aussieback-case-study-japanese-student-6180. Outbox collection is named 'webhook_outbox' (not 'outbox') - useful for cleanup. Share Card canvas draws a hardcoded 'A' logo mark glyph (ShareCardModal.jsx:353) next to 'refundmysuper' - cosmetic leftover of the old brand initial, reported informally.",
+  "rca_of_the_issue": "Mobile overflow fix works because the logo (sm variant), the CTA cluster and the logo link now carry shrink-0 with a compact h-10/px-3 button under 640px, keeping the flex row within 390px. Sitemap/IndexNow now resolve because next.config.mjs rewrites proxy the root SEO paths to the pod-internal FastAPI (localhost:8001), bypassing the ingress rule that only forwards /api/*. The residual brand problem is a scope RCA: the sweep grepped only /app/frontend/{app,src,public}, but article copy and the default author live in backend/blog_seed.py and backend/models.py plus already-persisted MongoDB documents, so public pages and newly published posts still emit 'AussieBack'."
+}

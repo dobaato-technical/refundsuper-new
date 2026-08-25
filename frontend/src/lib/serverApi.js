@@ -2,8 +2,15 @@
 // Prefers an INTERNAL URL when configured (avoids ingress roundtrips during SSR).
 const BACKEND_URL =
   process.env.INTERNAL_BACKEND_URL ||
-  process.env.REACT_APP_BACKEND_URL ||
-  "http://localhost:8001";
+  process.env.REACT_APP_BACKEND_URL;
+
+if (!BACKEND_URL) {
+  // Fail loud at import time in production if env is misconfigured, rather
+  // than silently issuing requests to localhost:8001 from a prod container.
+  throw new Error(
+    "serverApi: REACT_APP_BACKEND_URL (or INTERNAL_BACKEND_URL) must be set"
+  );
+}
 
 export const API_URL = `${BACKEND_URL}/api`;
 

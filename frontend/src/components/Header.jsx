@@ -28,9 +28,10 @@ export default function Header({ onCtaClick }) {
       data-testid="site-header"
       className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-[#E5E7EB]"
     >
-      <div className="px-6 md:px-12 lg:px-24 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5" data-testid="logo-link">
-          <BrandLogo size="md" />
+      <div className="px-4 sm:px-6 md:px-12 lg:px-24 py-4 flex items-center justify-between gap-2">
+        <Link href="/" className="flex items-center gap-2.5 shrink-0" data-testid="logo-link">
+          <span className="sm:hidden"><BrandLogo size="sm" /></span>
+          <span className="hidden sm:inline-flex"><BrandLogo size="md" /></span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 text-sm text-[#475569] font-medium">
@@ -48,14 +49,16 @@ export default function Header({ onCtaClick }) {
           </Link>
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 shrink-0">
           <LanguageSwitcher />
           <Button
             data-testid="header-cta"
             onClick={handleCta}
-            className="bg-[#014E87] hover:bg-[#013A66] text-white shadow-[0_4px_14px_0_rgba(1,78,135,0.28)] rounded-lg font-semibold hover:-translate-y-0.5 transition-all"
+            size="sm"
+            className="bg-[#014E87] hover:bg-[#013A66] text-white shadow-[0_4px_14px_0_rgba(1,78,135,0.28)] rounded-lg font-semibold hover:-translate-y-0.5 transition-all h-10 px-3 sm:h-11 sm:px-5 text-xs sm:text-sm whitespace-nowrap"
           >
-            {t("nav.cta")}
+            <span className="sm:hidden">{t("nav.cta_short")}</span>
+            <span className="hidden sm:inline">{t("nav.cta")}</span>
           </Button>
         </div>
       </div>

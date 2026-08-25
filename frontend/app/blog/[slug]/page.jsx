@@ -13,7 +13,7 @@ import BlogShareButton from "@/components/BlogShareButton";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/serverApi";
 
-const SITE_URL = process.env.REACT_APP_SITE_URL || "https://aussieback.com";
+const SITE_URL = process.env.REACT_APP_SITE_URL || "https://refundsuper.com.au";
 
 const mdComponents = {
   h2: (p) => <h2 className="font-display text-3xl font-medium text-[#014E87] mt-10 mb-3 tracking-tight" {...p} />,

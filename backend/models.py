@@ -1,4 +1,4 @@
-"""All Pydantic request/response models for AussieBack."""
+"""All Pydantic request/response models for refundmysuper."""
 from pydantic import BaseModel, Field, EmailStr, ConfigDict, field_validator
 from typing import List, Optional, Literal
 import phonenumbers
@@ -133,7 +133,7 @@ class BlogPostUpsert(BaseModel):
     tags: List[str] = Field(default_factory=list)
     keywords: List[str] = Field(default_factory=list)
     hero_image: Optional[str] = None
-    author: str = "AussieBack Team"
+    author: str = "refundmysuper Team"
     reading_time_minutes: int = 4
     content: str = Field(..., min_length=50)
 

@@ -1,0 +1,58 @@
+{
+  "summary": "Iteration 14 regression run after the <Suspense> wrap on app/page.jsx, serverApi.js env-guard, backend/.env SITE_URL dedupe and admin password rotation. Backend: created /app/backend/tests/test_iteration14.py (24 tests) -> 23 pass / 1 fail. Frontend: Playwright over landing, full 3-step lead capture + Share Card, blog list, blog post + comment posting, admin login (old vs new password), dashboard, blog studio, comments moderation (delete-confirm), outbox (flush) and 404, desktop + mobile. NO regression from the Suspense wrap or serverApi refactor: /?utm_source=... and /?ref=CODE still hydrate correctly (useSearchParams works, no hydration/page errors), SSR of /blog and /blog/<slug> still emits the article H1 + 2 ld+json blocks in the initial HTML, so the REACT_APP_BACKEND_URL-only serverApi path is fine. New issues found: public /sitemap.xml 404s through ingress, mobile header CTA overflows the viewport on every page, and residual aussieback.com branding. Test data (4 leads, 3 comments, 1 temp blog post, 7 outbox rows) cleaned up.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /sitemap.xml (public)", "issue": "Backend serves /sitemap.xml at the app root (seo_routes mounted on app, not api_router), but ingress routes every non-/api path to Next.js on :3000, which has no sitemap route -> public https://<preview>/sitemap.xml returns 404 while http://localhost:8001/sitemap.xml returns valid <urlset>. Googlebot cannot fetch the sitemap. Fix: expose it under /api/sitemap.xml + a Next.js app/sitemap.xml route/rewrite, or add a Next rewrite for /sitemap.xml -> backend."},
+      {"endpoint": "GET /robots.txt", "issue": "robots.txt is a static file in /app/frontend/public and still advertises 'Sitemap: https://aussieback.com/sitemap.xml' - stale domain, inconsistent with canonical SITE_URL https://refundsuper.com.au, and points at a 404."},
+      {"endpoint": "startup / passlib", "issue": "Backend log repeats 'passlib.handlers.bcrypt WARNING (trapped) error reading bcrypt version -> module bcrypt has no attribute __about__'. Trapped/harmless today but pin bcrypt<4.1 or move to the bcrypt lib directly to keep hashing from breaking on a future passlib/bcrypt bump."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Header (site-wide)", "issue": "At 390px viewport the header row overflows the viewport: document.scrollWidth=432 vs clientWidth=390 and [data-testid=header-cta] right edge = 432px, so the primary 'Calculate my refund' button is clipped offscreen and the whole page scrolls horizontally. Reproduced on /, /blog and /nope-404. No mobile nav/hamburger treatment.", "selector": "[data-testid=\"header-cta\"]", "priority": "HIGH"},
+      {"component": "Estimator step 3", "issue": "'Approx. date you left Australia' uses a native <input type=date> (renders as mm/dd/yyyy US format) instead of the shadcn calendar/date-picker used elsewhere; US ordering is wrong for an AU/DASP audience.", "selector": "input[type=\"date\"]", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Brand consistency (post rebrand)", "issues": [
+        "Share Card image still prints 'aussieback.com' as the destination URL under 'Estimate yours in 3 minutes' - customers share the old dead domain.",
+        "public/robots.txt Sitemap points to aussieback.com.",
+        "Admin Blog Studio 'Site URL (canonical)' placeholder is https://get.aussieback.co.",
+        "Blog posts are authored as 'AussieBack Team'.",
+        "Admin login email is still admin@aussieback.com (functional, but off-brand)."
+      ]},
+      {"screen": "Estimator mobile (390px)", "issues": ["The 'I know my balance / Estimate from earnings' segmented toggle is clipped at the right edge because of the site-wide horizontal overflow."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration14.py",
+    "/app/backend/tests/qa14_autopilot_and_cleanup.py",
+    "/app/test_reports/pytest/iteration14.xml"
+  ],
+  "action_items": [
+    "Serve /sitemap.xml through the public origin (Next.js route/rewrite or /api/sitemap.xml) and update public/robots.txt Sitemap to the canonical refundsuper.com.au URL.",
+    "Fix mobile header overflow (390px): header-cta is clipped and body scrolls horizontally on every page.",
+    "Sweep remaining 'aussieback.com' / 'AussieBack' strings: share-card footer URL, robots.txt, blog author, admin site-url placeholder.",
+    "Replace the native date input in Estimator step 3 with the shadcn date picker (and AU date order).",
+    "Optional: add allowedDevOrigins to next.config.mjs - dev server logs 'Cross origin request detected from aussie-super-back.cluster-5.preview.emergentcf.cloud to /_next/*' which will hard-fail in a future Next major.",
+    "Optional: dev log noise 'ENOENT .next/prerender-manifest.json' on /admin - stale .next between build/dev; harmless now but a clean rm -rf .next before dev avoids confusion."
+  ],
+  "critical_code_review_comments": [
+    "seo_routes is included on `app` (root) rather than under the /api prefix, so every SEO endpoint it owns (/sitemap.xml, /robots.txt, /google<token>.html, /<indexnow_key>.txt) is unreachable from the public origin because ingress sends non-/api traffic to Next.js. Verify IndexNow key-file verification too - it will 404 for Bing the same way sitemap.xml does.",
+    "app/page.jsx correctly wraps LandingClient in <Suspense fallback={null}>; consider a skeleton instead of null so the hero doesn't flash empty on slow first paint.",
+    "serverApi.js import-time throw is good, but the error will surface as an opaque 500 during SSR - log the env key names in the message (already does) and add the same guard to any other module reading REACT_APP_BACKEND_URL server-side."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration14.py",
+    "/app/backend/tests/qa14_autopilot_and_cleanup.py",
+    "/app/test_reports/iteration_14.json"
+  ],
+  "success_rate": {"backend": "96% (23/24)", "frontend": "92% (all functional flows pass; 1 HIGH mobile layout bug + 1 date-picker nit)"},
+  "seed_data_creation": "Created and then deleted: 4 leads (TEST_qa14ui@, TEST_qa14share@, TEST_qa14ref@, TEST_qa_iter14@example.com), 3 TEST_QA14 comments, blog post slug 'test-qa14-temp-post', 1 autopilot queue item, 7 webhook_outbox rows referencing TEST_qa14. DB is clean - verified counts = 0 after cleanup. Note: the live flowtax.io webhook did receive these test lead/comment events before cleanup.",
+  "should_call_test_agent_after_fix": true,
+  "should_main_agent_self_test": false,
+  "test_credentials": "admin@aussieback.com / doWhatYou@321 - CONFIRMED working (200 + JWT); old Admin@123 correctly returns 401 and the UI shows an 'Invalid email or password' toast.",
+  "context_for_next_testing_agent": "Verified this run: all 9 pages render with the refundmysuper wordmark (note /blog/aussie-super-back in the request is NOT a real slug - it 404s correctly; use how-to-claim-australian-super-refund-2026-guide). SSR H1 + 2 ld+json present in raw curl for /blog and /blog/<slug>. Full lead flow (estimate 200 -> leads 200 -> Share Card modal with referral code, reward tiers, download/share/copy) works. ?ref=CODE attribution verified end-to-end: POST /api/leads body carried referred_by_code=BD6ARU8C and utm_source. Comment posting on articles works (toast 'Thanks - your comment is live'). Admin: login, dashboard stats/analytics/referrers/utm, blog studio, site settings, autopilot (queue add + delete OK; POST /admin/autopilot/queue/{id}/requeue correctly 400s 'Only failed items can be requeued' for a queued item - needs a genuinely failed item to exercise), comments delete-confirm dialog (cancel preserves count), outbox flush (process-now 200, 'Flushed 1 delivered / 0 failed'). Correct payload schemas for tests: /api/estimate {visa_type: working_holiday|other_temp, input_mode: balance|earnings, super_balance|gross_earnings}; /api/leads adds estimated_refund, first_name, email, whatsapp_number (E.164, +61491570006 validates); comments need author_email; POST /api/admin/blog/posts needs `content` (>=50 chars) not body_markdown. Only unresolved failing test: TestSeo::test_seo[/sitemap.xml] (public 404).",
+  "rca_of_the_issue": "Suspense/serverApi changes: no regression. app/page.jsx wraps LandingClient so useSearchParams no longer bails the static render, and serverApi.js resolves BACKEND_URL from INTERNAL_BACKEND_URL||REACT_APP_BACKEND_URL with an import-time throw; SSR blog fetches still succeed (H1 in raw HTML), so the removed localhost fallback is not exercised. Sitemap 404 RCA: seo_routes.router is mounted on `app` at root while Kubernetes ingress routes every path without the /api prefix to the Next.js dev server, so the FastAPI root-level SEO routes are only reachable on localhost:8001 - it is a routing/mount-prefix defect, not a handler bug (localhost:8001/sitemap.xml returns a valid urlset). Mobile overflow RCA: the header's 'flex items-center gap-3' cluster (lang switcher + header-cta) has no responsive collapse, so its intrinsic width (~432px) exceeds a 390px viewport."
+}

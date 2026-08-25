@@ -34,7 +34,7 @@ async def generate_article_draft(topic: str, keywords: List[str], category: Opti
     except ImportError:
         raise HTTPException(status_code=503, detail="emergentintegrations not installed")
     system = (
-        "You are an SEO-savvy travel-finance editor at AussieBack. "
+        "You are an SEO-savvy travel-finance editor at refundmysuper. refundmysuper is the trusted portal for former Australian residents from India, China and beyond claiming their DASP superannuation refund. "
         "Write article drafts about Australian Super refunds (DASP) for backpackers, "
         "working holiday makers and international students who have left Australia. "
         "Always respond with ONLY a JSON object (no code fences, no prose) with keys: "
@@ -45,7 +45,7 @@ async def generate_article_draft(topic: str, keywords: List[str], category: Opti
         "end with a call to action linking to '/#estimator')."
     )
     user_text = (
-        f"Draft an SEO article for AussieBack.\n\n"
+        f"Draft an SEO article for refundmysuper.\n\n"
         f"Topic: {topic}\n"
         f"Target keywords: {', '.join(keywords) if keywords else '(pick from topic)'}\n"
         f"Preferred category: {category or 'auto-select from Guide, By Visa, By Country, Tips, Case Study'}\n\n"
@@ -80,7 +80,7 @@ async def generate_article_draft(topic: str, keywords: List[str], category: Opti
             "reading_time_minutes": int(data.get("reading_time_minutes", 5)),
             "content": data["content"],
             "hero_image": None,
-            "author": "AussieBack Team",
+            "author": "refundmysuper Team",
         }
     except (KeyError, TypeError, ValueError) as e:
         logger.warning("LLM draft parse missing keys: %s | payload=%s", e, data)

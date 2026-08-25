@@ -288,7 +288,7 @@ function AdminBlogStudioInner() {
                   value={siteUrl}
                   onChange={(e) => setSiteUrl(e.target.value)}
                   className="bg-[#F8FAFC] border-[#E5E7EB] h-10 mt-1"
-                  placeholder="https://get.aussieback.co"
+                  placeholder="https://refundsuper.com.au"
                 />
               </div>
               <div>

@@ -97,7 +97,7 @@ function AdminDashboardInner() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "aussieback_leads.csv";
+      a.download = "refundmysuper_leads.csv";
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {

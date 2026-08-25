@@ -1,4 +1,4 @@
-"""AussieBack API — bootstrap.
+"""refundmysuper API — bootstrap.
 
 All request handlers live under `routes/*.py`. This file wires the FastAPI app,
 CORS, rate limiter, DB indexes, the admin seed, and the APScheduler cron jobs.
@@ -34,7 +34,7 @@ from routes import admin_outbox as admin_outbox_routes
 from routes import seo as seo_routes
 
 # ---------------- App ----------------
-app = FastAPI(title="AussieBack API")
+app = FastAPI(title="refundmysuper API")
 app.state.limiter = limiter
 
 

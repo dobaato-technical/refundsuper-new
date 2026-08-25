@@ -1,4 +1,4 @@
-"""Seed blog articles for AussieBack. SEO-optimised for DASP / Super refund keywords.
+"""Seed blog articles for refundmysuper. SEO-optimised for DASP / Super refund keywords.
 Loaded once on backend startup if the collection is empty.
 """
 
@@ -7,11 +7,11 @@ SEED_BLOG_POSTS = [
         "slug": "how-to-claim-australian-super-refund-2026-guide",
         "title": "How to Claim Your Australian Super Refund After Leaving Australia (2026 Guide)",
         "meta_description": "Step-by-step 2026 guide to claiming your Australian Super refund (DASP) after you've left the country. Eligibility, tax rates, timelines and how to avoid the paperwork nightmare.",
-        "keywords": ["super refund", "australian super refund", "DASP", "departing australia superannuation payment", "aussieback"],
+        "keywords": ["super refund", "australian super refund", "DASP", "departing australia superannuation payment", "refundmysuper"],
         "category": "Guide",
         "tags": ["DASP", "guide", "super refund", "australia"],
         "hero_image": "https://images.pexels.com/photos/1450353/pexels-photo-1450353.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200",
-        "author": "AussieBack Team",
+        "author": "refundmysuper Team",
         "reading_time_minutes": 6,
         "excerpt": "You've left Australia. Your super's still sitting there. Here's exactly how to claim your Departing Australia Superannuation Payment (DASP) in 2026 — without the admin nightmare.",
         "content": """## What is a DASP refund?
@@ -42,7 +42,7 @@ The tax the ATO withholds when you claim depends on your visa type:
 
 > **Quick example:** A backpacker with $6,000 in super receives roughly **$2,100** after tax. A former Student 500 visa holder with the same $6,000 balance takes home about **$3,900**.
 
-Use the [AussieBack refund estimator](/) to check your number in under 3 minutes.
+Use the [refundmysuper refund estimator](/) to check your number in under 3 minutes.
 
 ## The 4 steps to claim
 
@@ -59,7 +59,7 @@ Use the [AussieBack refund estimator](/) to check your number in under 3 minutes
 
 ## Prefer to skip the admin?
 
-AussieBack partners with TPB-registered tax agents to run the entire DASP process on your behalf. Free estimate, expert review, refund paid directly to your bank. Estimate yours below.""",
+refundmysuper partners with TPB-registered tax agents to run the entire DASP process on your behalf. Free estimate, expert review, refund paid directly to your bank. Estimate yours below.""",
     },
     {
         "slug": "working-holiday-visa-super-refund-guide",
@@ -69,7 +69,7 @@ AussieBack partners with TPB-registered tax agents to run the entire DASP proces
         "category": "By Visa",
         "tags": ["working holiday", "417", "462", "DASP", "backpacker"],
         "hero_image": "https://images.pexels.com/photos/542811/pexels-photo-542811.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200",
-        "author": "AussieBack Team",
+        "author": "refundmysuper Team",
         "reading_time_minutes": 5,
         "excerpt": "If you were in Australia on a 417 or 462 visa, you're on the high-tax end of DASP — 65%. But 35% of your super is still yours. Here's how to claim it.",
         "content": """## The Working Holiday Maker rules
@@ -107,7 +107,7 @@ Once submitted correctly, the **ATO must pay you within 28 days**. In practice m
 
 ## Speed it up
 
-AussieBack chases your fund, files your DASP paperwork with a TPB-registered agent, and follows up if anything slows down. You upload two documents and we do the rest.
+refundmysuper chases your fund, files your DASP paperwork with a TPB-registered agent, and follows up if anything slows down. You upload two documents and we do the rest.
 
 [Estimate your refund →](/)""",
     },
@@ -119,7 +119,7 @@ AussieBack chases your fund, files your DASP paperwork with a TPB-registered age
         "category": "By Visa",
         "tags": ["student", "500", "485", "DASP", "international student"],
         "hero_image": "https://images.pexels.com/photos/1454360/pexels-photo-1454360.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200",
-        "author": "AussieBack Team",
+        "author": "refundmysuper Team",
         "reading_time_minutes": 4,
         "excerpt": "Unlike Working Holiday Makers, Student 500 visa holders keep a much larger 65% of their super. Here's exactly what you need to do to claim.",
         "content": """## The good news for students
@@ -163,7 +163,7 @@ Estimate your student refund in 3 minutes below.""",
         "category": "By Country",
         "tags": ["UK", "backpacker", "DASP", "working holiday"],
         "hero_image": "https://images.pexels.com/photos/460672/pexels-photo-460672.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200",
-        "author": "AussieBack Team",
+        "author": "refundmysuper Team",
         "reading_time_minutes": 4,
         "excerpt": "You're home in the UK, jet-lagged and staring at the leftover pile of Aussie paperwork. Your super refund is 100% claimable from over here. Here's how.",
         "content": """## Yes, you can absolutely claim from the UK
@@ -198,7 +198,7 @@ For most backpackers the DASP is **not taxable again in the UK** because it's a 
 
 ## Fastest path
 
-Skip the emailing, calling and re-emailing — AussieBack partners with TPB-registered tax agents who chase your fund for you and file the DASP forms on your behalf. Free estimate below.""",
+Skip the emailing, calling and re-emailing — refundmysuper partners with TPB-registered tax agents who chase your fund for you and file the DASP forms on your behalf. Free estimate below.""",
     },
     {
         "slug": "5-dasp-refund-mistakes-that-cost-you-thousands",
@@ -208,7 +208,7 @@ Skip the emailing, calling and re-emailing — AussieBack partners with TPB-regi
         "category": "Tips",
         "tags": ["DASP", "tips", "mistakes", "guide"],
         "hero_image": "https://images.pexels.com/photos/955389/pexels-photo-955389.jpeg?auto=compress&cs=tinysrgb&h=800&w=1200",
-        "author": "AussieBack Team",
+        "author": "refundmysuper Team",
         "reading_time_minutes": 5,
         "excerpt": "The DASP process looks simple until it isn't. These are the five expensive slip-ups we see travellers make — and how to avoid every one of them.",
         "content": """## 1. Claiming before your visa expires
@@ -237,17 +237,17 @@ You have **6 months from your visa cancellation** to claim from your super fund 
 
 ## Do it once, do it right
 
-If you want a set-and-forget path, AussieBack handles the whole DASP claim with a TPB-registered agent. Estimate your refund below and we'll take it from there.""",
+If you want a set-and-forget path, refundmysuper handles the whole DASP claim with a TPB-registered agent. Estimate your refund below and we'll take it from there.""",
     },
     {
         "slug": "aussieback-case-study-japanese-student-6180",
         "title": "Case Study: How Daichi Recovered $6,180 in Super From Tokyo",
-        "meta_description": "Real AussieBack case study: former Japanese student Daichi recovered $6,180 of his Australian super refund from Tokyo in 27 days.",
-        "keywords": ["super refund case study", "student super refund success", "japanese super refund", "aussieback review"],
+        "meta_description": "Real refundmysuper case study: former Japanese student Daichi recovered $6,180 of his Australian super refund from Tokyo in 27 days.",
+        "keywords": ["super refund case study", "student super refund success", "japanese super refund", "refundmysuper review"],
         "category": "Case Study",
         "tags": ["case study", "student", "japan", "success"],
         "hero_image": "https://images.unsplash.com/photo-1548213238-0da7521bd6e0?crop=entropy&cs=srgb&fm=jpg&w=1200",
-        "author": "AussieBack Team",
+        "author": "refundmysuper Team",
         "reading_time_minutes": 4,
         "excerpt": "Daichi finished his Business degree in Melbourne, moved back to Tokyo, and thought his Aussie chapter was closed. Then he found $6,180 waiting for him.",
         "content": """## The setup
@@ -262,7 +262,7 @@ If you want a set-and-forget path, AussieBack handles the whole DASP claim with 
 
 Daichi had no idea he'd been accumulating super. His employer had paid 12% on top of his hourly wage into a fund he'd never logged into. When he moved home to Tokyo he assumed anything unused would "just close automatically."
 
-Two years later he saw an AussieBack ad on Instagram and used the estimator out of curiosity.
+Two years later he saw an refundmysuper ad on Instagram and used the estimator out of curiosity.
 
 ## The math
 

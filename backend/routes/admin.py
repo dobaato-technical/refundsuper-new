@@ -127,7 +127,7 @@ async def export_leads(current: dict = Depends(get_current_admin)):
     return StreamingResponse(
         iter([buf.getvalue()]),
         media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=aussieback_leads.csv"},
+        headers={"Content-Disposition": "attachment; filename=refundmysuper_leads.csv"},
     )
 
 

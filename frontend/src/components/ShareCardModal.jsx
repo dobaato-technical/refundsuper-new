@@ -83,8 +83,8 @@ export default function ShareCardModal({
   const filename = () => {
     const amt = Math.round(amount || 0);
     return aspect === "story"
-      ? `aussieback-story-${amt}.png`
-      : `aussieback-refund-${amt}.png`;
+      ? `refundmysuper-story-${amt}.png`
+      : `refundmysuper-refund-${amt}.png`;
   };
 
   const downloadPng = () => {
@@ -342,26 +342,26 @@ function drawCard(ctx, cvs, { aspect, amount, visaLabel, firstName, referralCode
     }
   }
 
-  // Logo mark
-  ctx.fillStyle = "#F2F2F2";
+  // Logo mark — gold rupee accent to echo the refundmysuper hero mascot
+  ctx.fillStyle = "#D5A31B";
   roundRect(ctx, 80, 90, 96, 96, 22);
   ctx.fill();
   ctx.fillStyle = "#014E87";
-  ctx.font = "700 62px 'Clash Display', system-ui, sans-serif";
+  ctx.font = "700 62px 'Manrope', system-ui, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText("A", 128, 138);
+  ctx.fillText("₹", 128, 138);
 
   // Brand name
   ctx.fillStyle = "#FFFFFF";
-  ctx.font = "600 44px 'Clash Display', system-ui, sans-serif";
+  ctx.font = "700 44px 'Manrope', system-ui, sans-serif";
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
   ctx.fillText("refundmysuper", 200, 138);
 
   // Eyebrow
   ctx.fillStyle = "rgba(255,255,255,0.85)";
-  ctx.font = "600 26px 'Outfit', system-ui, sans-serif";
+  ctx.font = "600 26px 'Manrope', system-ui, sans-serif";
   ctx.textAlign = "center";
   ctx.fillText(spaced("DASP REFUND · CLAIMED"), W / 2, aspect === "story" ? 350 : 300);
 
@@ -369,21 +369,21 @@ function drawCard(ctx, cvs, { aspect, amount, visaLabel, firstName, referralCode
   const contentTop = aspect === "story" ? 780 : 560;
 
   ctx.fillStyle = "#014E87";
-  ctx.font = "600 82px 'Clash Display', system-ui, sans-serif";
+  ctx.font = "600 82px 'Manrope', system-ui, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   ctx.fillText(t("share.card_headline"), W / 2, contentTop);
 
   ctx.fillStyle = "#014E87";
-  ctx.font = "700 200px 'Clash Display', system-ui, sans-serif";
+  ctx.font = "700 200px 'Manrope', system-ui, sans-serif";
   ctx.fillText(formatAUD(amount || 0), W / 2, contentTop + 100);
 
   ctx.fillStyle = "#014E87";
-  ctx.font = "500 60px 'Clash Display', system-ui, sans-serif";
+  ctx.font = "500 60px 'Manrope', system-ui, sans-serif";
   ctx.fillText(t("share.card_from"), W / 2, contentTop + 340);
 
   // Visa chip
-  ctx.font = "600 30px 'Outfit', system-ui, sans-serif";
+  ctx.font = "600 30px 'Manrope', system-ui, sans-serif";
   const chipTextWidth = ctx.measureText(visaLabel).width;
   const chipW = chipTextWidth + 70;
   const chipH = 68;
@@ -407,18 +407,18 @@ function drawCard(ctx, cvs, { aspect, amount, visaLabel, firstName, referralCode
 
   // Footer / URL block
   ctx.fillStyle = "#475569";
-  ctx.font = "500 30px 'Outfit', system-ui, sans-serif";
+  ctx.font = "500 30px 'Manrope', system-ui, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   ctx.fillText("Estimate yours in 3 minutes →", W / 2, divY + 30);
 
   ctx.fillStyle = "#014E87";
-  ctx.font = "600 34px 'Outfit', system-ui, sans-serif";
+  ctx.font = "600 34px 'Manrope', system-ui, sans-serif";
   ctx.fillText(t("share.card_via"), W / 2, divY + 80);
 
   // Referral code pill
   if (referralCode) {
-    ctx.font = "600 26px 'Outfit', system-ui, sans-serif";
+    ctx.font = "600 26px 'Manrope', system-ui, sans-serif";
     const refText = `REF · ${referralCode}`;
     const refTextW = ctx.measureText(refText).width;
     const refChipW = refTextW + 44;
@@ -439,7 +439,7 @@ function drawCard(ctx, cvs, { aspect, amount, visaLabel, firstName, referralCode
   // Signature
   if (firstName) {
     ctx.fillStyle = "rgba(11,43,64,0.35)";
-    ctx.font = "italic 500 26px 'Outfit', system-ui, sans-serif";
+    ctx.font = "italic 500 26px 'Manrope', system-ui, sans-serif";
     ctx.textAlign = "right";
     ctx.textBaseline = "bottom";
     ctx.fillText(`— ${firstName}`, W - 60, H - 50);

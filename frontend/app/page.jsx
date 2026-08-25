@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import LandingClient from "./LandingClient";
 
 export const metadata = {
@@ -10,5 +11,9 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <LandingClient />;
+  return (
+    <Suspense fallback={null}>
+      <LandingClient />
+    </Suspense>
+  );
 }

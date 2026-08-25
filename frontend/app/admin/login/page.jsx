@@ -11,7 +11,7 @@ import { api } from "@/lib/api";
 import { saveAuth } from "@/lib/auth";
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState("admin@aussieback.com");
+  const [email, setEmail] = useState("admin@aussieback.com")  // kept: DB record uses this email; do not change without also updating admins collection;
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();

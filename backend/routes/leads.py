@@ -18,7 +18,7 @@ router = APIRouter()
 
 @router.get("/")
 async def root():
-    return {"service": "AussieBack API", "status": "ok"}
+    return {"service": "refundmysuper API", "status": "ok"}
 
 
 @router.post("/estimate")

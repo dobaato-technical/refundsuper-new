@@ -7,7 +7,7 @@ import SEO from "@/components/SEO";
 import BlogCTA from "@/components/BlogCTA";
 import { apiFetch } from "@/lib/serverApi";
 
-const SITE_URL = process.env.REACT_APP_SITE_URL || "https://aussieback.com";
+const SITE_URL = process.env.REACT_APP_SITE_URL || "https://refundsuper.com.au";
 
 export const metadata = {
   title: "The Super Refund Playbook",

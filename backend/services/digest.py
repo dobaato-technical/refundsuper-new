@@ -61,7 +61,7 @@ def _digest_to_html(d: dict) -> str:
         for r in d["top_referrers"]
     ) or "<li>No referred leads this week.</li>"
     return f"""
-    <h2>AussieBack — weekly digest</h2>
+    <h2>refundmysuper — weekly digest</h2>
     <p>Since {d['since'][:10]}</p>
     <ul>
       <li><strong>{d['new_leads_count']}</strong> new leads</li>
@@ -86,7 +86,7 @@ async def send_weekly_digest() -> dict:
             resend.Emails.send({
                 "from": RESEND_FROM_EMAIL,
                 "to": admin_recipients,
-                "subject": f"AussieBack weekly digest — {digest['new_leads_count']} new leads",
+                "subject": f"refundmysuper weekly digest — {digest['new_leads_count']} new leads",
                 "html": html,
             })
             logger.info("Weekly digest sent to %s", admin_recipients)

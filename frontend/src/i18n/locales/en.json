@@ -5,7 +5,8 @@
     "faq": "FAQ",
     "admin": "Admin",
     "blog": "Blog",
-    "cta": "Calculate my refund"
+    "cta": "Calculate my refund",
+    "cta_short": "Estimate"
   },
   "hero": {
     "eyebrow": "DASP superannuation refunds — India, China & every temporary visa",
@@ -106,7 +107,7 @@
     "copied": "Link copied!",
     "card_headline": "I'm claiming",
     "card_from": "back from Australia",
-    "card_via": "aussieback.com",
+    "card_via": "refundsuper.com.au",
     "card_visa_wh": "Working Holiday Maker",
     "card_visa_other": "Student / Temporary Visa",
     "format_feed": "Post (4:5)",

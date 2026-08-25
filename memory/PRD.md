@@ -81,7 +81,13 @@ All other paths continue to route to the Next.js frontend. In preview, `/robots.
 - [x] **Comment Moderation UI** — new `/admin/comments` page listing all comments with filter chips (all / pending / approved), Approve + Delete actions, links back to the source article. "Comments" button added to admin dashboard toolbar.
 - [x] **Bulk Article Autopilot** — new `settings.autopilot` config + `autopilot_queue` collection. Weekly APScheduler cron (Mon 10:00 Australia/Sydney) pops one queued topic and publishes it via Claude Sonnet. Admin can Add/Remove queue items, toggle enable/pause, and manually "Run now" from the Blog Studio "Content Autopilot" card.
 
-## Implemented (Feb 2026 — Iteration 13: Full brand refresh → refundmysuper)
+## Implemented (Feb 2026 — Iteration 15–16: Deployment fix + brand sweep + mobile header)
+- [x] **Fixed production `next build` failure** — wrapped `<LandingClient />` in `<Suspense fallback={null}>` (Next.js 15 requires this when a client component uses `useSearchParams`). Removed hardcoded `http://localhost:8001` fallback in `serverApi.js` (now throws at import time if `REACT_APP_BACKEND_URL` unset). Deleted stray `/app/yarn.lock`. Deduped `SITE_URL` in backend `.env`. Local `yarn build` now generates all 11 pages cleanly.
+- [x] **Mobile header no-overflow** — Header at 390px viewport now has `scrollWidth == 390` (was overflowing by ~42px). Fix: compact logo on mobile (`sm` variant), CTA copy switches to "Estimate" under 640px via new i18n key `nav.cta_short`, `shrink-0` on logo + CTA cluster, `px-4` on mobile.
+- [x] **Backend + frontend brand sweep** — every user-visible "AussieBack" replaced with "refundmysuper" across `blog_seed.py` (+ existing DB docs updated), `models.py` default author (**CRITICAL** — every new post now defaults to `refundmysuper Team`), `integrations.py` outbound Resend + WhatsApp copy, `services/digest.py` email subject + H2, `routes/leads.py` health endpoint, FastAPI title, CSV export filename (`refundmysuper_leads.csv`), Share Card monogram (`A` → `₹` in warm-gold square), all canvas fonts (`Clash Display` + `Outfit` → `Manrope`).
+- [x] **Sitemap + IndexNow key file reachable at public origin** — added Next.js `rewrites()` in `next.config.mjs` that proxy `/sitemap.xml`, `/robots.txt`, `/google*.html`, `/{indexnow_key}.txt` to the pod-internal FastAPI (bypasses ingress loop). Static `public/robots.txt` deleted so dynamic version wins. Verified: sitemap returns 8 `<loc>` entries on refundsuper.com.au, IndexNow key file returns key as plaintext, wrong keys return 404.
+- [x] **Admin password rotation** — `admin@aussieback.com` password changed from `Admin@123` → `doWhatYou@321`. Old password now 401. `test_credentials.md` updated. `ADMIN_SEED_PASSWORD` env set so future re-seeds use new password.
+- **⚠️ Left as-is (deliberate)**: webhook headers still `X-AussieBack-Event` / `X-AussieBack-Signature` (public contract with flowtax.io — coordinated rename needed). Slug `aussieback-case-study-japanese-student-6180` (needs a 301 redirect to migrate). Internal logger name `aussieback` (cosmetic).
 - [x] **Rebrand from AussieBack → refundmysuper** — new deep-blue + warm-gold palette applied across every page. Palette in `app/globals.css`: `#014E87` (primary), `#0076C2` (accent), `#D5A31B` (gold CTAs), `#F2F2F2` (page bg), `#FFFFFF` (cards). Typography swapped from Outfit/Clash Display → **Manrope** (Google Fonts stand-in for the brand's "Aura" spec). All 300+ hex-code references migrated via a scripted sweep.
 - [x] **New wordmark** — text-only `refundmysuper` lockup in `components/BrandLogo.jsx` (dark + light variants), replaces the old "A" square across Header, Footer, admin toolbar, admin login card.
 - [x] **Hero redesign** — deep-blue hero band with the brand mascot as a right-edge illustration (`/public/brand/mascot-cutout.jpg`), warm-gold "back where it belongs" tagline highlight, warm-gold CTA (with soft glow shadow). Estimator card floats up out of the hero into the next section for a "card breaks the color boundary" effect.
@@ -133,13 +139,27 @@ All other paths continue to route to the Next.js frontend. In preview, `/robots.
 - **P1**: Move `_revalidate_nextjs` HTTP call from sync `requests` inside a coroutine to `asyncio.to_thread` or `httpx.AsyncClient` — currently OK because it's only called from BackgroundTasks (threadpool) but should be cleaned up before scaling.
 - **P2**: Rate-limit `GET /api/blog/posts/{slug}/comments` to prevent scraping.
 
-## Backlog
+## Implemented (Feb 2026 — Iteration 13: Full brand refresh → refundmysuper)
 - **P0**: Verify `refundsuper.com.au` in the Resend dashboard so `hello@refundsuper.com.au` sender can actually deliver.
 - **P0**: WeChat integration — QR + WeChat ID card, optional zh-CN locale (in progress, awaiting user inputs).
 - **P1**: Un-stub Twilio WhatsApp notification (still stubbed — user deferred).
 - **P1**: Configure `GSC_SERVICE_ACCOUNT_JSON` so Google Search Console gets pinged alongside IndexNow.
 - **P2**: Rate-limit `GET /api/blog/posts/{slug}/comments` to prevent scraping.
 - **P2**: Deep-blue variant of Blog SSR pages (currently blog list/post inherit the old cream background — subtle contrast with the new blue hero on landing).
+
+## Backlog
+- **P0**: Verify `refundsuper.com.au` in the Resend dashboard so `hello@refundsuper.com.au` sender can actually deliver.
+- **P0**: Point the `refundsuper.com.au` DNS at Emergent's production hosting AND re-trigger the production deploy (last one succeeded to build after the Suspense fix — just needs re-run).
+- **P0**: WeChat integration — QR + WeChat ID card, optional zh-CN locale (**parked at user's request** — ready to build the moment they hand over the QR / WeChat ID).
+- **P1**: Coordinated rename of webhook headers `X-AussieBack-Event` / `X-AussieBack-Signature` / User-Agent — needs flowtax.io consumer update.
+- **P1**: 301 redirect for the `aussieback-case-study-*` slug so no public URL carries the old brand.
+- **P1**: Un-stub Twilio WhatsApp notification.
+- **P1**: Configure `GSC_SERVICE_ACCOUNT_JSON` so Google Search Console gets pinged alongside IndexNow.
+- **P2**: Replace native HTML date input in Estimator step 3 with shadcn calendar in dd/mm/yyyy.
+- **P2**: Suppress the WhatsApp inactivity nudge while the estimator form is visible (currently overlaps on 390px).
+- **P2**: DELETE /api/admin/leads/{id} for GDPR-erasure / manual cleanup.
+- **P2**: Extract a `BRAND` constant in `deps.py` so future rebrands only touch one place.
+- **P2**: Rate-limit `GET /api/blog/posts/{slug}/comments` to prevent scraping.
 
 ## Older Backlog (still valid)
 - **P1**: Multi-admin invitations + audit log.

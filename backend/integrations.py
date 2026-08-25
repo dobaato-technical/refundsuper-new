@@ -27,7 +27,7 @@ def send_whatsapp(lead: dict):
         from twilio.rest import Client
         c = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
         body = (
-            f"Hi {lead.get('first_name')}, this is AussieBack. We've received your estimate "
+            f"Hi {lead.get('first_name')}, this is refundmysuper. We've received your estimate "
             f"of ${lead.get('estimated_refund'):,.0f}. Our team will contact you shortly to "
             f"fast-track your DASP refund. Reply STOP to opt-out."
         )
@@ -51,13 +51,13 @@ def send_emails(lead: dict):
         resend.Emails.send({
             "from": RESEND_FROM_EMAIL,
             "to": [lead["email"]],
-            "subject": f"Your AussieBack Super refund estimate: ${lead['estimated_refund']:,.0f}",
+            "subject": f"Your refundmysuper Australian Super refund estimate: ${lead['estimated_refund']:,.0f}",
             "html": f"""
                 <h2>Hi {lead['first_name']},</h2>
-                <p>Thanks for using AussieBack. Based on what you've told us, your estimated
+                <p>Thanks for using refundmysuper. Based on what you've told us, your estimated
                 Australian Super refund is <strong>${lead['estimated_refund']:,.0f}</strong>.</p>
                 <p>Our team will reach out via WhatsApp shortly to help you recover this.</p>
-                <p>– The AussieBack Team</p>
+                <p>– The refundmysuper Team</p>
             """,
         })
         admin_recipients = [e.strip() for e in ADMIN_NOTIFICATION_EMAILS.split(",") if e.strip()]
@@ -65,7 +65,7 @@ def send_emails(lead: dict):
             resend.Emails.send({
                 "from": RESEND_FROM_EMAIL,
                 "to": admin_recipients,
-                "subject": f"New AussieBack lead: {lead['first_name']} (${lead['estimated_refund']:,.0f})",
+                "subject": f"New refundmysuper lead: {lead['first_name']} (${lead['estimated_refund']:,.0f})",
                 "html": f"""
                     <h3>New lead captured</h3>
                     <ul>
