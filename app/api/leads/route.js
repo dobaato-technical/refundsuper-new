@@ -8,6 +8,11 @@ import { checkAndRecordRateLimit, getClientIp } from "@/lib/server/rateLimit";
 import { dispatchLeadIntegrations } from "@/lib/server/integrations";
 
 export const dynamic = "force-dynamic";
+// Safety margin for the after() dispatch (WhatsApp/email/webhook) below —
+// this bounds the whole invocation, not just the HTTP response, so a slow
+// (but reachable) SMTP provider has room to finish instead of being killed
+// by Vercel's default function duration limit.
+export const maxDuration = 30;
 
 const VISA_TYPES = ["working_holiday", "other_temp"];
 const INPUT_MODES = ["balance", "earnings"];
