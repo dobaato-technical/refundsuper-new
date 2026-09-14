@@ -1,47 +1,52 @@
-// Generic SMTP transport via Nodemailer — replaces Resend, per the migration
-// plan (provider-agnostic SMTP_* env vars). Mirrors backend/integrations.py's
-// soft-fail-if-unconfigured pattern: never throws when SMTP isn't set up,
-// just logs a [STUB] line and returns.
-import nodemailer from "nodemailer";
+// Transactional email via the Resend HTTP API.
+//
+// Replaces the previous Nodemailer/SMTP transport: serverless platforms
+// (Vercel included, since it runs on AWS Lambda) block outbound SMTP ports,
+// which made raw SMTP fail with ETIMEDOUT in production. Resend is a plain
+// HTTPS call, so it works from any serverless runtime.
+//
+// Keeps the codebase's soft-fail-if-unconfigured convention: never throws when
+// credentials are missing, just logs a [STUB] line and returns.
+import { Resend } from "resend";
 
-let _transporter = null;
+let _client = null;
 
-function getTransporter() {
-  if (_transporter) return _transporter;
-  const port = Number(process.env.SMTP_PORT || 587);
-  _transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port,
-    secure: port === 465,
-    auth:
-      process.env.SMTP_USER || process.env.SMTP_PASS
-        ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-        : undefined,
-    // Bounded so a slow/unreachable SMTP host fails fast instead of hanging
-    // the request that triggered it (e.g. lead submission) for minutes —
-    // this call sits on the response path, not a background job.
-    connectionTimeout: 8000,
-    greetingTimeout: 8000,
-    socketTimeout: 8000,
-  });
-  return _transporter;
+// Lazy, like supabaseAdmin.js — read the key at call time, not import time, so
+// `next build` never fails just because the env var is unset.
+function getClient() {
+  if (!_client) _client = new Resend(process.env.RESEND_API_KEY);
+  return _client;
+}
+
+export function isEmailConfigured() {
+  return Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL);
 }
 
 export async function sendMail({ to, subject, html }) {
-  if (!process.env.SMTP_HOST) {
+  const recipients = (Array.isArray(to) ? to : [to]).filter(Boolean);
+  if (!recipients.length) return;
+
+  if (!isEmailConfigured()) {
     console.log(
-      `[STUB] email not sent (SMTP not configured) — to=${Array.isArray(to) ? to.join(",") : to} subject=${subject}`
+      `[STUB] email not sent (RESEND_API_KEY / RESEND_FROM_EMAIL not configured) — to=${recipients.join(",")} subject=${subject}`
     );
     return;
   }
+
   try {
-    const transporter = getTransporter();
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.SMTP_USER,
-      to: Array.isArray(to) ? to.join(",") : to,
+    // The SDK resolves with { data, error } instead of rejecting on API
+    // errors, so an unchecked `error` would look like a successful send.
+    const { data, error } = await getClient().emails.send({
+      from: process.env.RESEND_FROM_EMAIL,
+      to: recipients,
       subject,
       html,
     });
+    if (error) {
+      console.error("[MAILER] Resend rejected the send:", error);
+      return;
+    }
+    console.log(`[MAILER] sent id=${data?.id} to=${recipients.join(",")}`);
   } catch (e) {
     console.error("[MAILER] send failed:", e);
   }

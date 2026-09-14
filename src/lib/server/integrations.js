@@ -1,32 +1,68 @@
 // External integrations: WhatsApp, email, HMAC-signed CRM webhook, IndexNow,
-// Google Search Console. Port of backend/integrations.py — WhatsApp now uses
-// the `twilio` npm package (same Twilio API), email goes through mailer.js
-// (Nodemailer/SMTP replacing Resend), and the webhook path is unchanged
-// (enqueue into the durable outbox, HMAC-signed on delivery by outbox.js).
+// Google Search Console. Port of backend/integrations.py — WhatsApp uses the
+// `twilio` npm package (same Twilio API), email goes through mailer.js
+// (Resend HTTP API), and the webhook path is unchanged (enqueue into the
+// durable outbox, HMAC-signed on delivery by outbox.js).
 import twilio from "twilio";
-import { sendMail } from "./mailer";
+import { sendMail, isEmailConfigured } from "./mailer";
 import { enqueue } from "./outbox";
 import { renderEmail, button, escapeHtml, BRAND, SITE_URL } from "./emailTemplates";
 
 const VISA_LABEL = { working_holiday: "Working Holiday Maker", other_temp: "Student / Other Temporary Visa" };
 const fmtAUD = (n) => `$${Math.round(Number(n) || 0).toLocaleString()}`;
 
-// -------------------- WhatsApp --------------------
+// -------------------- WhatsApp (Twilio) --------------------
+// Twilio addresses always carry the `whatsapp:` scheme prefix. Env values are
+// normally pasted as a bare E.164 number, so normalise rather than trusting
+// the raw value — an un-prefixed `from` is rejected by the API.
+function whatsappAddress(value) {
+  const v = (value || "").trim();
+  if (!v) return "";
+  return v.startsWith("whatsapp:") ? v : `whatsapp:${v}`;
+}
+
+/**
+ * Builds a Twilio REST client from whichever credential style is configured:
+ *   - Account SID (AC…) + Auth Token         → twilio(sid, token)
+ *   - API Key SID (SK…) + API Key Secret     → twilio(key, secret, { accountSid })
+ * API keys are the credential Twilio now surfaces most prominently, and they
+ * additionally require the account SID, which is easy to miss.
+ */
+function getTwilioClient() {
+  const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET } = process.env;
+  if (TWILIO_API_KEY_SID && TWILIO_API_KEY_SECRET) {
+    if (!TWILIO_ACCOUNT_SID) {
+      throw new Error("TWILIO_API_KEY_SID/SECRET are set but TWILIO_ACCOUNT_SID is missing (API keys require it)");
+    }
+    return twilio(TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET, { accountSid: TWILIO_ACCOUNT_SID });
+  }
+  return twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+}
+
+export function isWhatsappConfigured() {
+  const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET, TWILIO_WHATSAPP_FROM } =
+    process.env;
+  const hasCredentials =
+    (TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN) || (TWILIO_API_KEY_SID && TWILIO_API_KEY_SECRET && TWILIO_ACCOUNT_SID);
+  return Boolean(hasCredentials && TWILIO_WHATSAPP_FROM);
+}
+
 export async function sendWhatsapp(lead) {
-  const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM } = process.env;
-  if (!(TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_WHATSAPP_FROM)) {
+  if (!isWhatsappConfigured()) {
     console.log(`[STUB] WhatsApp not configured — would notify ${lead.whatsapp_number}`);
     return;
   }
   try {
-    const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+    const client = getTwilioClient();
     const body =
       `Hi ${lead.first_name}, this is refundmysuper. We've received your estimate ` +
       `of $${Math.round(lead.estimated_refund).toLocaleString()}. Our team will contact you shortly to ` +
       `fast-track your DASP refund. Reply STOP to opt-out.`;
-    let to = lead.whatsapp_number || "";
-    if (!to.startsWith("whatsapp:")) to = `whatsapp:${to}`;
-    const msg = await client.messages.create({ body, from: TWILIO_WHATSAPP_FROM, to });
+    const msg = await client.messages.create({
+      body,
+      from: whatsappAddress(process.env.TWILIO_WHATSAPP_FROM),
+      to: whatsappAddress(lead.whatsapp_number),
+    });
     console.log(`WhatsApp sent SID=${msg.sid}`);
   } catch (e) {
     console.error("WhatsApp send failed:", e);
@@ -35,7 +71,7 @@ export async function sendWhatsapp(lead) {
 
 // -------------------- Email --------------------
 export async function sendLeadEmails(lead) {
-  if (!process.env.SMTP_HOST) {
+  if (!isEmailConfigured()) {
     console.log(`[STUB] Email not configured — would email ${lead.email}`);
     return;
   }
@@ -141,7 +177,7 @@ export async function sendLeadEmails(lead) {
     );
   }
   // Independent recipients — send concurrently rather than serializing two
-  // SMTP round-trips on the /api/leads response path.
+  // API round-trips on the /api/leads response path.
   await Promise.allSettled(sends);
 }
 
@@ -160,8 +196,8 @@ export function sendWebhook(event, data, { previous } = {}) {
 
 export async function dispatchLeadIntegrations(lead) {
   // Run concurrently, not sequentially — this sits on the /api/leads response
-  // path, so a slow provider (e.g. SMTP) shouldn't add its latency on top of
-  // the others'. Each call already catches its own errors internally, but
+  // path, so a slow provider shouldn't add its latency on top of the
+  // others'. Each call already catches its own errors internally, but
   // allSettled is a second guard against one hanging integration blocking
   // the others from even starting.
   await Promise.allSettled([sendWhatsapp(lead), sendLeadEmails(lead), sendWebhook("lead.created", lead)]);

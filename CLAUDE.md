@@ -72,11 +72,16 @@ needs the database will fail clearly at request time instead.
 
 ### Integrations — all soft-fail when unconfigured (`src/lib/server/`)
 
-- `mailer.js` + `integrations.js` — email via **Nodemailer/generic SMTP** (`SMTP_HOST`/`PORT`/`USER`/`PASS`/`FROM`),
-  not Resend. If `SMTP_HOST` is unset, sends are no-ops that just log `[STUB]` — this is expected until real SMTP
-  credentials are added to `.env`.
+- `mailer.js` + `integrations.js` — email via the **Resend HTTP API** (`RESEND_API_KEY`/`RESEND_FROM_EMAIL`). Guard
+  every send behind `isEmailConfigured()`; when unset, sends are no-ops that log `[STUB]`. **Do not reintroduce
+  SMTP/Nodemailer** — serverless platforms (Vercel runs on AWS Lambda) block outbound SMTP ports, which made raw
+  SMTP fail in production with `ETIMEDOUT` on `CONN`. Resend's SDK resolves with `{ data, error }` rather than
+  rejecting, so an unchecked `error` silently looks like a successful send.
 - `integrations.js` — WhatsApp via the `twilio` npm package, IndexNow ping, Google Search Console ping
-  (`google-auth-library`, direct REST call rather than a generated client).
+  (`google-auth-library`, direct REST call rather than a generated client). Twilio accepts **either** credential
+  style — Account SID + Auth Token, or API Key SID + Secret (which additionally requires `TWILIO_ACCOUNT_SID`) — see
+  `getTwilioClient()`. Both the `from` and `to` addresses are normalised to Twilio's required `whatsapp:` prefix,
+  so `TWILIO_WHATSAPP_FROM` should hold a bare E.164 number.
 - `anthropic.js` — AI blog-draft generation via the direct Anthropic API (`@anthropic-ai/sdk`, model
   `claude-sonnet-5`), replacing the old Emergent LLM proxy. System prompt and JSON contract are preserved exactly.
 - `outbox.js` — durable webhook queue with HMAC-SHA256 signing. **Keep the header names
@@ -111,13 +116,17 @@ No `.env.example` exists (env files are gitignored). `.env` (repo root) env vars
 
 - **Supabase**: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (server-only, never expose to the browser),
   `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-- **Email**: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` — leave unset to no-op email sends
-  during local dev.
+- **Email (Resend)**: `RESEND_API_KEY`, `RESEND_FROM_EMAIL` (must be on a Resend-verified domain;
+  `onboarding@resend.dev` works for testing), `ADMIN_NOTIFICATION_EMAILS`. Leave unset to no-op sends in local dev.
+- **WhatsApp (Twilio)**: `TWILIO_ACCOUNT_SID` + `TWILIO_AUTH_TOKEN`, **or** `TWILIO_API_KEY_SID` +
+  `TWILIO_API_KEY_SECRET` + `TWILIO_ACCOUNT_SID`; plus `TWILIO_WHATSAPP_FROM` (bare E.164).
 - **AI blog drafts**: `ANTHROPIC_API_KEY`.
-- **Everything else, unchanged from before the migration**: `TWILIO_ACCOUNT_SID`/`TWILIO_AUTH_TOKEN`/
-  `TWILIO_WHATSAPP_FROM`, `ADMIN_NOTIFICATION_EMAILS`, `WEBHOOK_URL`/`WEBHOOK_SECRET`, `RECAPTCHA_SECRET_KEY`/
+- **`SITE_URL`** — server-side canonical origin used for email/webhook/sitemap links. Distinct from the client-side
+  `REACT_APP_SITE_URL`; if unset it falls back to `https://refundsuper.com.au`, which silently produces wrong links
+  on any other deployment.
+- **Everything else, unchanged from before the migration**: `WEBHOOK_URL`/`WEBHOOK_SECRET`, `RECAPTCHA_SECRET_KEY`/
   `REACT_APP_RECAPTCHA_SITE_KEY`/`RECAPTCHA_MIN_SCORE`/`RECAPTCHA_ACTION`, `LEAD_RATE_LIMIT`, `INDEXNOW_KEY`/
-  `INDEXNOW_ENDPOINT`, `GSC_SERVICE_ACCOUNT_JSON`, `WEEKLY_DIGEST_TZ`/`WEEKLY_DIGEST_ENABLED`, `SITE_URL`,
+  `INDEXNOW_ENDPOINT`, `GSC_SERVICE_ACCOUNT_JSON`, `WEEKLY_DIGEST_TZ`/`WEEKLY_DIGEST_ENABLED`,
   `GOOGLE_SITE_VERIFICATION`, `COMMENTS_AUTO_APPROVE`, `REACT_APP_SUPPORT_WHATSAPP`, `REACT_APP_SITE_URL`.
 
 ```bash

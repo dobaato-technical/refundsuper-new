@@ -3,6 +3,9 @@ import { requireAdmin } from "@/lib/server/requireAdmin";
 import { generateArticleDraft } from "@/lib/server/anthropic";
 
 export const dynamic = "force-dynamic";
+// A full 500-900 word draft takes ~20-30s to generate, which exceeds Vercel's
+// default function duration — without this the request is killed mid-flight.
+export const maxDuration = 60;
 
 export async function POST(req) {
   const { response } = await requireAdmin();

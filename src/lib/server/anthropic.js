@@ -29,6 +29,66 @@ function slugifyLocal(text) {
   return s.slice(0, 140) || `post-${Math.random().toString(16).slice(2, 10)}`;
 }
 
+/**
+ * The draft's `content` field is markdown, and models routinely emit it with
+ * literal newlines/tabs inside the JSON string rather than `\n`/`\t` escapes —
+ * which is invalid JSON and makes `JSON.parse` fail with "Bad control
+ * character in string literal". Escape control characters that occur *inside*
+ * string literals so the payload becomes parseable, leaving structural
+ * whitespace between tokens untouched.
+ */
+function escapeControlCharsInStrings(jsonText) {
+  let out = "";
+  let inString = false;
+  let escaped = false;
+  for (const ch of jsonText) {
+    if (escaped) {
+      out += ch;
+      escaped = false;
+      continue;
+    }
+    if (ch === "\\") {
+      out += ch;
+      escaped = true;
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      out += ch;
+      continue;
+    }
+    const code = ch.charCodeAt(0);
+    if (inString && code < 0x20) {
+      if (ch === "\n") out += "\\n";
+      else if (ch === "\r") out += "\\r";
+      else if (ch === "\t") out += "\\t";
+      else out += `\\u${code.toString(16).padStart(4, "0")}`;
+      continue;
+    }
+    out += ch;
+  }
+  return out;
+}
+
+/** Tries progressively more forgiving reads of the model's response. */
+function parseDraftJson(text) {
+  const candidates = [text];
+  const braced = text.match(/\{[\s\S]*\}/);
+  if (braced && braced[0] !== text) candidates.push(braced[0]);
+  // Sanitised variants of each, for the unescaped-control-character case.
+  for (const c of [...candidates]) candidates.push(escapeControlCharsInStrings(c));
+
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(candidate);
+      if (parsed && typeof parsed === "object") return parsed;
+    } catch {
+      /* try the next, more forgiving, candidate */
+    }
+  }
+  return null;
+}
+
 export async function generateArticleDraft(topic, keywords, category) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -63,17 +123,12 @@ export async function generateArticleDraft(topic, keywords, category) {
     text = text.replace(/```$/, "").trim();
   }
 
-  let data;
-  try {
-    data = JSON.parse(text);
-  } catch (e) {
-    const match = text.match(/\{[\s\S]*\}/);
-    if (!match) {
-      const err = new Error("LLM did not return JSON");
-      err.status = 502;
-      throw err;
-    }
-    data = JSON.parse(match[0]);
+  const data = parseDraftJson(text);
+  if (!data) {
+    console.warn("LLM draft was not parseable as JSON | raw head=", text.slice(0, 300));
+    const err = new Error("LLM did not return JSON");
+    err.status = 502;
+    throw err;
   }
 
   if (!data || !data.title || !data.meta_description || !data.excerpt || !data.content) {

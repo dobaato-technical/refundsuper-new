@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { MessageCircle, X } from "lucide-react";
 import { formatAUD } from "@/lib/format";
 
-const SUPPORT_PHONE_RAW = (process.env.REACT_APP_SUPPORT_WHATSAPP || "+61400000000")
+const SUPPORT_PHONE_RAW = (process.env.REACT_APP_SUPPORT_WHATSAPP || "+61495097311")
   .replace(/[^\d]/g, ""); // wa.me expects no +/spaces
 
 const INACTIVITY_MS = 20_000;
