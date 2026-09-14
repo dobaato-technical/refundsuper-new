@@ -213,7 +213,7 @@ function AdminBlogStudioInner() {
         <aside className="lg:col-span-2 space-y-4" data-testid="studio-prompt">
           <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6">
             <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-[#014E87] font-medium mb-3">
-              <Sparkles className="h-3.5 w-3.5" /> Claude Sonnet 4.6
+              <Sparkles className="h-3.5 w-3.5" /> Claude Sonnet 5
             </div>
             <h1 className="font-display text-2xl font-medium mb-4">Draft a new article</h1>
             <div className="space-y-3">
@@ -334,7 +334,8 @@ function AdminBlogStudioInner() {
               </div>
             </div>
             <p className="text-sm text-[#475569] mb-4 leading-relaxed">
-              Cron runs every Monday 10:00 (Australia/Sydney) — pops one queued topic, drafts it with Claude Sonnet, and publishes it.
+              Pops one queued topic, drafts it with Claude Sonnet, and publishes it. Automatic scheduling isn&apos;t
+              set up yet — use &quot;Run now&quot; to process the next queued topic.
             </p>
 
             <div className="space-y-2 mb-3">

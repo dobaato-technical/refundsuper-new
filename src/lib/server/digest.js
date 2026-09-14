@@ -2,7 +2,7 @@
 // (Mon 09:00 Sydney) is explicitly deferred — this is invoked on-demand via
 // the admin UI's "Run digest" button / POST /api/admin/weekly-digest/run.
 import { getSupabaseAdmin } from "./supabaseAdmin";
-import { sendMail } from "./mailer";
+import { sendMail, isEmailConfigured } from "./mailer";
 import { renderEmail, statBlock, button, escapeHtml, BRAND, SITE_URL } from "./emailTemplates";
 
 const CHANNEL_LABEL = { download: "Downloads", native: "Native share", copy: "Link copies", story_download: "Story downloads" };
@@ -117,7 +117,7 @@ export async function sendWeeklyDigest() {
     .split(",")
     .map((e) => e.trim())
     .filter(Boolean);
-  if (process.env.SMTP_HOST && adminRecipients.length) {
+  if (isEmailConfigured() && adminRecipients.length) {
     await sendMail({
       to: adminRecipients,
       subject: `refundmysuper weekly digest — ${digest.new_leads_count} new leads`,
@@ -126,7 +126,7 @@ export async function sendWeeklyDigest() {
     console.log(`Weekly digest sent to ${adminRecipients}`);
   } else {
     console.log(
-      `[STUB] Weekly digest not sent — SMTP / ADMIN_NOTIFICATION_EMAILS not configured. ` +
+      `[STUB] Weekly digest not sent — Resend / ADMIN_NOTIFICATION_EMAILS not configured. ` +
         `${digest.new_leads_count} new leads · $${digest.new_pipeline_value.toLocaleString()} pipeline · top channel=${digest.top_channel.channel}`
     );
   }

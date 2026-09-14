@@ -25,7 +25,7 @@
     "WhatsAppChatButton: `armIdle` returns null when watchInactivity is false, but its useEffect early-returns in that case too — logic is correct but slightly redundant.",
     "ShareCardModal `spaced()` helper takes a `px` arg that is unused; harmless dead param.",
     "ShareCardModal useEffect deps include `visaLabel` which is derived from `visaType` + `t` — redundant but not buggy.",
-    "REACT_APP_SUPPORT_WHATSAPP is a placeholder (+61400000000). Before production launch this must be swapped for the real support number; document this in deployment checklist."
+    "REACT_APP_SUPPORT_WHATSAPP is a placeholder (+14155238886). Before production launch this must be swapped for the real support number; document this in deployment checklist."
   ],
   "updated_files": [],
   "success_rate": {"backend": "N/A (unchanged)", "frontend": "100%"},
